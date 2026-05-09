@@ -1,0 +1,109 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>HTML 作為 AI 知識展示格式：Claude Code 的實務補充</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}.search{margin-top:22px;display:flex;gap:10px;align-items:center}.search input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1rem;background:var(--bg);color:var(--text)}.count{margin:14px 0 20px;color:var(--muted)}.empty{padding:28px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--card)}
+</style></head><body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>HTML 作為 AI 知識展示格式：Claude Code 的實務補充</h1><p class="meta">來源筆記：<code>HTML 作為 AI 知識展示格式：Claude Code 的實務補充.md</code></p><p class="excerpt">這份筆記整理 Thariq（Claude Code / Anthropic）文章〈Using Claude Code: The Unreasonable Effectiveness of HTML〉對 HTML artifact 的觀點，並轉成 knowledge-mirror / knowledge-showcase 的實作規則。 來源： Thariq X Article：&lt;…</p></section><h1>HTML 作為 AI 知識展示格式：Claude Code 的實務補充</h1>
+<p>#html #claude-code #knowledge-showcase #artifact #workflow</p>
+<h2>這是什麼</h2>
+<p>這份筆記整理 Thariq（Claude Code / Anthropic）文章〈Using Claude Code: The Unreasonable Effectiveness of HTML〉對 HTML artifact 的觀點，並轉成 <code>knowledge-mirror</code> / <code>knowledge-showcase</code> 的實作規則。</p>
+<p>來源：</p>
+<ul>
+<li>Thariq X Article：<a href="https://x.com/trq212/status/2052809885763747935" target="_blank" rel="noopener noreferrer" title="https://x.com/trq212/status/2052809885763747935">Thariq HTML article</a></li>
+<li>HTML examples：<a href="https://thariqs.github.io/html-effectiveness/" target="_blank" rel="noopener noreferrer" title="https://thariqs.github.io/html-effectiveness/">HTML examples</a></li>
+</ul>
+<h2>核心結論</h2>
+<ul>
+<li>HTML 不是單純取代 Markdown，而是讓 AI 產出從「文件」升級成「可讀、可分享、可互動的工作介面」。</li>
+<li>Markdown 的優勢仍是可版本控管、好 diff、適合作為 canonical source；HTML 的優勢是資訊密度、視覺結構、互動與分享。</li>
+<li>對 <code>know</code> 來說，Markdown 應繼續保存知識原始稿；HTML 則應作為主要閱讀、分享與操作層。</li>
+<li>不要只是把 Markdown 包成 HTML；應依內容類型加入適合的視覺結構，例如表格、卡片、流程圖、時間線、tabs、互動控制。</li>
+<li>HTML artifact 的理想用法是雙向：人用 UI 選擇、調整、比較，最後能匯出 prompt / plan / spec，餵回 agent 繼續執行。</li>
+</ul>
+<h2>文章重點理解</h2>
+<p>Thariq 的主張是：Markdown 曾經很適合 agent 與人溝通，因為它簡單、可攜、容易手改，也能表示基本結構。但當 agent 產出越來越長、越來越複雜時，Markdown 會變成資訊密度太低的文字牆。</p>
+<p>他觀察到幾個變化：</p>
+<ol>
+<li>長 Markdown spec 超過一百行後，很少人真的完整讀完。</li>
+<li>現在人通常不是直接手改 AI 產出的文件，而是把它當 spec、reference、brainstorming output，再要求 Claude 修改。</li>
+<li>既然人不常手改，Markdown「易手動編輯」的優勢就下降。</li>
+<li>HTML 能表示表格、CSS 設計資料、SVG 圖、script snippets、互動元素、workflow、canvas 空間資訊與圖片。</li>
+<li>HTML 更容易分享：上傳後一個連結就能打開，不需要收件人下載或使用特定 Markdown renderer。</li>
+<li>HTML 可以做 two-way interaction：滑桿、選項、比較器、copy prompt button，讓人選完後把結果餵回 Claude Code。</li>
+<li>Claude Code 適合產 HTML，因為它能讀取本地檔案、git history、MCP、瀏覽器等上下文，做出更貼合專案的 artifact。</li>
+</ol>
+<h2>對 know 的新規則</h2>
+<h3>1. HTML 不是「轉檔」，而是「展示設計」</h3>
+<p>新增 know HTML 時，不應只把 Markdown 直譯成段落。至少要思考：</p>
+<ul>
+<li>這篇內容的核心資訊結構是什麼？</li>
+<li>使用者最想比較、查找、決策的是什麼？</li>
+<li>有沒有適合用卡片、表格、流程圖、時間線、tabs 呈現的部分？</li>
+<li>是否需要搜尋、篩選、展開/收合、複製 prompt 等輕互動？</li>
+</ul>
+<h3>2. 依內容類型選 HTML 型態</h3>
+<p>| 內容類型 | 建議 HTML 型態 |</p>
+<p>|---|---|</p>
+<p>| 架構 / 系統設計 | 架構圖、資料流、元件卡片、責任邊界表 |</p>
+<p>| 流程 / SOP | stepper、流程圖、checklist、風險提示 |</p>
+<p>| 多方案比較 | 比較矩陣、tabs、並排卡片、選項篩選 |</p>
+<p>| 技術文章整理 | 摘要卡、重點區塊、範例程式碼、注意事項 |</p>
+<p>| 專案狀態 / 報告 | timeline、狀態燈、風險表、指標卡 |</p>
+<p>| Prompt / workflow | profile 卡片、輸入輸出範例、copy button |</p>
+<p>| 研究 / 學習 | glossary、collapsible sections、tabbed examples |</p>
+<h3>3. HTML 要支援讀者快速掌握</h3>
+<p>每個分享頁至少要有：</p>
+<ul>
+<li>標題與一句話摘要</li>
+<li>核心結論</li>
+<li>可掃讀的章節導航或清楚 heading</li>
+<li>可讀連結文字，不顯示整串 URL</li>
+<li>手機可讀的 responsive layout</li>
+<li>來源與更新時間</li>
+</ul>
+<h3>4. 能互動時就加輕互動</h3>
+<p>若內容適合，優先加入：</p>
+<ul>
+<li>搜尋 / filter</li>
+<li>tabs</li>
+<li>collapsible detail</li>
+<li>copy prompt / copy command button</li>
+<li>比較卡片</li>
+<li>timeline</li>
+<li>checklist</li>
+</ul>
+<p>但互動應保持單檔 HTML 可用，不要過度依賴外部套件。</p>
+<h3>5. Public showcase 要更克制</h3>
+<p>同步到 <code>knowledge-showcase</code> 前要確認：</p>
+<ul>
+<li>不含 private path、token、credential、內部不可公開內容。</li>
+<li>連結文字用短標籤，例如「原文」、「官方文件」、「GitHub repo」。</li>
+<li>本機或內部 URL 不應公開；必要時改成說明性文字。</li>
+</ul>
+<h2>實作建議</h2>
+<p>目前 <code>knowledge-mirror</code> 的 HTML pipeline 應升級成：</p>
+<pre><code>Markdown source
+→ 擷取 title / tags / excerpt
+→ 依內容類型選 HTML template
+→ link label cleanup
+→ index manifest
+→ public sanitization
+→ sync to knowledge-showcase
+→ commit + push
+→ probe Pages URL</code></pre>
+<p>短期可以先維持通用文章模板；之後遇到特定類型時逐步加入專用模板：</p>
+<ul>
+<li><code>architecture.html</code>：架構圖 + 元件表</li>
+<li><code>sop.html</code>：stepper + checklist</li>
+<li><code>comparison.html</code>：比較矩陣</li>
+<li><code>prompt-profile.html</code>：copy prompt + input/output examples</li>
+<li><code>report.html</code>：timeline + 指標卡</li>
+</ul>
+<h2>可直接套用的 Prompt</h2>
+<pre><code>請根據這份 Markdown 筆記產生單檔 HTML 分享頁。
+要求：
+1. 不只是 Markdown 轉 HTML，要重新設計閱讀結構。
+2. 依內容加入適合的卡片、表格、流程圖、tabs 或 checklist。
+3. 手機可讀，CSS 內嵌，不依賴外部 CDN。
+4. URL 不要直接顯示完整字串，改用可讀連結文字。
+5. 不包含任何 private path、token、credential。
+6. 頁面需包含標題、一句話摘要、核心結論、來源與更新時間。</code></pre></main></body></html>

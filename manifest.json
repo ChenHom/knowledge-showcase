@@ -4,125 +4,132 @@
     "rel": "AI/語音化工作流程設計實戰/AI 時代的 PM 新技能：語音化工作流程設計實戰.md",
     "slug": "voice-workflow-design",
     "url": "notes/voice-workflow-design.html",
-    "excerpt": "title: AI 時代的 PM 新技能：語音化工作流程設計實戰 created: 2026-05-09 source: 260508_AI 時代的 PM 新技能：語音化工作流程設計實戰.zip AI 語音工作流 PM ZeroType Prompt Engineering Ollama 這份教材的核心不是「用語音打字」，而是把語音設計成一個低摩擦的 AI …"
+    "excerpt": "title: AI 時代的 PM 新技能：語音化工作流程設計實戰 created: 2026-05-09 source: 260508_AI 時代的 PM 新技能：語音化工作流程設計實戰.zip AI 語音工作流 PM ZeroType Prompt Engineering Ollama 這份教材的核心不是「用語音打字」，而是把語音設計成一個低摩擦的 AI 工作入口：想到就說，…"
   },
   {
     "title": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計",
     "rel": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計.md",
     "slug": "avif-image-format-implementation",
     "url": "notes/avif-image-format-implementation.html",
-    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路…"
+    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路：…"
   },
   {
     "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
     "rel": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness.md",
     "slug": "agent-system-foundation-beta-harness",
     "url": "notes/agent-system-foundation-beta-harness.html",
-    "excerpt": "agent-system-foundation 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。 它的核心重點不是 prompt 本身，而是把以下幾件事制度化： workflow state verification run orchestration human handoff…"
+    "excerpt": "agent-system-foundation 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。 它的核心重點不是 prompt 本身，而是把以下幾件事制度化： workflow state verification run orchestration human handoff observability artifact g…"
   },
   {
     "title": "Agent、RAG、Harness 系統 Eval 功能設計",
     "rel": "Agent、RAG、Harness 系統 Eval 功能設計.md",
     "slug": "agent-rag-harness-eval-design",
     "url": "notes/agent-rag-harness-eval-design.html",
-    "excerpt": "這份筆記整理一套用來評估 Agent / RAG / Harness 系統的 Eval 設計。重點不是做漂亮 demo，而是把系統裡容易退化、容易被改壞、但又很難靠肉眼長期盯住的規則，變成可重複執行的檢查。 核心原則：  Eval 不是只拿來評分模型回答好不好，而是整個 AI 系統的防回歸機制。 對 Agentic system 來說，真正會壞的地方通常不是…"
+    "excerpt": "這份筆記整理一套用來評估 Agent / RAG / Harness 系統的 Eval 設計。重點不是做漂亮 demo，而是把系統裡容易退化、容易被改壞、但又很難靠肉眼長期盯住的規則，變成可重複執行的檢查。 核心原則：  Eval 不是只拿來評分模型回答好不好，而是整個 AI 系統的防回歸機制。 對 Agentic system 來說，真正會壞的地方通常不是單一 prompt，…"
   },
   {
     "title": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構",
     "rel": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md",
     "slug": "claw-notify-rsshub-firebase-pwa",
     "url": "notes/claw-notify-rsshub-firebase-pwa.html",
-    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：jackyb… 連結"
+    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：外部連結"
   },
   {
     "title": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文",
     "rel": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文.md",
     "slug": "gemma-4-explained",
     "url": "notes/gemma-4-explained.html",
-    "excerpt": "這篇文章在講什麼 這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。 新手先記住這 6 件事…"
+    "excerpt": "這篇文章在講什麼 這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。 新手先記住這 6 件事 1. Gemma 4 有四個型號：E…"
+  },
+  {
+    "title": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充",
+    "rel": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充.md",
+    "slug": "html-as-ai-knowledge-artifact",
+    "url": "notes/html-as-ai-knowledge-artifact.html",
+    "excerpt": "這份筆記整理 Thariq（Claude Code / Anthropic）文章〈Using Claude Code: The Unreasonable Effectiveness of HTML〉對 HTML artifact 的觀點，並轉成 knowledge-mirror / knowledge-showcase 的實作規則。 來源： Thariq X Article：<…"
   },
   {
     "title": "Laravel 的事件概念及實作方式",
     "rel": "Laravel 的事件概念及實作方式.md",
     "slug": "laravel-events-concepts-implementation",
     "url": "notes/laravel-events-concepts-implementation.html",
-    "excerpt": "在 Laravel 中事件 (Event) 是一種發佈-訂閱模式(Publish-Subscribe)的實作方式 ，它可以使應用程式中的邏輯從執行中分離出來，讓整個程式碼更加清晰明瞭。 當一個特定的事件發生時，會發送出該事件並且觸發訂閱這個事件的所有處理函式。 透過 event() 函式或 Event facade 來發送事件。例如 event(new Us…"
+    "excerpt": "在 Laravel 中事件 (Event) 是一種發佈-訂閱模式(Publish-Subscribe)的實作方式 ，它可以使應用程式中的邏輯從執行中分離出來，讓整個程式碼更加清晰明瞭。 當一個特定的事件發生時，會發送出該事件並且觸發訂閱這個事件的所有處理函式。 透過 event() 函式或 Event facade 來發送事件。例如 event(new UserRegister…"
   },
   {
     "title": "OpenClaw workflow 降本改造方案",
     "rel": "OpenClaw workflow 降本改造方案.md",
     "slug": "openclaw-workflow-cost-reduction",
     "url": "notes/openclaw-workflow-cost-reduction.html",
-    "excerpt": "不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷…"
+    "excerpt": "不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷 先做粗分類，再做精推理 能批次做的不要逐筆做…"
   },
   {
     "title": "OpenClaw 降本提效 checklist",
     "rel": "OpenClaw 降本提效 checklist.md",
     "slug": "openclaw-cost-performance-checklist",
     "url": "notes/openclaw-cost-performance-checklist.html",
-    "excerpt": "只送這次任務需要的片段 歷史對話先摘要，再送摘要 長 memory 先檢索，別整包塞進去 FAQ / 分類 / 格式化，先用便宜模型或本地模型 長文推理 / 高風險判斷，才升級強模型 能批次處理的就不要一筆一請求 高頻問題直接快取答案 標準流程輸出可快取中間結果 重複查詢先查 cache，再進模型 刪掉重複指令 把長說明改成短規則…"
+    "excerpt": "只送這次任務需要的片段 歷史對話先摘要，再送摘要 長 memory 先檢索，別整包塞進去 FAQ / 分類 / 格式化，先用便宜模型或本地模型 長文推理 / 高風險判斷，才升級強模型 能批次處理的就不要一筆一請求 高頻問題直接快取答案 標準流程輸出可快取中間結果 重複查詢先查 cache，再進模型 刪掉重複指令 把長說明改成短規則 用條列，不要堆散文 設每日 / 每月用量上限…"
   },
   {
     "title": "RAG 大量文件的多層次儲存與檢索設計",
     "rel": "RAG 大量文件的多層次儲存與檢索設計.md",
     "slug": "rag-large-document-layered-storage-retrieval",
     "url": "notes/rag-large-document-layered-storage-retrieval.html",
-    "excerpt": "這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。 核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援： 大量文件持續寫入 文件更新與增量索引 快速檢索 精準召回 可引用來源 權限過濾 回答品質穩定 的 RAG 架構。…"
+    "excerpt": "這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。 核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援： 大量文件持續寫入 文件更新與增量索引 快速檢索 精準召回 可引用來源 權限過濾 回答品質穩定 的 RAG 架構。 大量文件 RAG 不應只做單層 chunk emb…"
   },
   {
     "title": "TiDB RAG：從自架技能包到可重用知識基線",
     "rel": "TiDB RAG：從自架技能包到可重用知識基線.md",
     "slug": "tidb-rag-reusable-knowledge-baseline",
     "url": "notes/tidb-rag-reusable-knowledge-baseline.html",
-    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational d…"
+    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data…"
   },
   {
     "title": "OpenClaw Usage",
     "rel": "openclaw-cost-control-usage.md",
     "slug": "openclaw-cost-control-usage",
     "url": "notes/openclaw-cost-control-usage.html",
-    "excerpt": "OpenClaw 要做降本增效，通常會這樣落地： 1. 先分流任務 FAQ / 格式化 / 短摘要 - 便宜模型或本地模型 長文推理 / 高風險判斷 - 強模型 2. 先縮上下文 先檢索相關片段 先摘要歷史對話 不把整包 memory 塞給模型 3. 把高頻回覆快取起來 重複問題先查 cache 標準流程先存中間結果 4. 把 prompt 壓短…"
+    "excerpt": "OpenClaw 要做降本增效，通常會這樣落地： 1. 先分流任務 FAQ / 格式化 / 短摘要 - 便宜模型或本地模型 長文推理 / 高風險判斷 - 強模型 2. 先縮上下文 先檢索相關片段 先摘要歷史對話 不把整包 memory 塞給模型 3. 把高頻回覆快取起來 重複問題先查 cache 標準流程先存中間結果 4. 把 prompt 壓短 system prompt 只…"
   },
   {
     "title": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式",
     "rel": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式.md",
     "slug": "dependency-injection-pure-di-container-lifecycle",
     "url": "notes/dependency-injection-pure-di-container-lifecycle.html",
-    "excerpt": " 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依…"
+    "excerpt": " 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依賴交給它。…"
   },
   {
     "title": "這篇文章在講什麼",
     "rel": "台股自動化研究平台：MVP 閉環與資料防禦實踐指南.md",
     "slug": "taiwan-stock-automation-research-platform",
     "url": "notes/taiwan-stock-automation-research-platform.html",
-    "excerpt": "這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。 1. 分層資料獲取策略 (Tiered…"
+    "excerpt": "這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。 1. 分層資料獲取策略 (Tiered Sourcing)…"
   },
   {
     "title": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆",
     "rel": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆.md",
     "slug": "large-scale-data-processing-performance",
     "url": "notes/large-scale-data-processing-performance.html",
-    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<stitcher.io 連結"
+    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<外部連結"
   },
   {
     "title": "第二層 Agent 實作設計：固定工具下的受控自主工作流",
     "rel": "第二層 Agent 實作設計：固定工具下的受控自主工作流.md",
     "slug": "second-layer-agent-controlled-autonomy",
     "url": "notes/second-layer-agent-controlled-autonomy.html",
-    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」…"
+    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」，而是 受控自主。…"
   },
   {
     "title": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工",
     "rel": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工.md",
     "slug": "second-layer-agent-vs-harness",
     "url": "notes/second-layer-agent-vs-harness.html",
-    "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。…"
+    "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。 第二層 Agent 則一定有「Agent 自…"
   },
   {
     "title": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口",
     "rel": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md",
     "slug": "high-write-message-system-cassandra-tombstone",
     "url": "notes/high-write-message-system-cassandra-tombstone.html",
-    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](discord.com 連結"
+    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](外部連結"
   }
 ]

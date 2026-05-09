@@ -1,12 +1,8 @@
-<!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</title><style>
-:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb}
 @media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
-main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
-h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
-</style></head>
-<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1><p class="meta">來源筆記：<code>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md</code></p><p class="excerpt">Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：<a href="https://github.com/ruanyf/weekly" target="_blank" rel="noopener noreferrer" title="https://github.com/ruanyf/weekly">阮一峰科技愛好者週刊 GitHub</a> Jacky Bing-Sheng Lee：https://jackyb…</p></section><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}.search{margin-top:22px;display:flex;gap:10px;align-items:center}.search input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1rem;background:var(--bg);color:var(--text)}.count{margin:14px 0 20px;color:var(--muted)}.empty{padding:28px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--card)}
+</style></head><body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1><p class="meta">來源筆記：<code>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md</code></p><p class="excerpt">Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：外部連結</p></section><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1>
 <p>#rsshub #firebase #firestore #fcm #pwa #webpush #notification-system #openclaw #automation #obsidian</p>
 <h2>這是什麼</h2>
 <p>Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。</p>
@@ -19,9 +15,9 @@ h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top
 → PWA 收件箱</code></pre>
 <p>目前接入的來源包含：</p>
 <ul>
-<li>阮一峰科技愛好者週刊：<code>https://github.com/ruanyf/weekly</code></li>
-<li>Jacky Bing-Sheng Lee：<code>https://jackybingshenglee.substack.com</code></li>
-<li>JOJO 的運動產業觀察筆記：<code>https://jojo4sports.substack.com</code></li>
+<li>阮一峰科技愛好者週刊：<code><a href="https://github.com/ruanyf/weekly</code>" target="_blank" rel="noopener noreferrer" title="https://github.com/ruanyf/weekly<code>">github.com/ruanyf/weekly</code></a></li>
+<li>Jacky Bing-Sheng Lee：<code><a href="https://jackybingshenglee.substack.com</code>" target="_blank" rel="noopener noreferrer" title="https://jackybingshenglee.substack.com<code>">jackybingshenglee.substack.com</code></a></li>
+<li>JOJO 的運動產業觀察筆記：<code><a href="https://jojo4sports.substack.com</code>" target="_blank" rel="noopener noreferrer" title="https://jojo4sports.substack.com<code>">jojo4sports.substack.com</code></a></li>
 </ul>
 <h2>核心結論</h2>
 <p>這套架構裡，各元件的責任要切清楚：</p>
@@ -258,7 +254,7 @@ https://openclaw-notify-inbox-hom.web.app</code></pre>
 <p>```</p>
 <p>不要在通知腳本中直接呼叫：</p>
 <p>```txt</p>
-<p><a href="http://127.0.0.1:11434/api/generate" target="_blank" rel="noopener noreferrer" title="http://127.0.0.1:11434/api/generate">本機 Ollama generate API</a></p>
+<p><a href="http://127.0.0.1:11434/api/generate" target="_blank" rel="noopener noreferrer" title="http://127.0.0.1:11434/api/generate">127.0.0.1:11434/api/generate</a></p>
 <p>```</p>
 <ol>
 <li><strong>fallback 也不能回退成原文截斷</strong>  </li>
@@ -269,7 +265,7 @@ https://openclaw-notify-inbox-hom.web.app</code></pre>
 </ol>
 <p>summary cleaner 至少要移除：</p>
 <ul>
-<li><code>http://</code> / <code>https://</code></li>
+<li><code><a href="http://</code>" target="_blank" rel="noopener noreferrer" title="http://<code>"></code></a> / <code><a href="https://</code>" target="_blank" rel="noopener noreferrer" title="https://<code>"></code></a></li>
 <li><code>pan.baidu</code></li>
 <li><code>提取碼</code></li>
 <li><code>複製這段內容</code></li>
