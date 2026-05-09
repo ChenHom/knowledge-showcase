@@ -11,7 +11,7 @@
     "rel": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計.md",
     "slug": "avif-image-format-implementation",
     "url": "notes/avif-image-format-implementation.html",
-    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 https://segmentfault.com/a/1190000047749433 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路…"
+    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路…"
   },
   {
     "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
@@ -32,7 +32,7 @@
     "rel": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md",
     "slug": "claw-notify-rsshub-firebase-pwa",
     "url": "notes/claw-notify-rsshub-firebase-pwa.html",
-    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：https://github.com/ruanyf/weekly Jacky Bing-Sheng Lee：https://jackyb…"
+    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：jackyb… 連結"
   },
   {
     "title": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文",
@@ -102,7 +102,7 @@
     "rel": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆.md",
     "slug": "large-scale-data-processing-performance",
     "url": "notes/large-scale-data-processing-performance.html",
-    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<https://stitcher.io/blog/p…"
+    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<stitcher.io 連結"
   },
   {
     "title": "第二層 Agent 實作設計：固定工具下的受控自主工作流",
@@ -123,6 +123,6 @@
     "rel": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md",
     "slug": "high-write-message-system-cassandra-tombstone",
     "url": "notes/high-write-message-system-cassandra-tombstone.html",
-    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](https://discord.com/blog/…"
+    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](discord.com 連結"
   }
 ]
