@@ -24,7 +24,7 @@ h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top
 <a class="card" data-search="" href="notes/second-layer-agent-controlled-autonomy.html"><h2>第二層 Agent 實作設計：固定工具下的受控自主工作流</h2><p>這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」…</p><p class="meta"><code>第二層 Agent 實作設計：固定工具下的受控自主工作流.md</code></p></a>
 <a class="card" data-search="" href="notes/second-layer-agent-vs-harness.html"><h2>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工</h2><p>這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。…</p><p class="meta"><code>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工.md</code></p></a>
 <a class="card" data-search="" href="notes/high-write-message-system-cassandra-tombstone.html"><h2>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口</h2><p>這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](https://discord.com/blog/…</p><p class="meta"><code>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md</code></p></a></div></main><script>
-(() => {
+(() =&gt; {
   const input = document.getElementById('searchInput');
   const count = document.getElementById('resultCount');
   const grid = document.getElementById('cards');
@@ -33,7 +33,7 @@ h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top
   empty.className = 'empty';
   empty.textContent = '找不到符合的筆記。';
 
-  const normalize = (text) => (text || '').toLocaleLowerCase('zh-Hant');
+  const normalize = (text) =&gt; (text || '').toLocaleLowerCase('zh-Hant');
   for (const card of cards) {
     card.dataset.search = normalize(card.textContent);
     card.dataset.title = card.querySelector('h2')?.textContent || '';
@@ -48,8 +48,8 @@ h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top
       if (ok) visible++;
     }
     count.textContent = query ? `找到 ${visible} / ${cards.length} 篇` : `共 ${cards.length} 篇`;
-    if (visible === 0 && !empty.parentNode) grid.after(empty);
-    if (visible > 0 && empty.parentNode) empty.remove();
+    if (visible === 0 &amp;&amp; !empty.parentNode) grid.after(empty);
+    if (visible &gt; 0 &amp;&amp; empty.parentNode) empty.remove();
   }
 
   input.addEventListener('input', runSearch);
