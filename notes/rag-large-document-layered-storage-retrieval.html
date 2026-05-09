@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RAG 大量文件的多層次儲存與檢索設計</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>RAG 大量文件的多層次儲存與檢索設計</h1><p class="meta">來源筆記：<code>RAG 大量文件的多層次儲存與檢索設計.md</code></p><p class="excerpt">這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。 核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援： 大量文件持續寫入 文件更新與增量索引 快速檢索 精準召回 可引用來源 權限過濾 回答品質穩定 的 RAG 架構。…</p></section><h1>RAG 大量文件的多層次儲存與檢索設計</h1>
+<p>#rag #retrieval #vector-database #system-design #ai-engineering #knowledge-base</p>
+<h2>這是什麼</h2>
+<p>這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。</p>
+<p>核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援：</p>
+<ul>
+<li>大量文件持續寫入</li>
+<li>文件更新與增量索引</li>
+<li>快速檢索</li>
+<li>精準召回</li>
+<li>可引用來源</li>
+<li>權限過濾</li>
+<li>回答品質穩定</li>
+</ul>
+<p>的 RAG 架構。</p>
+<h2>核心結論</h2>
+<p>大量文件 RAG 不應只做單層 chunk embedding。比較穩定的做法是：</p>
+<pre><code>Document layer
+→ Section layer
+→ Chunk layer
+→ Fact / Entity layer（選配）</code></pre>
+<p>讀取時也不要一開始全庫搜尋 chunk，而應該：</p>
+<pre><code>Query 分析
+→ 先找相關文件 / 章節
+→ 再找精準 chunks
+→ rerank
+→ context packing
+→ LLM 回答
+→ citation / verification</code></pre>
+<p>有效率的 RAG 系統，本質上是：</p>
+<blockquote>寫入時多存索引與摘要，讀取時先粗後細，回答時只餵最有價值的上下文。</blockquote>
+<h2>一、系統目標</h2>
+<h3>1. 有效率存入</h3>
+<p>文件進來後，系統應該能：</p>
+<ul>
+<li>判斷文件是否已存在</li>
+<li>判斷是否有更新</li>
+<li>只重建變動部分</li>
+<li>自動切章節與 chunk</li>
+<li>建立 embedding</li>
+<li>建立 metadata index</li>
+<li>建立文件摘要 / 章節摘要</li>
+<li>保留來源與權限資訊</li>
+</ul>
+<h3>2. 有效率讀取</h3>
+<p>使用者查詢時，系統應該能：</p>
+<ul>
+<li>快速縮小搜尋範圍</li>
+<li>避免全庫暴力搜尋</li>
+<li>避免撈到語意相近但不相關的 chunk</li>
+<li>支援權限過濾</li>
+<li>支援時間、來源、文件類型過濾</li>
+<li>支援 rerank</li>
+<li>支援引用來源</li>
+</ul>
+<h3>3. 有效率回應</h3>
+<p>回答時，系統應該能：</p>
+<ul>
+<li>控制 context 長度</li>
+<li>去除重複資訊</li>
+<li>保留必要上下文</li>
+<li>引用來源</li>
+<li>文件不足時明確說不知道</li>
+<li>避免幻覺</li>
+<li>支援後續追問</li>
+</ul>
+<h2>二、資料分層設計</h2>
+<h3>1. Document Layer：文件層</h3>
+<p>文件層是整份文件的索引。</p>
+<p>適合用來回答：</p>
+<ul>
+<li>哪些文件可能相關？</li>
+<li>這份文件屬於什麼主題？</li>
+<li>文件來源、時間、版本、權限是什麼？</li>
+<li>文件是否已更新？</li>
+</ul>
+<p>建議欄位：</p>
+<pre><code>{
+  &quot;doc_id&quot;: &quot;doc_001&quot;,
+  &quot;source_type&quot;: &quot;pdf | markdown | web | notion | google_drive&quot;,
+  &quot;source_uri&quot;: &quot;https://...&quot;,
+  &quot;title&quot;: &quot;退款政策文件&quot;,
+  &quot;summary&quot;: &quot;這份文件說明退款條件、期限與例外情境。&quot;,
+  &quot;tags&quot;: [&quot;policy&quot;, &quot;refund&quot;, &quot;customer-service&quot;],
+  &quot;language&quot;: &quot;zh-TW&quot;,
+  &quot;version&quot;: &quot;2026-05-01&quot;,
+  &quot;content_hash&quot;: &quot;sha256...&quot;,
+  &quot;permission_scope&quot;: [&quot;support_team&quot;],
+  &quot;created_at&quot;: &quot;2026-05-07T10:00:00Z&quot;,
+  &quot;updated_at&quot;: &quot;2026-05-07T10:00:00Z&quot;,
+  &quot;embedding&quot;: &quot;embedding(summary + title)&quot;
+}</code></pre>
+<p>文件層用途：</p>
+<ul>
+<li>快速找候選文件</li>
+<li>做權限過濾</li>
+<li>做版本管理</li>
+<li>做來源追蹤</li>
+<li>避免每次都從 chunk 層開始搜尋</li>
+</ul>
+<h3>2. Section Layer：章節層</h3>
+<p>章節層代表文件中的自然結構，例如：</p>
+<pre><code>1. 退款政策
+1.1 可退款條件
+1.2 不可退款條件
+2. 退貨流程
+3. 特殊案例</code></pre>
+<p>建議欄位：</p>
+<pre><code>{
+  &quot;section_id&quot;: &quot;sec_001&quot;,
+  &quot;doc_id&quot;: &quot;doc_001&quot;,
+  &quot;heading_path&quot;: [&quot;退款政策&quot;, &quot;可退款條件&quot;],
+  &quot;section_title&quot;: &quot;可退款條件&quot;,
+  &quot;section_summary&quot;: &quot;說明哪些訂單符合退款資格。&quot;,
+  &quot;start_page&quot;: 3,
+  &quot;end_page&quot;: 5,
+  &quot;content_hash&quot;: &quot;sha256...&quot;,
+  &quot;embedding&quot;: &quot;embedding(section_summary + heading_path)&quot;
+}</code></pre>
+<p>章節層用途：</p>
+<ul>
+<li>先找到相關章節，再進 chunk</li>
+<li>保留上下文結構</li>
+<li>避免 chunk 太碎導致語意漂移</li>
+<li>支援「這份文件哪一章有答案」</li>
+</ul>
+<h3>3. Chunk Layer：片段層</h3>
+<p>chunk 是實際餵給 LLM 的主要內容。</p>
+<p>建議欄位：</p>
+<pre><code>{
+  &quot;chunk_id&quot;: &quot;chunk_001&quot;,
+  &quot;doc_id&quot;: &quot;doc_001&quot;,
+  &quot;section_id&quot;: &quot;sec_001&quot;,
+  &quot;heading_path&quot;: [&quot;退款政策&quot;, &quot;可退款條件&quot;],
+  &quot;text&quot;: &quot;使用者在付款後 7 天內，且商品未出貨時，可以申請退款...&quot;,
+  &quot;token_count&quot;: 420,
+  &quot;chunk_index&quot;: 3,
+  &quot;page_start&quot;: 4,
+  &quot;page_end&quot;: 4,
+  &quot;prev_chunk_id&quot;: &quot;chunk_000&quot;,
+  &quot;next_chunk_id&quot;: &quot;chunk_002&quot;,
+  &quot;content_hash&quot;: &quot;sha256...&quot;,
+  &quot;embedding&quot;: &quot;embedding(text)&quot;
+}</code></pre>
+<p>Chunk 設計建議：</p>
+<pre><code>chunk size：300–800 tokens
+overlap：10–20%</code></pre>
+<p>實際數字要依文件類型調整：</p>
+<p>| 文件類型 | chunk 建議 |</p>
+<p>|---|---|</p>
+<p>| FAQ | 小 chunk，問題答案成對保留 |</p>
+<p>| 法規 / 政策 | 中等 chunk，保留條文完整性 |</p>
+<p>| 技術文件 | 按 heading / code block 切 |</p>
+<p>| 長篇報告 | 章節摘要 + chunk 混合 |</p>
+<p>| 表格 | 優先轉成結構化 records |</p>
+<h3>4. Fact / Entity Layer：事實層，選配</h3>
+<p>如果文件中有大量規則、產品規格、政策條件，可以抽成結構化 facts。</p>
+<p>例如：</p>
+<pre><code>{
+  &quot;fact_id&quot;: &quot;fact_001&quot;,
+  &quot;doc_id&quot;: &quot;doc_001&quot;,
+  &quot;section_id&quot;: &quot;sec_001&quot;,
+  &quot;subject&quot;: &quot;退款期限&quot;,
+  &quot;predicate&quot;: &quot;是&quot;,
+  &quot;object&quot;: &quot;付款後 7 天內&quot;,
+  &quot;condition&quot;: &quot;商品尚未出貨&quot;,
+  &quot;source_chunk_id&quot;: &quot;chunk_001&quot;,
+  &quot;confidence&quot;: 0.92
+}</code></pre>
+<p>Fact Layer 適合：</p>
+<ul>
+<li>政策查詢</li>
+<li>法規條文</li>
+<li>產品規格</li>
+<li>價格表</li>
+<li>權限規則</li>
+<li>可自動驗證的條件</li>
+</ul>
+<p>不適合：</p>
+<ul>
+<li>文學內容</li>
+<li>主觀評論</li>
+<li>高度上下文依賴的內容</li>
+</ul>
+<h2>三、有效率的寫入設計</h2>
+<h3>寫入流程總覽</h3>
+<pre><code>Input document
+→ Normalize
+→ Hash / deduplicate
+→ Parse structure
+→ Generate document summary
+→ Split sections
+→ Generate section summaries
+→ Split chunks
+→ Generate embeddings
+→ Store metadata + vectors
+→ Build indexes</code></pre>
+<h3>1. Normalize：格式標準化</h3>
+<p>所有來源先轉成統一格式。</p>
+<pre><code>PDF / HTML / Markdown / Word / Notion
+→ canonical markdown / plain text</code></pre>
+<p>標準化時要處理：</p>
+<ul>
+<li>移除頁首頁尾</li>
+<li>移除重複導航列</li>
+<li>保留 heading</li>
+<li>保留表格</li>
+<li>保留來源頁碼</li>
+<li>保留連結</li>
+<li>正規化空白與標點</li>
+<li>語言偵測</li>
+</ul>
+<h3>2. Hash：避免重複寫入</h3>
+<p>每份文件都算 hash：</p>
+<pre><code>doc_hash = sha256(normalized_content)</code></pre>
+<p>每個 section / chunk 也算 hash：</p>
+<pre><code>section_hash = sha256(section_text)
+chunk_hash = sha256(chunk_text)</code></pre>
+<p>寫入時先比較：</p>
+<pre><code>如果 doc_hash 沒變 → 不重建
+如果 section_hash 沒變 → 不重建該章節
+如果 chunk_hash 沒變 → 不重算 embedding</code></pre>
+<p>這是大量文件系統省成本的關鍵。</p>
+<h3>3. Parse Structure：保留文件結構</h3>
+<p>不要只按 token 數硬切。</p>
+<p>優先用文件自然結構：</p>
+<pre><code>H1 / H2 / H3
+PDF outline
+章節標題
+條文編號
+FAQ Q/A
+表格 row</code></pre>
+<p>如果文件沒有結構，再 fallback 成 token-based chunking。</p>
+<h3>4. Summary：寫入時預先摘要</h3>
+<p>寫入時可以先產生：</p>
+<pre><code>document_summary
+section_summary</code></pre>
+<p>這些摘要不是最終回答，而是 retrieval index。</p>
+<p>好處：</p>
+<ul>
+<li>query 可以先對 summary embedding 搜尋</li>
+<li>比直接搜長 chunk 更穩</li>
+<li>可以快速縮小候選範圍</li>
+</ul>
+<h3>5. Embedding：分層建立向量</h3>
+<p>不要只 embedding chunk。</p>
+<p>建議至少建立三種 embedding：</p>
+<pre><code>document embedding：title + document_summary
+section embedding：heading_path + section_summary
+chunk embedding：chunk text</code></pre>
+<p>選配：</p>
+<pre><code>fact embedding：subject + predicate + object + condition</code></pre>
+<h3>6. Batch 寫入</h3>
+<p>大量文件寫入時不要一筆一筆寫。</p>
+<p>建議：</p>
+<pre><code>parse jobs
+→ embedding batch jobs
+→ vector upsert batch
+→ metadata DB transaction</code></pre>
+<p>寫入批次設計：</p>
+<pre><code>embedding batch size：依模型 API / 本機模型吞吐量調整
+vector upsert batch：100–1000 records
+metadata insert：transaction</code></pre>
+<h3>7. 寫入資料庫分工</h3>
+<p>建議分開：</p>
+<pre><code>Metadata DB：Postgres / MySQL / TiDB
+Vector DB：pgvector / Milvus / Qdrant / Weaviate / TiDB Vector
+Object Storage：原始文件 / normalized markdown</code></pre>
+<p>儲存分工：</p>
+<p>| 類型 | 存哪裡 |</p>
+<p>|---|---|</p>
+<p>| 原始文件 | object storage / filesystem |</p>
+<p>| normalized text | object storage / DB |</p>
+<p>| metadata | relational DB |</p>
+<p>| vector | vector DB |</p>
+<p>| chunk text | DB 或 object storage |</p>
+<p>| access control | metadata DB |</p>
+<p>| processing state | job table |</p>
+<h2>四、有效率的讀取設計</h2>
+<h3>讀取流程總覽</h3>
+<pre><code>User query
+→ Query understanding
+→ Permission filter
+→ Document / section retrieval
+→ Chunk retrieval
+→ Rerank
+→ Context packing
+→ Answer generation
+→ Citation</code></pre>
+<h3>1. Query Understanding</h3>
+<p>先判斷問題類型：</p>
+<pre><code>fact lookup：查明確事實
+policy reasoning：查政策並判斷
+summary：總結某文件
+comparison：比較多文件
+troubleshooting：找解法
+exploratory：探索式問題</code></pre>
+<p>不同問題走不同 retrieval 策略。</p>
+<p>| 問題類型 | Retrieval 策略 |</p>
+<p>|---|---|</p>
+<p>| 明確事實 | fact / chunk 優先 |</p>
+<p>| 政策判斷 | section + chunk + fact |</p>
+<p>| 文件摘要 | document + section |</p>
+<p>| 比較問題 | 多 document retrieval |</p>
+<p>| debug / 排錯 | chunk + rerank |</p>
+<h3>2. Permission Filter</h3>
+<p>權限一定要在 retrieval 前做，不要等 LLM 看到後再要求它不要說。</p>
+<pre><code>WHERE permission_scope includes current_user</code></pre>
+<p>這是安全底線。</p>
+<h3>3. 粗到細檢索</h3>
+<p>不要直接全庫 chunk search。</p>
+<p>建議：</p>
+<pre><code>Step 1：document / section search 找候選範圍
+Step 2：只在候選範圍內做 chunk search
+Step 3：rerank chunks</code></pre>
+<p>範例：</p>
+<pre><code>query → 找 top 10 sections
+→ 在這 10 個 sections 的 chunks 裡找 top 30 chunks
+→ rerank 成 top 6 chunks
+→ 組 context</code></pre>
+<h3>4. Hybrid Search</h3>
+<p>純 vector search 容易漏掉精確詞，例如：</p>
+<ul>
+<li>訂單編號</li>
+<li>API 名稱</li>
+<li>錯誤碼</li>
+<li>法條編號</li>
+<li>函式名稱</li>
+</ul>
+<p>所以建議 hybrid：</p>
+<pre><code>vector search + keyword / BM25 search</code></pre>
+<p>再合併結果。</p>
+<h3>5. Rerank</h3>
+<p>初步 retrieval 找到的是候選，不一定是最好。</p>
+<p>Rerank 可以用：</p>
+<ul>
+<li>cross-encoder reranker</li>
+<li>LLM rerank</li>
+<li>heuristic score</li>
+<li>metadata boost</li>
+</ul>
+<p>排序因素：</p>
+<pre><code>semantic similarity
+keyword match
+document freshness
+source authority
+section relevance
+user permission
+query intent match</code></pre>
+<h3>6. Context Packing</h3>
+<p>不要把 top chunks 直接全部塞進 prompt。</p>
+<p>要做：</p>
+<ul>
+<li>去重</li>
+<li>合併相鄰 chunk</li>
+<li>保留 heading path</li>
+<li>保留來源</li>
+<li>控制 token budget</li>
+<li>優先高分 chunk</li>
+<li>保留相反或例外條款</li>
+</ul>
+<p>Context 格式建議：</p>
+<pre><code>[Source 1]
+doc: 退款政策 v2026
+section: 退款政策 &gt; 可退款條件
+page: 4
+text: ...
+
+[Source 2]
+doc: 退款政策 v2026
+section: 退款政策 &gt; 不可退款條件
+page: 5
+text: ...</code></pre>
+<h2>五、有效率的回應設計</h2>
+<h3>回答 prompt 原則</h3>
+<p>System prompt 要明確限制：</p>
+<pre><code>你只能根據提供的 sources 回答。
+如果 sources 沒有答案，請說不知道。
+回答時要引用來源。
+不要補充 sources 以外的資訊。
+若來源互相衝突，請指出衝突。</code></pre>
+<h3>回答格式</h3>
+<p>建議根據問題類型輸出。</p>
+<h4>事實查詢</h4>
+<pre><code>答案：
+...
+
+來源：
+- 文件 A，第 3 頁</code></pre>
+<h4>政策判斷</h4>
+<pre><code>判斷：
+可以 / 不可以 / 需要更多資訊
+
+理由：
+1. ...
+2. ...
+
+來源：
+- ...</code></pre>
+<h4>比較問題</h4>
+<pre><code>比較結果：
+- A：...
+- B：...
+
+差異：
+...
+
+來源：
+...</code></pre>
+<h3>回答後驗證</h3>
+<p>重要場景可以多一步 verification：</p>
+<pre><code>Answer
+→ Check whether every claim is supported by sources
+→ Remove unsupported claims
+→ Add missing citation</code></pre>
+<p>尤其適合：</p>
+<ul>
+<li>法務</li>
+<li>醫療</li>
+<li>金融</li>
+<li>公司政策</li>
+<li>對外客服</li>
+</ul>
+<h2>六、整體架構草圖</h2>
+<pre><code>                 ┌─────────────────────┐
+                 │   Document Sources   │
+                 │ PDF / Web / MD / DB  │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │ Normalize / Parse    │
+                 │ clean + structure    │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │ Hash / Deduplicate   │
+                 │ doc/section/chunk    │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+       ┌────────────────────────────────────────┐
+       │ Multi-level Index Builder              │
+       │ doc summary / section summary / chunks │
+       └──────────┬───────────────┬─────────────┘
+                  │               │
+                  ▼               ▼
+       ┌────────────────┐  ┌──────────────────┐
+       │ Metadata DB    │  │ Vector DB         │
+       │ docs/sections  │  │ embeddings        │
+       │ chunks/facts   │  │ doc/sec/chunk vec │
+       └────────────────┘  └──────────────────┘
+
+
+Query Flow
+
+User Query
+   │
+   ▼
+Query Understanding
+   │
+   ▼
+Permission Filter
+   │
+   ▼
+Document / Section Retrieval
+   │
+   ▼
+Chunk Retrieval + Hybrid Search
+   │
+   ▼
+Rerank
+   │
+   ▼
+Context Packing
+   │
+   ▼
+LLM Answer with Citation
+   │
+   ▼
+Verification / Final Response</code></pre>
+<h2>七、實作優先順序</h2>
+<h3>MVP</h3>
+<p>先做：</p>
+<pre><code>documents
+sections
+chunks
+metadata
+chunk embeddings
+section summary embeddings
+basic hybrid search
+citation</code></pre>
+<p>不要一開始就做太複雜。</p>
+<h3>第二階段</h3>
+<p>再加：</p>
+<pre><code>document summary embedding
+reranker
+incremental indexing
+permission filter
+query classification
+context packing optimizer</code></pre>
+<h3>第三階段</h3>
+<p>最後才加：</p>
+<pre><code>fact extraction
+knowledge graph
+multi-hop retrieval
+answer verification
+eval dataset
+online feedback loop</code></pre>
+<h2>八、常見錯誤</h2>
+<h3>1. 只做 chunk embedding</h3>
+<p>結果：</p>
+<ul>
+<li>找不到整體脈絡</li>
+<li>chunk 太碎</li>
+<li>回答缺上下文</li>
+</ul>
+<h3>2. chunk 太大</h3>
+<p>結果：</p>
+<ul>
+<li>embedding 不準</li>
+<li>context 塞不下</li>
+<li>rerank 困難</li>
+</ul>
+<h3>3. chunk 太小</h3>
+<p>結果：</p>
+<ul>
+<li>語意不完整</li>
+<li>回答容易斷章取義</li>
+</ul>
+<h3>4. 沒有 metadata</h3>
+<p>結果：</p>
+<ul>
+<li>不能按文件、時間、權限過濾</li>
+<li>不能引用來源</li>
+<li>不能 incremental update</li>
+</ul>
+<h3>5. 權限過濾放太晚</h3>
+<p>錯誤做法：</p>
+<pre><code>先 retrieve，再叫 LLM 不要說</code></pre>
+<p>正確做法：</p>
+<pre><code>先 permission filter，再 retrieve</code></pre>
+<h3>6. 沒有 eval</h3>
+<p>RAG 看起來能答，不代表答得準。</p>
+<p>至少要測：</p>
+<pre><code>retrieval precision
+retrieval recall
+answer faithfulness
+citation correctness
+latency</code></pre>
+<h2>九、可以落地的資料表草案</h2>
+<h3>documents</h3>
+<pre><code>CREATE TABLE documents (
+  doc_id TEXT PRIMARY KEY,
+  source_type TEXT,
+  source_uri TEXT,
+  title TEXT,
+  summary TEXT,
+  language TEXT,
+  version TEXT,
+  content_hash TEXT,
+  permission_scope JSON,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);</code></pre>
+<h3>sections</h3>
+<pre><code>CREATE TABLE sections (
+  section_id TEXT PRIMARY KEY,
+  doc_id TEXT REFERENCES documents(doc_id),
+  heading_path JSON,
+  section_title TEXT,
+  section_summary TEXT,
+  start_page INT,
+  end_page INT,
+  content_hash TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);</code></pre>
+<h3>chunks</h3>
+<pre><code>CREATE TABLE chunks (
+  chunk_id TEXT PRIMARY KEY,
+  doc_id TEXT REFERENCES documents(doc_id),
+  section_id TEXT REFERENCES sections(section_id),
+  heading_path JSON,
+  text TEXT,
+  token_count INT,
+  chunk_index INT,
+  page_start INT,
+  page_end INT,
+  prev_chunk_id TEXT,
+  next_chunk_id TEXT,
+  content_hash TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+);</code></pre>
+<h3>embeddings</h3>
+<pre><code>CREATE TABLE embeddings (
+  embedding_id TEXT PRIMARY KEY,
+  owner_type TEXT, -- document | section | chunk | fact
+  owner_id TEXT,
+  embedding_model TEXT,
+  embedding VECTOR,
+  created_at TIMESTAMP
+);</code></pre>
+<h2>十、總結</h2>
+<p>大量文件 RAG 的關鍵不是「切 chunk + embedding」而已，而是：</p>
+<pre><code>寫入時：
+保留結構、建立摘要、分層 embedding、支援增量更新
+
+讀取時：
+先粗後細、權限前置、hybrid search、rerank、context packing
+
+回應時：
+來源約束、citation、必要時 verification</code></pre>
+<p>一句話：</p>
+<blockquote>好的 RAG 系統，是把文件整理成可檢索、可追溯、可更新、可控權限的多層知識索引，再用先粗後細的方式把最有用的上下文交給 LLM。</blockquote></main></body></html>

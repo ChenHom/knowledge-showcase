@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式</h1><p class="meta">來源筆記：<code>依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式.md</code></p><p class="excerpt"> 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依…</p></section><h1>依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式</h1>
+<blockquote>草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。</blockquote>
+<h2>一句話總結</h2>
+<p><strong>依賴注入的本質，是把「使用物件」跟「建立物件」分離。</strong></p>
+<p>物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依賴交給它。</p>
+<pre><code>// 不推薦：OrderService 自己建立依賴
+class OrderService {
+  private repo = new OrderRepository()
+  private payment = new StripePaymentGateway()
+}
+
+// 推薦：依賴由外部注入
+class OrderService {
+  constructor(
+    private repo: OrderRepository,
+    private payment: PaymentGateway
+  ) {}
+}</code></pre>
+<p>DI 的價值不是少寫幾個 <code>new</code>，而是讓系統更容易：</p>
+<ul>
+<li>測試</li>
+<li>替換實作</li>
+<li>隔離外部副作用</li>
+<li>管理生命週期</li>
+<li>降低業務邏輯與基礎設施的耦合</li>
+</ul>
+<h2>DI、IoC 與依賴反轉</h2>
+<p>DI 常和 IoC 一起出現。</p>
+<p><strong>IoC（Inversion of Control，控制反轉）</strong>是一種設計思想：原本由物件自己控制依賴建立，改成由外部控制。</p>
+<p><strong>DI 是實作 IoC 的一種方式。</strong></p>
+<pre><code>原本：物件自己 new 依賴
+改成：外部建立依賴後注入物件</code></pre>
+<p>這也呼應依賴反轉原則：</p>
+<blockquote>高層業務邏輯不應依賴低層具體實作，兩者都應依賴抽象。</blockquote>
+<p>例如：</p>
+<pre><code>interface PaymentGateway {
+  charge(amount: number): Promise&lt;void&gt;
+}
+
+class OrderService {
+  constructor(private payment: PaymentGateway) {}
+}</code></pre>
+<p><code>OrderService</code> 不需要知道背後是 Stripe、PayPal，還是測試用 FakePaymentGateway。</p>
+<h2>IoC、DI 與依賴反轉的差異</h2>
+<p>這三個概念常被混在一起，但它們其實位在不同層次：</p>
+<pre><code>IoC：控制權反轉的泛稱 / 思想
+DI：實作 IoC 的一種手法，專門處理依賴取得
+DIP：Dependency Inversion Principle，依賴反轉原則，SOLID 裡的設計原則</code></pre>
+<h3>IoC：誰控制流程或建立？</h3>
+<p><strong>IoC（Inversion of Control，控制反轉）</strong>指的是原本由自己的程式主動控制流程、建立物件或呼叫邏輯，改成由外部框架、容器或環境來控制。</p>
+<p>例如傳統程式：</p>
+<pre><code>const app = new App()
+app.run()</code></pre>
+<p>這是你的程式主動控制流程。</p>
+<p>Web framework 裡常見的寫法：</p>
+<pre><code>router.get(&#x27;/users&#x27;, userController.list)</code></pre>
+<p>你只是註冊 handler，真正什麼時候呼叫它，是 framework 決定。這就是 IoC。</p>
+<p>IoC 可以出現在很多地方，不一定跟 DI 有關：</p>
+<ul>
+<li>framework 呼叫 callback</li>
+<li>event loop 觸發 handler</li>
+<li>lifecycle hook</li>
+<li>template method</li>
+<li>plugin system</li>
+<li>DI container 建立物件</li>
+</ul>
+<h3>DI：依賴從哪裡來？</h3>
+<p><strong>DI（Dependency Injection，依賴注入）</strong>是 IoC 的一種具體形式，專門處理「依賴怎麼取得」。</p>
+<p>原本物件自己建立依賴：</p>
+<pre><code>class OrderService {
+  private payment = new StripePaymentGateway()
+}</code></pre>
+<p>改成外部注入：</p>
+<pre><code>class OrderService {
+  constructor(private payment: PaymentGateway) {}
+}</code></pre>
+<p>控制權從 <code>OrderService</code> 內部轉到外部組裝者。</p>
+<p>所以：</p>
+<pre><code>DI 一定是某種 IoC。
+但 IoC 不一定是 DI。</code></pre>
+<h3>DIP：程式碼依賴抽象還是具體實作？</h3>
+<p>依賴反轉通常指 <strong>DIP（Dependency Inversion Principle，依賴反轉原則）</strong>。</p>
+<p>它不是工具，也不是注入方式，而是一條設計原則：</p>
+<blockquote>高層模組不應依賴低層模組；兩者都應依賴抽象。</blockquote>
+<blockquote>抽象不應依賴細節；細節應依賴抽象。</blockquote>
+<p>壞例子：</p>
+<pre><code>class OrderService {
+  private payment = new StripePaymentGateway()
+}</code></pre>
+<p><code>OrderService</code> 是高層業務邏輯，卻直接依賴低層 Stripe 實作。</p>
+<p>比較好的版本：</p>
+<pre><code>interface PaymentGateway {
+  charge(amount: number): Promise&lt;void&gt;
+}
+
+class OrderService {
+  constructor(private payment: PaymentGateway) {}
+}
+
+class StripePaymentGateway implements PaymentGateway {
+  charge(amount: number) {
+    // call Stripe API
+  }
+}</code></pre>
+<p>這裡：</p>
+<pre><code>OrderService 依賴 PaymentGateway 抽象
+StripePaymentGateway 也依賴 PaymentGateway 抽象</code></pre>
+<p>這才是依賴反轉。</p>
+<h3>有 IoC 就算有 DI 嗎？</h3>
+<p>不一定。</p>
+<p>例如：</p>
+<pre><code>button.onClick(() =&gt; {
+  console.log(&#x27;clicked&#x27;)
+})</code></pre>
+<p>這是 IoC，因為不是你主動呼叫 callback，而是 UI framework 在事件發生時呼叫你。</p>
+<p>但這不是 DI，因為它沒有處理物件依賴注入。</p>
+<pre><code>有 IoC ≠ 有 DI</code></pre>
+<h3>有 IoC 就算有依賴反轉嗎？</h3>
+<p>也不一定。</p>
+<p>例如：</p>
+<pre><code>router.get(&#x27;/pay&#x27;, () =&gt; {
+  const stripe = new StripePaymentGateway()
+  stripe.charge(...)
+})</code></pre>
+<p>路由 handler 被 framework 呼叫，所以有 IoC。</p>
+<p>但 handler 裡還是直接依賴 Stripe 具體實作，所以沒有做好 DIP。</p>
+<pre><code>有 IoC ≠ 有 DIP</code></pre>
+<h3>有 DI 就算有依賴反轉嗎？</h3>
+<p>也不一定。</p>
+<p>你可以把具體類別注入進去：</p>
+<pre><code>class OrderService {
+  constructor(private payment: StripePaymentGateway) {}
+}</code></pre>
+<p>這是 DI，因為依賴從外部注入。</p>
+<p>但它仍然依賴具體 Stripe 類別，不是依賴抽象。</p>
+<p>比較符合 DIP 的版本是：</p>
+<pre><code>class OrderService {
+  constructor(private payment: PaymentGateway) {}
+}</code></pre>
+<p>所以：</p>
+<pre><code>有 DI ≠ 一定有 DIP</code></pre>
+<p>DI 是「怎麼給依賴」。</p>
+<p>DIP 是「應該依賴誰」。</p>
+<h3>有 DIP 一定要 DI 嗎？</h3>
+<p>嚴格說也不一定，但實務上常搭配。</p>
+<p>可以用 Factory、Plugin、Event 等方式達成依賴抽象，不一定非得 constructor injection。</p>
+<p>但在大多數業務程式中：</p>
+<pre><code>DIP 通常靠 DI 實作起來最自然。</code></pre>
+<h3>關係圖</h3>
+<pre><code>IoC：控制權交給外部
+ └─ DI：依賴取得的控制權交給外部
+
+DIP：高層與低層都依賴抽象</code></pre>
+<p>更精準地說：</p>
+<pre><code>IoC 是大概念
+DI 是技術手法
+DIP 是設計原則</code></pre>
+<p>一句話記法：</p>
+<pre><code>IoC 問：誰控制流程或建立？
+DI 問：依賴從哪裡來？
+DIP 問：程式碼依賴抽象還是具體實作？</code></pre>
+<p>結論：</p>
+<pre><code>有 IoC，不一定有 DI。
+有 IoC，不一定有依賴反轉。
+有 DI，也不一定有依賴反轉。
+但好的 DI 設計，通常會用來實現依賴反轉。</code></pre>
+<h2>Pure DI 是什麼？</h2>
+<p><strong>Pure DI</strong> 指的是不用 DI Container，而是直接用程式碼手動組裝物件圖。</p>
+<pre><code>const db = new PostgresDatabase()
+const userRepo = new UserRepository(db)
+const email = new SendGridEmailService()
+const userService = new UserService(userRepo, email)
+const controller = new UserController(userService)</code></pre>
+<p>這仍然是 DI，因為依賴是從外部注入的；只是組裝方式是手寫，而不是交給容器。</p>
+<h3>Pure DI 優點</h3>
+<ul>
+<li>明確，沒有魔法</li>
+<li>好 debug</li>
+<li>不依賴框架</li>
+<li>小型專案很乾淨</li>
+<li>測試時容易控制</li>
+<li>依賴關係一眼可見</li>
+</ul>
+<h3>Pure DI 缺點</h3>
+<p>當依賴圖變大時，手動接線會變得冗長：</p>
+<pre><code>const a = new A()
+const b = new B(a)
+const c = new C(a, b)
+const d = new D(c)
+const e = new E(b, d)</code></pre>
+<p>當專案開始有大量模組、request scope、transaction scope、provider override 時，Pure DI 的組裝成本會上升。</p>
+<h2>DI Container 是什麼？</h2>
+<p><strong>DI Container</strong> 是幫你建立物件、解析依賴、管理生命週期的工具。</p>
+<p>例如 NestJS、Spring、Angular 都有 DI Container。</p>
+<pre><code>@Injectable()
+class UserService {
+  constructor(private repo: UserRepository) {}
+}</code></pre>
+<p>你不需要自己寫：</p>
+<pre><code>new UserService(new UserRepository(...))</code></pre>
+<p>容器會根據註冊規則或 metadata 自動組裝。</p>
+<p>DI Container 通常負責：</p>
+<ul>
+<li>建立物件</li>
+<li>解析 constructor 需要哪些依賴</li>
+<li>自動注入</li>
+<li>管理 singleton / scoped / transient</li>
+<li>處理 request scope</li>
+<li>綁定 interface 到 implementation</li>
+<li>測試時 override provider</li>
+<li>組裝 decorator、pipeline、多實作集合</li>
+</ul>
+<h3>Pure DI vs DI Container</h3>
+<pre><code>Pure DI：依賴怎麼組裝，你看得見。
+DI Container：依賴怎麼組裝，交給容器處理。</code></pre>
+<h3>什麼時候用 Pure DI？</h3>
+<p>適合：</p>
+<ul>
+<li>小到中型專案</li>
+<li>CLI 工具</li>
+<li>library</li>
+<li>核心 domain logic</li>
+<li>依賴圖不複雜</li>
+<li>不需要 request scope</li>
+<li>重視明確性與低魔法</li>
+</ul>
+<h3>什麼時候用 DI Container？</h3>
+<p>適合：</p>
+<ul>
+<li>使用 NestJS、Spring、Angular 這類框架</li>
+<li>大型後端 API</li>
+<li>模組很多</li>
+<li>依賴圖很大</li>
+<li>有 request scope / transaction scope</li>
+<li>有大量 provider override</li>
+<li>有 logging、metrics、tracing、interceptor 等橫切需求</li>
+<li>團隊已熟悉 container 規則</li>
+</ul>
+<p>實務建議：</p>
+<pre><code>核心邏輯用 Pure DI 思維設計。
+外層 framework / infrastructure 可以用 DI Container 組裝。</code></pre>
+<p>核心業務類別不要知道 container 存在。</p>
+<h2>Service Locator 跟 DI Container 的差別</h2>
+<p>差別在於：<strong>誰主動去拿依賴。</strong></p>
+<h3>DI Container 正常用法</h3>
+<p>物件只宣告自己需要什麼，由外部注入。</p>
+<pre><code>class UserService {
+  constructor(private repo: UserRepository) {}
+}</code></pre>
+<p><code>UserService</code> 不知道 container 存在。</p>
+<h3>Service Locator</h3>
+<p>物件自己去 locator / container 裡查詢依賴。</p>
+<pre><code>class UserService {
+  createUser() {
+    const repo = ServiceLocator.get(UserRepository)
+    repo.save(...)
+  }
+}</code></pre>
+<p>或：</p>
+<pre><code>class UserService {
+  constructor(private container: Container) {}
+
+  createUser() {
+    const repo = this.container.get(UserRepository)
+  }
+}</code></pre>
+<p>這就是 Service Locator。</p>
+<pre><code>DI Container：依賴從外面被注入進來
+UserService ← repo
+
+Service Locator：物件自己去查詢依賴
+UserService → locator.get(repo)</code></pre>
+<p>Service Locator 常被視為反模式，因為它會把依賴藏起來：</p>
+<ul>
+<li>constructor 看不出真正依賴</li>
+<li>測試時才發現缺東西</li>
+<li>型別系統較難協助檢查</li>
+<li>物件與 container 耦合</li>
+<li>錯誤容易到 runtime 才爆</li>
+<li>容易變成全域變數式設計</li>
+</ul>
+<p>少數可以接受 Service Locator 味道的地方：</p>
+<ul>
+<li>Composition Root</li>
+<li>plugin system</li>
+<li>framework adapter</li>
+<li>middleware / controller factory</li>
+<li>動態 handler 載入邊界</li>
+</ul>
+<p>但不要放進核心業務邏輯。</p>
+<h2>Composition Root 是什麼？</h2>
+<p><strong>Composition Root</strong> 是整個程式裡集中建立物件、接好依賴關係的地方。</p>
+<p>通常位於：</p>
+<pre><code>main.ts
+app.ts
+bootstrap.ts
+server.ts
+program.cs
+Application.java</code></pre>
+<p>它負責：</p>
+<ul>
+<li>建立 concrete implementation</li>
+<li>決定 interface 綁哪個實作</li>
+<li>設定生命週期</li>
+<li>接好 decorator / adapter / factory</li>
+<li>初始化 DI container</li>
+<li>啟動最外層 app / controller / handler</li>
+</ul>
+<p>Pure DI 的 Composition Root 可能長這樣：</p>
+<pre><code>const db = new Database()
+const repo = new OrderRepository(db)
+const payment = new StripePaymentGateway()
+const orderService = new OrderService(repo, payment)
+const controller = new OrderController(orderService)</code></pre>
+<p>DI Container 的 Composition Root 則可能是：</p>
+<pre><code>container.register(OrderRepository)
+container.register(OrderService)
+container.register(OrderController)
+
+const app = container.resolve(App)</code></pre>
+<p>核心原則：</p>
+<pre><code>業務類別：我需要什麼。
+Composition Root：我要給你什麼。</code></pre>
+<p>Composition Root 是組裝區，不是業務邏輯區。</p>
+<h2>副作用邊界是什麼？</h2>
+<p><strong>副作用邊界</strong>是程式從「單純計算」走出去，開始碰到外部世界或可變狀態的地方。</p>
+<p>純計算：</p>
+<pre><code>function calculateTotal(price: number, qty: number) {
+  return price * qty
+}</code></pre>
+<p>同樣輸入永遠得到同樣輸出，不碰外部世界。</p>
+<p>副作用：</p>
+<pre><code>await db.save(order)
+await email.send(...)
+await payment.charge(...)
+const now = new Date()
+const id = crypto.randomUUID()</code></pre>
+<p>常見副作用邊界：</p>
+<ul>
+<li>DB / Repository</li>
+<li>Cache</li>
+<li>Queue</li>
+<li>HTTP API</li>
+<li>Payment gateway</li>
+<li>Email / SMS / Push</li>
+<li>File system</li>
+<li>Clock / time</li>
+<li>UUID / random</li>
+<li>Logger / metrics / tracing</li>
+<li>Environment config</li>
+<li>Current user / request context</li>
+</ul>
+<p>這些地方容易慢、失敗、不穩定、測試困難，所以特別適合用 DI 包起來。</p>
+<p>正式環境：</p>
+<pre><code>const payment = new StripePaymentGateway()
+const email = new SendGridEmailService()
+const clock = new SystemClock()</code></pre>
+<p>測試環境：</p>
+<pre><code>const payment = new FakePaymentGateway()
+const email = new FakeEmailService()
+const clock = new FixedClock(new Date(&#x27;2026-01-01&#x27;))</code></pre>
+<p>業務邏輯不用改。</p>
+<h2>生命週期管理</h2>
+<p>DI 裡的生命週期管理，是回答：</p>
+<blockquote>一個依賴物件應該什麼時候被建立？建立幾份？什麼時候釋放？</blockquote>
+<p>常見生命週期：</p>
+<pre><code>Singleton：整個應用程式共用同一個實例
+Scoped：某個範圍內共用同一個實例
+Transient：每次需要都建立新的實例</code></pre>
+<h3>Singleton</h3>
+<p>整個 application 只有一份。</p>
+<p>適合：</p>
+<ul>
+<li>Logger</li>
+<li>Config</li>
+<li>DB connection pool</li>
+<li>HTTP client</li>
+<li>Metrics client</li>
+<li>Cache client</li>
+</ul>
+<p>不適合放 request-specific mutable state。</p>
+<p>例如 <code>CurrentUser</code> 不應該是 singleton，否則不同 request 可能共用到錯誤使用者狀態。</p>
+<h3>Scoped</h3>
+<p>在某個範圍內共用一份，最常見是 request scope。</p>
+<p>適合：</p>
+<ul>
+<li>CurrentUser</li>
+<li>RequestContext</li>
+<li>UnitOfWork</li>
+<li>TransactionManager</li>
+<li>per-request cache</li>
+<li>correlation id / trace id</li>
+<li>tenant context</li>
+</ul>
+<pre><code>Request A
+  ├─ CurrentUser #A
+  ├─ Transaction #A
+  └─ RequestLogger #A
+
+Request B
+  ├─ CurrentUser #B
+  ├─ Transaction #B
+  └─ RequestLogger #B</code></pre>
+<h3>Transient</h3>
+<p>每次需要就建立新的。</p>
+<p>適合：</p>
+<ul>
+<li>無狀態小物件</li>
+<li>command handler</li>
+<li>validator</li>
+<li>formatter</li>
+<li>builder</li>
+<li>短生命週期工作物件</li>
+</ul>
+<h3>常見生命週期錯誤：Captive Dependency</h3>
+<p><strong>Captive Dependency</strong> 是指長生命週期物件持有短生命週期依賴。</p>
+<p>錯誤例子：</p>
+<pre><code>class SingletonOrderService {
+  constructor(private currentUser: CurrentUser) {}
+}</code></pre>
+<p>如果 <code>OrderService</code> 是 singleton，而 <code>CurrentUser</code> 是 request scoped，singleton 可能抓住第一次 request 的 user，導致後續 request 用錯狀態。</p>
+<p>危險方向：</p>
+<pre><code>Singleton -&gt; Scoped / stateful Transient</code></pre>
+<p>比較安全的方向：</p>
+<pre><code>Scoped -&gt; Singleton
+Transient -&gt; Singleton</code></pre>
+<p>簡單說：短生命週期可以依賴長生命週期，但長生命週期不要直接持有短生命週期狀態。</p>
+<h2>DI 與設計模式</h2>
+<p>DI 不取代設計模式，而是讓很多設計模式更容易落地。</p>
+<pre><code>設計模式：定義物件之間怎麼合作。
+DI：負責把這些物件接起來。</code></pre>
+<h3>Strategy Pattern：策略模式</h3>
+<p>策略模式讓演算法或行為可替換。</p>
+<pre><code>interface DiscountStrategy {
+  calculate(price: number): number
+}
+
+class VipDiscount implements DiscountStrategy {
+  calculate(price: number) {
+    return price * 0.8
+  }
+}
+
+class NormalDiscount implements DiscountStrategy {
+  calculate(price: number) {
+    return price
+  }
+}
+
+class CheckoutService {
+  constructor(private discount: DiscountStrategy) {}
+}</code></pre>
+<p>DI 負責決定注入哪個策略。</p>
+<p>適合：付款策略、折扣策略、排序策略、風控策略、通知渠道、推薦演算法。</p>
+<h3>Adapter Pattern：轉接器模式</h3>
+<p>Adapter 把外部 API 包成系統內部想要的介面。</p>
+<pre><code>interface PaymentGateway {
+  charge(amount: number): Promise&lt;void&gt;
+}
+
+class StripePaymentAdapter implements PaymentGateway {
+  async charge(amount: number) {
+    await stripe.paymentIntents.create({
+      amount,
+      currency: &#x27;usd&#x27;
+    })
+  }
+}</code></pre>
+<p>業務服務只依賴 <code>PaymentGateway</code>，不依賴 Stripe SDK。</p>
+<p>這是 DI 在實務上最常見、最有價值的用法之一。</p>
+<h3>Decorator Pattern：裝飾器模式</h3>
+<p>Decorator 在不改原本類別的情況下增加行為。</p>
+<pre><code>interface UserRepository {
+  findById(id: string): Promise&lt;User&gt;
+}
+
+class SqlUserRepository implements UserRepository {
+  async findById(id: string) {
+    return db.query(...)
+  }
+}
+
+class CachedUserRepository implements UserRepository {
+  constructor(private inner: UserRepository) {}
+
+  async findById(id: string) {
+    const cached = await cache.get(id)
+    if (cached) return cached
+
+    const user = await this.inner.findById(id)
+    await cache.set(id, user)
+    return user
+  }
+}
+
+class LoggingUserRepository implements UserRepository {
+  constructor(private inner: UserRepository) {}
+
+  async findById(id: string) {
+    logger.info(&#x27;find user&#x27;, id)
+    return this.inner.findById(id)
+  }
+}</code></pre>
+<p>組合：</p>
+<pre><code>const repo =
+  new LoggingUserRepository(
+    new CachedUserRepository(
+      new SqlUserRepository()
+    )
+  )</code></pre>
+<p>適合：logging、metrics、tracing、caching、retry、transaction、authorization、rate limit。</p>
+<h3>Abstract Factory：抽象工廠</h3>
+<p>有些依賴無法在 app 啟動時決定，而是 runtime 才知道。</p>
+<pre><code>interface PaymentGatewayFactory {
+  create(method: PaymentMethod): PaymentGateway
+}
+
+class CheckoutService {
+  constructor(private factory: PaymentGatewayFactory) {}
+
+  checkout(order: Order) {
+    const gateway = this.factory.create(order.paymentMethod)
+    return gateway.charge(order.amount)
+  }
+}</code></pre>
+<p>需要動態建立物件時，優先注入明確 factory，而不是把整個 container 注入進業務服務。</p>
+<h3>Composite Pattern：組合模式</h3>
+<p>Composite 把多個實作包成一個實作。</p>
+<pre><code>interface Notifier {
+  send(message: string): Promise&lt;void&gt;
+}
+
+class CompositeNotifier implements Notifier {
+  constructor(private notifiers: Notifier[]) {}
+
+  async send(message: string) {
+    for (const notifier of this.notifiers) {
+      await notifier.send(message)
+    }
+  }
+}</code></pre>
+<p>業務服務只依賴一個 <code>Notifier</code>，不需要知道背後有 Email、Slack、SMS 幾種通知渠道。</p>
+<h3>Chain of Responsibility：責任鏈</h3>
+<p>常見於 middleware、validator、handler pipeline。</p>
+<pre><code>interface OrderValidator {
+  validate(order: Order): void
+}
+
+class OrderValidationPipeline {
+  constructor(private validators: OrderValidator[]) {}
+
+  validate(order: Order) {
+    for (const validator of this.validators) {
+      validator.validate(order)
+    }
+  }
+}</code></pre>
+<p>適合：middleware、validation pipeline、event handlers、command handlers、rule engine、filters。</p>
+<h2>如何不過度工程化？</h2>
+<p>核心原則：</p>
+<blockquote>先讓程式碼清楚，再讓它可抽換；不要為了「可能未來會換」先抽一堆介面。</blockquote>
+<h3>1. 不要每個 class 都配一個 interface</h3>
+<p>不一定要這樣：</p>
+<pre><code>interface IUserService {}
+class UserService implements IUserService {}</code></pre>
+<p>如果目前只有一個實作，而且沒有明確替換需求，直接用 concrete class 就好。</p>
+<p>值得抽 interface 的情況：</p>
+<ul>
+<li>會打外部 API</li>
+<li>會碰 DB / cache / queue</li>
+<li>測試需要 fake</li>
+<li>真的有多個實作</li>
+<li>是跨模組邊界</li>
+<li>要隔離第三方套件</li>
+</ul>
+<h3>2. 純計算與小 helper 不要硬 DI</h3>
+<pre><code>function calculateDiscount(price: number, level: UserLevel) {
+  return ...
+}</code></pre>
+<p>這種純函式通常直接寫最乾淨，不需要硬包成 <code>DiscountCalculator</code>。</p>
+<h3>3. 抽象要來自痛點，不要來自想像</h3>
+<p>先問：</p>
+<pre><code>現在有第二個實作嗎？
+測試真的需要替換嗎？
+這是外部服務或副作用邊界嗎？
+這個依賴是否跨越架構邊界？</code></pre>
+<p>如果答案都是否，就先不要抽。</p>
+<h3>4. 副作用邊界用 DI，核心邏輯少抽象</h3>
+<p>最值得 DI 的地方：</p>
+<pre><code>DB / HTTP API / 金流 / Email / Queue / Cache / File system / Clock / UUID / Logger / Config</code></pre>
+<p>最不需要重 DI 的地方：</p>
+<pre><code>純計算 / 資料轉換 / 小 helper / value object / 簡單 validator</code></pre>
+<h3>5. 先 Pure DI，痛了再 Container</h3>
+<pre><code>只有一個實作、無副作用、小專案
+→ 直接 new / concrete class
+
+有副作用、需要測試替換
+→ constructor injection
+
+有多個實作，需要 runtime 切換
+→ Strategy / Factory + DI
+
+依賴圖很大，scope 很複雜
+→ DI Container
+
+核心 domain logic
+→ 優先簡單、純函式、明確資料流</code></pre>
+<h2>實務設計準則</h2>
+<ol>
+<li><strong>業務核心只依賴明確依賴，不依賴 container。</strong></li>
+</ol>
+<pre><code>class OrderService {
+  constructor(
+    private repo: OrderRepository,
+    private payment: PaymentGateway
+  ) {}
+}</code></pre>
+<p>不要：</p>
+<pre><code>class OrderService {
+  constructor(private container: Container) {}
+}</code></pre>
+<ol>
+<li><strong>生命週期由外層組裝層決定。</strong></li>
+</ol>
+<p>業務類別不要自己決定要 new 哪個具體依賴。</p>
+<ol>
+<li><strong>長生命週期不要抓短生命週期。</strong></li>
+</ol>
+<p>尤其 singleton 不要持有 <code>CurrentUser</code>、<code>RequestContext</code>、<code>Transaction</code>。</p>
+<ol>
+<li><strong>外部系統用 Adapter 包起來。</strong></li>
+</ol>
+<p>業務邏輯不要直接依賴 Stripe SDK、SendGrid SDK、資料庫 driver。</p>
+<ol>
+<li><strong>橫切需求用 Decorator / Pipeline。</strong></li>
+</ol>
+<p>例如 logging、cache、retry、metrics、tracing。</p>
+<ol>
+<li><strong>動態選擇用 Strategy / Factory。</strong></li>
+</ol>
+<p>不要把 container 當 Service Locator 塞進業務邏輯。</p>
+<h2>最後整理</h2>
+<p>DI 的主軸不是工具，而是設計邊界：</p>
+<pre><code>核心業務：
+  Constructor Injection + 明確依賴 + 少魔法
+
+外部基礎設施：
+  Adapter 包外部服務
+
+橫切需求：
+  Decorator 加 logging/cache/retry/metrics
+
+多實作集合：
+  Composite / Chain of Responsibility
+
+動態選擇：
+  Strategy / Abstract Factory
+
+大型 app 組裝：
+  DI Container 管生命週期與依賴圖</code></pre>
+<p>一句話：</p>
+<p><strong>DI 不是只為了少寫 <code>new</code>，而是為了讓物件的建立、替換、組合、生命週期，從業務邏輯裡分離出去。</strong></p></main></body></html>

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆</h1><p class="meta">來源筆記：<code>大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆.md</code></p><p class="excerpt">這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：&lt;https://stitcher.io/blog/p…</p></section><h1>大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆</h1>
+<p>#database #performance #event-sourcing #batch-processing #php #mysql #optimization</p>
+<h2>這是什麼</h2>
+<p>這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 <code>30 events/sec</code> 優化到約 <code>45,000 events/sec</code>。</p>
+<p>原文：&lt;https://stitcher.io/blog/processing-11-million-rows&gt;</p>
+<p>這份文件不是逐字翻譯，而是把文章中的效能優化知識點整理成可回查、可套用的工程筆記。</p>
+<h2>核心結論</h2>
+<p>大量資料處理的效能優化，核心不是單一技巧，而是持續減少幾類成本：</p>
+<ul>
+<li>減少不必要的資料庫排序。</li>
+<li>減少重複讀取同一批資料。</li>
+<li>減少 ORM / framework abstraction 的 per-row overhead。</li>
+<li>避免大 offset pagination。</li>
+<li>減少 database round trip。</li>
+<li>減少 commit / fsync 次數。</li>
+<li>用 profiler 找真正瓶頸，而不是只靠直覺。</li>
+<li>每次只改一件事，並記錄吞吐量變化。</li>
+</ul>
+<p>文章中的效能變化大致如下：</p>
+<p>| 步驟 | 優化內容 | 效能 |</p>
+<p>|---|---|---:|</p>
+<p>| Baseline | 原始版本 | 30/sec |</p>
+<p>| 1 | 移除 <code>createdAt</code> 排序 | 6,700/sec |</p>
+<p>| 2 | 反轉 projector/event loop | 6,800/sec |</p>
+<p>| 3 | 避開 ORM | 7,800/sec |</p>
+<p>| 4 | 改 while loop、調整 batch size | 8,400/sec |</p>
+<p>| 5 | 修正 framework scalar binding overhead | 14,000/sec |</p>
+<p>| 6 | Buffered inserts | 19,000/sec |</p>
+<p>| 7 | Transaction | 45,000/sec |</p>
+<h2>背景 / 問題</h2>
+<p>作者的網站使用 server-side anonymous analytics。每次有人造訪網站時，系統會記錄事件，之後由不同 projectors 產生統計資料，例如：</p>
+<ul>
+<li>每日造訪數</li>
+<li>每月造訪數</li>
+<li>每週熱門文章</li>
+<li>每年統計</li>
+<li>圖表資料</li>
+</ul>
+<p>這是典型 event sourcing 場景：歷史事件完整保存，未來若新增統計方式，只要 replay 舊事件即可重建資料。</p>
+<p>問題是五年下來累積超過 1,100 萬筆 visit events。當作者要把舊 Laravel 系統搬到 Tempest 並重建 projectors 時，原始 replay command 每秒只能處理約 30 筆事件。若有多個 projectors，總耗時可能達數十小時。</p>
+<h2>優化流程</h2>
+<h3>1. 先建立 baseline</h3>
+<p>效能優化前，先量測原始速度。</p>
+<p>原始流程大致是：</p>
+<pre><code>foreach ($projectors as $projector) {
+    $projector-&gt;clear();
+
+    StoredEvent::select()
+        -&gt;orderBy(&#x27;createdAt ASC&#x27;)
+        -&gt;chunk(500, function ($events) use ($projector) {
+            foreach ($events as $event) {
+                $projector-&gt;replay($event);
+            }
+        });
+}</code></pre>
+<p>問題包括：</p>
+<ul>
+<li>每個 projector 都重新讀一次全部 events。</li>
+<li>對 <code>createdAt</code> 排序。</li>
+<li>使用 ORM hydration。</li>
+<li>寫入可能是一筆一筆送。</li>
+<li>沒有明確 transaction。</li>
+</ul>
+<p>初始吞吐量約：</p>
+<pre><code>30 events/sec</code></pre>
+<p>重點：不要靠感覺猜瓶頸。先取得 baseline，後續每一步才知道是否真的有效。</p>
+<h3>2. 移除不必要排序</h3>
+<p>原本 query 依 <code>createdAt ASC</code> 排序：</p>
+<pre><code>-&gt;orderBy(&#x27;createdAt ASC&#x27;)</code></pre>
+<p>但事件本來就是依序寫入資料庫，若沒有額外需求，這個排序可能不必要。尤其當排序欄位沒有 index 時，對大量資料排序非常昂貴。</p>
+<p>移除後速度大幅提升：</p>
+<pre><code>30/sec → 6,700/sec</code></pre>
+<p>經驗：</p>
+<ul>
+<li>大量資料處理時，<code>ORDER BY</code> 必須非常小心。</li>
+<li>若必須排序，排序欄位應該有合適 index。</li>
+<li>若資料本身已按插入順序排列，可以考慮用 indexed <code>id</code> 取代時間欄位排序。</li>
+</ul>
+<h3>3. 反轉 loop，避免重複讀資料</h3>
+<p>原始流程是：</p>
+<pre><code>for 每個 projector:
+    讀全部 events
+    for 每個 event:
+        projector replay event</code></pre>
+<p>如果有 12 個 projectors，就會把 1,100 萬筆事件讀 12 次。</p>
+<p>改成：</p>
+<pre><code>讀一批 events
+for 每個 projector:
+    for 每個 event:
+        projector replay event</code></pre>
+<p>概念範例：</p>
+<pre><code>StoredEvent::select()
+    -&gt;chunk(500, function ($events) use ($projectors) {
+        foreach ($projectors as $projector) {
+            foreach ($events as $event) {
+                $projector-&gt;replay($event);
+            }
+        }
+    });</code></pre>
+<p>單一 projector 的速度提升有限：</p>
+<pre><code>6,700/sec → 6,800/sec</code></pre>
+<p>但在多 projector 場景，這個改法可以避免大量重複 I/O。</p>
+<p>經驗：如果資料量遠大於處理器數量，應優先讓大量資料只被讀一次。</p>
+<h3>4. 避開 ORM</h3>
+<p>ORM 對一般開發很方便，但大量批次處理時，每一筆 row 都被轉成 model 會產生明顯成本。</p>
+<p>可把 ORM query：</p>
+<pre><code>StoredEvent::select()</code></pre>
+<p>改為更接近資料庫的 query builder / raw query：</p>
+<pre><code>query(&#x27;stored_events&#x27;)-&gt;select()</code></pre>
+<p>概念範例：</p>
+<pre><code>query(&#x27;stored_events&#x27;)
+    -&gt;select()
+    -&gt;chunk(1500, function (array $rows) use ($projectors) {
+        $events = array_map(function ($row) {
+            return $row[&#x27;eventClass&#x27;]::unserialize($row[&#x27;payload&#x27;]);
+        }, $rows);
+
+        foreach ($projectors as $projector) {
+            foreach ($events as $event) {
+                $projector-&gt;replay($event);
+            }
+        }
+    });</code></pre>
+<p>速度提升：</p>
+<pre><code>6,800/sec → 7,800/sec</code></pre>
+<p>經驗：ORM 是方便性工具，不是免費工具。對數百萬筆以上的批次處理，應評估是否改用 raw query / query builder。</p>
+<h3>5. 自己控制 batch loop，並實測 batch size</h3>
+<p>Framework 的 <code>chunk()</code> helper 也可能有額外成本。作者改用 <code>while</code> loop 自己控制批次讀取，並測試不同 batch size，最後找到在他的環境中較好的數值。</p>
+<p>概念範例：</p>
+<pre><code>$offset = 0;
+$limit = 1500;
+
+while (true) {
+    $rows = query(&#x27;stored_events&#x27;)
+        -&gt;select()
+        -&gt;limit($limit)
+        -&gt;offset($offset)
+        -&gt;all();
+
+    if ($rows === []) {
+        break;
+    }
+
+    // process rows...
+
+    $offset += $limit;
+}</code></pre>
+<p>速度提升：</p>
+<pre><code>7,800/sec → 8,400/sec</code></pre>
+<p>經驗：</p>
+<ul>
+<li>Batch size 需要實測。</li>
+<li>太小會增加 round trip。</li>
+<li>太大可能增加 memory pressure 或降低 cache locality。</li>
+<li>不同資料庫、資料形狀、硬體環境的最佳值不同。</li>
+</ul>
+<h3>6. 不要迷信直覺優化：serialization 嘗試反而更慢</h3>
+<p>事件 payload 需要 unserialize。作者猜測若跳過 unserialize、改從原始 visits table 手動建立 event 物件，可能會更快。</p>
+<p>實測結果反而更慢。</p>
+<p>經驗：</p>
+<ul>
+<li>看似合理的優化不一定有效。</li>
+<li>PHP 內建或成熟框架功能可能已被高度優化。</li>
+<li>每個改動都要實測，不要只靠直覺。</li>
+</ul>
+<h3>7. 用 profiler 找出真正瓶頸</h3>
+<p>作者使用 Xdebug profiler 後發現：每處理一批 events，Tempest 的 reflection 相關工具被呼叫大量次數。</p>
+<p>原因是 framework 的 database layer 在處理 query binding 時，會檢查每個值是否需要 serializer。這對 object 可能合理，但對 string / number 這類 scalar value 沒必要。</p>
+<p>優化方向是先短路處理 scalar value：</p>
+<pre><code>if ($value instanceof Query) {
+    $value = $value-&gt;execute();
+} elseif (is_string($value) || is_numeric($value)) {
+    // scalar value，直接保留，不進 serializer factory
+} elseif ($serializer = $serializerFactory-&gt;forValue($value)) {
+    $value = $serializer-&gt;serialize($value);
+}</code></pre>
+<p>速度提升：</p>
+<pre><code>8,400/sec → 14,000/sec</code></pre>
+<p>經驗：</p>
+<ul>
+<li>真正瓶頸常常藏在 framework 或 library 的通用路徑裡。</li>
+<li>Profiler 可以揭露肉眼很難看出的 per-row overhead。</li>
+<li>熱路徑中的 reflection、dynamic dispatch、serializer lookup 都要特別小心。</li>
+</ul>
+<h3>8. 避免大 offset pagination</h3>
+<p>長時間 replay 時，作者發現一開始速度快，但跑越久越慢。記憶體沒有持續增加，因此不像 memory leak。</p>
+<p>問題可能出在 offset pagination：</p>
+<pre><code>LIMIT 1500 OFFSET 9000000</code></pre>
+<p>資料庫可能仍需掃過前面大量 rows，只是最後丟掉。offset 越大，後面越慢。</p>
+<p>改成 keyset pagination / seek pagination：</p>
+<pre><code>$lastId = 0;
+$limit = 1500;
+
+while (true) {
+    $rows = query(&#x27;stored_events&#x27;)
+        -&gt;select()
+        -&gt;where(&#x27;id &gt; ?&#x27;, $lastId)
+        -&gt;orderBy(&#x27;id ASC&#x27;)
+        -&gt;limit($limit)
+        -&gt;all();
+
+    if ($rows === []) {
+        break;
+    }
+
+    // process rows...
+
+    $lastId = end($rows)[&#x27;id&#x27;];
+}</code></pre>
+<p>經驗：</p>
+<ul>
+<li>大量資料分頁避免大 offset。</li>
+<li>優先使用 indexed 欄位，例如 <code>id &gt; last_id</code>。</li>
+<li>這個改法不一定提高初始峰值，但能讓長時間處理更穩定。</li>
+</ul>
+<h3>9. Buffered inserts：減少 database round trip</h3>
+<p>如果 projector 每處理一筆 event 就寫一次資料庫，會產生大量 round trips。</p>
+<p>可把寫入先 buffer 起來，等一批處理完再一起送出。</p>
+<p>概念 interface：</p>
+<pre><code>interface BufferedProjector extends Projector
+{
+    public function persist(): void;
+}</code></pre>
+<p>概念 trait：</p>
+<pre><code>trait BuffersQueries
+{
+    private array $queries = [];
+
+    protected function buffer(string $sql): void
+    {
+        $this-&gt;queries[] = $sql;
+    }
+
+    public function persist(): void
+    {
+        if ($this-&gt;queries === []) {
+            return;
+        }
+
+        query()-&gt;executeMany($this-&gt;queries);
+
+        $this-&gt;queries = [];
+    }
+}</code></pre>
+<p>Projector 不立即寫 DB，而是先 buffer：</p>
+<pre><code>public function onPageVisited(PageVisited $event): void
+{
+    $date = $event-&gt;visitedAt-&gt;format(&#x27;Y-m-d&#x27;);
+
+    $this-&gt;buffer(&quot;
+        INSERT INTO visits_per_day (`date`, `count`)
+        VALUES (&#x27;$date&#x27;, 1)
+        ON DUPLICATE KEY UPDATE `count` = `count` + 1
+    &quot;);
+}</code></pre>
+<p>Replay loop 每批 flush：</p>
+<pre><code>foreach ($projectors as $projector) {
+    foreach ($events as $event) {
+        $projector-&gt;replay($event);
+    }
+
+    if ($projector instanceof BufferedProjector) {
+        $projector-&gt;persist();
+    }
+}</code></pre>
+<p>速度提升：</p>
+<pre><code>14,000/sec → 19,000/sec</code></pre>
+<p>注意：上面的 SQL 是概念範例。實務上應使用 prepared statements、bulk insert builder 或安全的 escaping，避免 SQL injection。</p>
+<h3>10. Transaction：減少 commit / fsync 成本</h3>
+<p>最後的巨大提升來自 transaction。</p>
+<p>如果沒有明確 transaction，每次 insert/update 都可能成為 implicit transaction。對 InnoDB 這類資料庫來說，頻繁 commit 會導致大量 fsync 成本。</p>
+<p>概念上：</p>
+<pre><code>20,000 inserts = 20,000 commits = 很多次 fsync</code></pre>
+<p>包進 transaction 後：</p>
+<pre><code>20,000 inserts = 1 transaction = 1 commit</code></pre>
+<p>概念範例：</p>
+<pre><code>$database-&gt;withinTransaction(function () use ($projectors, $events) {
+    foreach ($projectors as $projector) {
+        foreach ($events as $event) {
+            $projector-&gt;replay($event);
+        }
+
+        if ($projector instanceof BufferedProjector) {
+            $projector-&gt;persist();
+        }
+    }
+});</code></pre>
+<p>速度提升：</p>
+<pre><code>19,000/sec → 45,000/sec</code></pre>
+<p>經驗：大量寫入時，transaction 常常是最有力的優化之一。</p>
+<h2>可套用的優化 checklist</h2>
+<p>大量資料處理前後，可以用這份 checklist 檢查：</p>
+<pre><code>[ ] 有沒有建立 baseline？
+[ ] 有沒有每一步記錄吞吐量？
+[ ] Query 是否有不必要 ORDER BY？
+[ ] ORDER BY 欄位是否有 index？
+[ ] 是否用了大 OFFSET？
+[ ] 能不能改成 id &gt; last_id？
+[ ] 是否重複撈同一批資料？
+[ ] 能不能資料讀一次，多個處理器共用？
+[ ] ORM hydration 是否是瓶頸？
+[ ] Batch size 是否實測過？
+[ ] 是否一筆一筆寫 DB？
+[ ] 能不能 buffer writes？
+[ ] 能不能 bulk insert / bulk update？
+[ ] 是否包 transaction？
+[ ] 有沒有用 profiler 找真正瓶頸？</code></pre>
+<h2>常見踩坑</h2>
+<h3>不必要排序</h3>
+<p>大量資料上的未索引排序，可能是最昂貴的操作之一。若資料本身已按寫入順序排列，先確認排序是否真的必要。</p>
+<h3>Offset pagination</h3>
+<p><code>OFFSET</code> 在後期會越來越慢。大量掃描應優先用 keyset pagination：</p>
+<pre><code>WHERE id &gt; :last_id
+ORDER BY id ASC
+LIMIT :limit</code></pre>
+<h3>ORM per-row overhead</h3>
+<p>ORM 會做 hydration、mapping、型別處理、可能還有 event hooks。對一般 CRUD 很方便，但在千萬級資料處理中可能成為熱路徑成本。</p>
+<h3>小 query 太多</h3>
+<p>即使單次 query 很快，幾百萬次 round trip 也會非常慢。應考慮 buffer、bulk execute、bulk insert、bulk update。</p>
+<h3>Commit 太頻繁</h3>
+<p>大量 insert/update 若沒有 transaction，可能會被 implicit commit 拖垮。明確 transaction 可以大幅降低 fsync 成本。</p>
+<h3>沒有 profiler</h3>
+<p>直覺只能找到一部分問題。Framework 內部的 reflection、serializer lookup、binding handling 等熱路徑瓶頸，通常需要 profiler 才看得到。</p>
+<h2>工程思維</h2>
+<h3>每次只改一件事</h3>
+<p>效能優化要能歸因。一次改太多，速度變快也不知道是哪個改動有效；速度變慢也不知道是哪個改動造成問題。</p>
+<h3>先解最大瓶頸</h3>
+<p>移除排序從 30/sec 到 6,700/sec，比許多微優化有效得多。先找高成本操作，再處理細節。</p>
+<h3>不要過度抽象</h3>
+<p>大量資料處理通常是熱路徑。熱路徑上要盡量簡單、直接、可預測。</p>
+<h3>對方便性工具保持警覺</h3>
+<p>ORM、chunk helper、serializer factory、reflection 都可能在大量資料處理中變成成本。不是不能用，而是要知道何時該繞過。</p>
+<h3>寫入優化常比讀取優化更關鍵</h3>
+<p>讀取可以透過 index、分批、減少排序改善；寫入則要注意 round trip、bulk operation、transaction、lock contention、index 更新成本。</p>
+<h2>延伸應用</h2>
+<p>這些原則不只適用 PHP / MySQL，也適用於多數大量資料處理場景：</p>
+<ul>
+<li>Event sourcing replay</li>
+<li>Analytics aggregation</li>
+<li>Data migration</li>
+<li>Backfill jobs</li>
+<li>ETL / ELT pipeline</li>
+<li>Reindexing</li>
+<li>Materialized view rebuild</li>
+<li>Audit log replay</li>
+<li>Historical report recomputation</li>
+</ul>
+<p>可概括為一句話：</p>
+<blockquote>大量資料處理要減少排序、減少抽象層、減少 round trip、減少 commit、避免大 offset，並用 profiler 驗證每一步。</blockquote></main></body></html>

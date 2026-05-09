@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口</h1><p class="meta">來源筆記：<code>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md</code></p><p class="excerpt">這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](https://discord.com/blog/…</p></section><h2>文章主題</h2>
+<p>這篇是 Discord 在 <strong>2017-01-13</strong> 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 <strong>MongoDB</strong> 遷移到 <strong>Cassandra</strong>，以支撐已經超過 <strong>每日 1.2 億則訊息</strong> 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h2>重點整理</h2>
+<h3>1. 為什麼要從 MongoDB 換掉</h3>
+<p>Discord 早期把所有資料放在單一 MongoDB replica set，方便快速開發。但到 <strong>2015 年 11 月左右，累積訊息達 1 億則</strong> 後，資料與索引已經塞不進 RAM，延遲開始不可預測，系統撐不住。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>2. 他們選 Cassandra 的理由</h3>
+<p>Discord 的訊息讀寫特性是：</p>
+<ul>
+<li>讀取非常隨機</li>
+</ul>
+<ul>
+<li>讀寫比大約 <strong>50/50</strong></li>
+</ul>
+<ul>
+<li>需要線性擴充</li>
+</ul>
+<ul>
+<li>需要自動故障切換</li>
+</ul>
+<ul>
+<li>要低維護</li>
+</ul>
+<ul>
+<li>要穩定且效能可預測</li>
+</ul>
+<ul>
+<li>不想靠 Redis/Memcached 之類額外快取去硬撐</li>
+</ul>
+<p>在這些條件下，他們判斷 <strong>Cassandra</strong> 最符合需求。因為它能靠加節點擴充、容忍節點故障，且相同分區內資料會連續存放，適合這類訊息查詢模式。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>3. 資料模型怎麼設計</h3>
+<p>原本 MongoDB 的查詢索引是 <code>(channel_id, created_at)</code>。</p>
+<p>搬到 Cassandra 後，Discord 改用 <code>(channel_id, message_id)</code>，其中 <code>message_id</code> 是 <strong>Snowflake</strong>，具時間排序特性，因此可以做範圍掃描。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<p>但這還不夠。因為一個 channel 可能存在很多年，分區會越長越肥。於是他們再把訊息按時間做 <strong>bucket 分桶</strong>，大約每桶放 <strong>10 天</strong> 的訊息，讓單一 partition 盡量控制在 <strong>100MB 以下</strong>。最後主鍵變成：</p>
+<p><code>((channel_id, bucket), message_id)</code></p>
+<p>這樣查近期訊息時，就掃最近幾個 bucket，避免單一大分區把 Cassandra 拖死。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>4. 上線後踩到的一個坑：最終一致性</h3>
+<p>Discord 採用 Cassandra，也等於接受它的 <strong>eventual consistency</strong>。</p>
+<p>Cassandra 的寫入本質偏向 <strong>upsert</strong>，而且以欄位為單位採 <strong>last write wins</strong>。這帶來一個競態問題：</p>
+<ul>
+<li>一個人同時編輯訊息</li>
+</ul>
+<ul>
+<li>另一個人同時刪掉訊息</li>
+</ul>
+<p>結果可能留下只剩主鍵和部分欄位的「殘缺資料列」。Discord 的做法是：用必要欄位（例如 <code>author_id</code>）當檢查點，只要缺值就視為壞資料直接刪除。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>5. Tombstone 才是真正的地雷</h3>
+<p>Cassandra 刪除資料不是立刻物理刪除，而是寫入 <strong>tombstone</strong>。之後讀取會略過它，等到 compaction 和保留時間到期才真正清掉。更麻煩的是：</p>
+<ul>
+<li>寫 <code>null</code></li>
+</ul>
+<ul>
+<li>刪欄位</li>
+</ul>
+<p>兩者都會產生 tombstone。</p>
+<p>Discord 發現自己的 schema 有 <strong>16 個欄位</strong>，但平均每則訊息只有 <strong>4 個欄位有值</strong>，等於平常一直在白白寫大量 tombstone。於是他們改成：<strong>只寫非 null 欄位</strong>。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>6. 最慘事故怎麼發生</h3>
+<p>正式切主後大約 6 個月，Cassandra 有次突然卡死，GC 持續出現 <strong>10 秒 stop-the-world</strong>。追查後發現有一個 channel 幾乎被 API 刪光了，只剩 <strong>1 則訊息</strong>，但底下其實堆了 <strong>數百萬個 tombstone</strong>。使用者一讀這個 channel，Cassandra 就得掃過海量 tombstone，JVM 垃圾回收直接爆炸。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<p>他們最後做了兩件事：</p>
+<ul>
+<li>把 tombstone 保留時間從 <strong>10 天降到 2 天</strong></li>
+</ul>
+<ul>
+<li>在查詢邏輯中記錄「空 bucket」，之後避免再掃這些空桶</li>
+</ul>
+<p>這就是工程世界經典場景：資料看起來只剩 1 筆，實際上墓地塞滿。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h3>7. 成果</h3>
+<p>測試期間他們觀察到：</p>
+<ul>
+<li>寫入延遲低於 <strong>1ms</strong></li>
+</ul>
+<ul>
+<li>讀取延遲低於 <strong>5ms</strong></li>
+</ul>
+<p>而且即使跳到一個擁有數百萬則訊息的 channel 中，一年前的訊息位置也能穩定讀取。當時他們最終運行的是 <strong>12 節點、replication factor 3</strong> 的 Cassandra 叢集。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</p>
+<h2>這篇文章最值得記住的 5 件事</h2>
+<ol>
+<li><strong>先求可用，再求可擴充</strong>：Discord 一開始用 MongoDB 不是錯，是刻意為了快速驗證產品。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</li>
+</ol>
+<ol>
+<li><strong>Cassandra 不是萬靈丹，資料模型決定生死</strong>：分區鍵、排序鍵、bucket 設計錯了，後面全是災難。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</li>
+</ol>
+<ol>
+<li><strong>eventual consistency 不是口號，是會炸出競態條件的現實</strong>。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</li>
+</ol>
+<ol>
+<li><strong>tombstone 是 Cassandra 常見陷阱</strong>：大量刪除、寫 null、不當查詢，都可能把系統拖進 GC 地獄。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</li>
+</ol>
+<ol>
+<li><strong>分散式系統的痛點常不在平均情況，而在少數極端 case</strong>。Discord 真正出事，不是因為正常流量，而是因為一個被大量刪訊息的特殊 channel。(<a href="https://discord.com/blog/how-discord-stores-billions-of-messages &quot;How Discord Stores Billions of Messages&quot;">Discord</a>)</li>
+</ol>
+<p>ref: <a href="https://tachunwu.github.io/posts/discord-cassandra/?fbclid=IwAR0Kafo0LEdqflpMGRRWPk7ZX-9ESI9uOdjTNqZk1zE5DA69jQ5VKDs6Crc"># Discord 如何處理一天數億的訊息</a></p>
+<p>#backend #backend/database #backend/database/cassandra #backend/database/mongodb #backend/distributed-systems #backend/data-modeling #backend/scalability #backend/storage #backend/eventual-consistency</p></main></body></html>

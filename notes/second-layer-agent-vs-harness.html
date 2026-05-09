@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工</h1><p class="meta">來源筆記：<code>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工.md</code></p><p class="excerpt">這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。…</p></section><h1>第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工</h1>
+<p>#agent #harness #agentic-workflow #system-design #workflow #verification</p>
+<h2>這是什麼</h2>
+<p>這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。</p>
+<p>簡單講：</p>
+<pre><code>Harness = 管理整個任務生命週期的外層執行框架
+第二層 Agent = 某個任務內部的 agent 自主決策模式</code></pre>
+<p>比喻：</p>
+<pre><code>Harness 是片場導演 / 製片流程
+第二層 Agent 是其中一個演員怎麼在規則內自由發揮</code></pre>
+<p>兩者不是競爭關係，而是上下層關係：</p>
+<pre><code>Harness 可以包住第二層 Agent，讓 Agent 的每次工具呼叫、狀態轉移、驗證結果都成為可追蹤、可審計的 run artifact。</code></pre>
+<h2>核心結論</h2>
+<p><strong>Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。</strong></p>
+<p>更精準地說：</p>
+<pre><code>Harness = run-level control plane
+第二層 Agent = task-level decision loop</code></pre>
+<p>Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。</p>
+<p>第二層 Agent 則一定有「Agent 自己選下一步」這件事。</p>
+<h2>一、核心差異表</h2>
+<p>| 面向 | Harness 系統 | 第二層 Agent |</p>
+<p>|---|---|---|</p>
+<p>| 主要目的 | 讓任務可追蹤、可驗證、可恢復、可收尾 | 讓 Agent 在固定工具內自主決定步驟 |</p>
+<p>| 管理範圍 | 整個 run / task lifecycle | 單一業務任務或工作流程內部 |</p>
+<p>| 重點 | bootstrap、state、contracts、verification、close-out、audit | tool registry、agent loop、guardrails、state、approval |</p>
+<p>| 自主性 | 不一定要求 Agent 自主；可以管理人工流程、固定腳本、subagent | 明確要求「工具固定，但步驟由 Agent 決定」 |</p>
+<p>| 產物 | task-state、verification report、audit、handoff、memory target | tool calls、state transitions、final response、action trace |</p>
+<p>| 失敗處理 | repair、blocked handoff、re-run、close-out review | retry、ask user、approval、tool error handling |</p>
+<p>| 適用層級 | 外層治理 / 任務作業系統 | 內層 agent workflow pattern |</p>
+<h2>二、Harness 是什麼</h2>
+<p>Harness 是任務外層的治理框架。</p>
+<p>它關心的是：</p>
+<blockquote>這個任務有沒有被正確開始、執行、驗證、修正、收尾、沉澱？</blockquote>
+<p>典型 Harness 會管理：</p>
+<pre><code>任務開始前：bootstrap / 判斷 workflow
+任務進行中：維護 task-state / contracts / orchestration
+任務完成前：verify-revise loop
+任務完成後：close-out / audit / memory target 判斷
+卡住時：handoff / repair / blocked state</code></pre>
+<p>Harness 不一定管「Agent 下一步要查訂單還是查政策」。</p>
+<p>它管的是：</p>
+<pre><code>這個任務是否有狀態
+是否有成功標準
+是否有驗證報告
+是否可以恢復
+是否有可審計的紀錄
+是否有 close-out</code></pre>
+<h2>三、第二層 Agent 是什麼</h2>
+<p>第二層 Agent 關心的是某個任務內部怎麼跑。</p>
+<p>定義：</p>
+<pre><code>工具固定
+權限固定
+任務邊界固定
+但步驟由 Agent 自己決定</code></pre>
+<p>例如客服改地址 Agent：</p>
+<pre><code>工具固定：
+- get_order
+- search_policy
+- update_address
+- send_email
+
+Agent 自己決定：
+- 先查訂單？
+- 先問使用者？
+- 要不要查政策？
+- 要不要送 approval？</code></pre>
+<p>它關心的是：</p>
+<blockquote>在一組固定工具和規則內，Agent 如何自主決定下一步？</blockquote>
+<h2>四、Run-level Control Plane vs Task-level Decision Loop</h2>
+<h3>Harness：Run-level Control Plane</h3>
+<p>Harness 的層級比較高。</p>
+<p>它像任務控制塔：</p>
+<pre><code>start run
+→ choose workflow
+→ create task-state
+→ prepare contracts
+→ execute work
+→ verify output
+→ revise if needed
+→ audit
+→ close out</code></pre>
+<p>它的核心問題是：</p>
+<pre><code>這個任務是否被正確治理？</code></pre>
+<h3>第二層 Agent：Task-level Decision Loop</h3>
+<p>第二層 Agent 的層級比較低。</p>
+<p>它像任務內部的決策引擎：</p>
+<pre><code>read state
+→ choose next action
+→ validate action
+→ execute tool
+→ update state
+→ verify result
+→ continue / ask user / finish</code></pre>
+<p>它的核心問題是：</p>
+<pre><code>下一步該使用哪個工具？</code></pre>
+<h2>五、兩者如何搭配</h2>
+<p>最合理的關係是：</p>
+<pre><code>Harness
+└── Task: 建立客服改地址 Agent
+    ├── bootstrap task-state
+    ├── 定義 tool contracts
+    ├── 執行第二層 Agent loop
+    ├── 收集 action trace
+    ├── 跑 component eval
+    ├── 跑 end-to-end eval
+    ├── 產生 verification report
+    └── close-out / audit</code></pre>
+<p>也就是：</p>
+<pre><code>Harness 包住第二層 Agent
+第二層 Agent 是 Harness 裡的一種可執行工作單元</code></pre>
+<p>Harness 可以把第二層 Agent 的內部事件收斂成外層 artifact：</p>
+<p>| 第二層 Agent 內部事件 | Harness 可收斂成 |</p>
+<p>|---|---|</p>
+<p>| tool call | action trace / tool contract result |</p>
+<p>| state transition | task-state update |</p>
+<p>| approval request | human handoff artifact |</p>
+<p>| verifier result | verification report |</p>
+<p>| repeated failure | blocked state / repair request |</p>
+<p>| final response | deliverable |</p>
+<h2>六、具體例子：客服改地址 Agent</h2>
+<h3>任務：做客服改地址 Agent</h3>
+<p>Harness 會管：</p>
+<pre><code>- 這個任務叫什麼？
+- 成功標準是什麼？
+- 需要哪些 tool contract？
+- 要跑哪些測試？
+- 有沒有 verification report？
+- 失敗要不要 repair？
+- 完成後要不要寫入 know / memory / RAG？</code></pre>
+<p>第二層 Agent 會管：</p>
+<pre><code>- 使用者沒給 order_id，要問使用者
+- 有 order_id，要查 get_order
+- 未出貨，要查 search_policy
+- 政策允許，要 request_approval
+- approval 後才能 update_address
+- 完成後 draft / send email</code></pre>
+<h3>Harness 流程</h3>
+<pre><code>1. 建立 task-state：customer-address-agent
+2. 定義成功標準：
+   - 不更新已出貨訂單
+   - 缺 order_id 時會詢問
+   - 高風險操作需要 approval
+   - end-to-end case 通過
+3. 建立 tool contracts：
+   - get_order
+   - search_policy
+   - update_address
+   - send_email
+4. 執行 Agent loop
+5. 收集 action trace
+6. 跑 eval
+7. 建 verification report
+8. close-out</code></pre>
+<h3>第二層 Agent 流程</h3>
+<pre><code>1. 收到使用者：我要改 A127 地址到建國南路
+2. 呼叫 get_order(A127)
+3. 發現未出貨
+4. 呼叫 search_policy(address_change)
+5. 判斷允許修改
+6. 送出 update_address approval
+7. approval 通過後呼叫 update_address
+8. 草擬通知 email
+9. 送出 send_email approval
+10. 寄出 email
+11. 回覆使用者完成</code></pre>
+<h2>七、什麼情況只需要 Harness</h2>
+<p>如果任務本身步驟固定，不需要 Agent 自主選擇下一步，只需要外層追蹤和驗證，那只需要 Harness。</p>
+<p>例子：</p>
+<pre><code>- 寫入 know 文件後 commit &amp; push
+- 跑固定測試流程
+- 產生固定報表
+- 執行固定部署 checklist
+- 整理文件、驗證格式、close-out</code></pre>
+<p>這些任務可能需要：</p>
+<pre><code>task-state
+verification report
+audit
+memory target</code></pre>
+<p>但不需要 Agent 自己決定工具順序。</p>
+<h2>八、什麼情況需要第二層 Agent</h2>
+<p>如果任務內部有分支、例外、工具選擇，而且工具邊界明確，就適合第二層 Agent。</p>
+<p>例子：</p>
+<pre><code>- 客服 Agent
+- IT helpdesk Agent
+- 內部資料查詢 Agent
+- 訂單處理 Agent
+- RAG + tool action 的業務助理</code></pre>
+<p>這些任務需要 Agent 自己判斷：</p>
+<pre><code>資訊夠不夠？
+要不要問使用者？
+要先查哪個資料源？
+要不要使用 RAG？
+要不要呼叫外部工具？
+是否需要 approval？</code></pre>
+<h2>九、什麼情況兩者都需要</h2>
+<p>當任務同時具備：</p>
+<pre><code>1. 多步驟、需要驗證、需要可恢復
+2. 任務內部又有 Agent 自主決策</code></pre>
+<p>就應該兩者都用。</p>
+<p>例子：</p>
+<pre><code>- 建立 production 客服 Agent
+- 做一套 RAG + tool-calling 的企業知識助理
+- 自動化資料修復 Agent
+- 半自動交易研究 Agent
+- 多工具 DevOps Agent</code></pre>
+<p>此時：</p>
+<pre><code>Harness 負責治理整個 run
+第二層 Agent 負責 run 裡的自主決策工作單元</code></pre>
+<h2>十、與 workspace agent-system-foundation 的對照</h2>
+<p>目前 workspace 裡的 <code>agent-system-foundation/</code> 比較接近 Harness。</p>
+<p>它已經具備的方向包括：</p>
+<pre><code>bootstrap
+workflow selection
+task-state
+contracts
+verification
+verify-revise loop
+close-out
+audit
+human handoff
+repair orchestration
+memory target recommendation</code></pre>
+<p>所以它的定位不是「某個業務 Agent」，而是：</p>
+<pre><code>多步任務的外層治理框架</code></pre>
+<p>它可以管理很多種任務：</p>
+<pre><code>固定腳本任務
+文件整理任務
+RAG 寫入任務
+coding 任務
+subagent 任務
+第二層 Agent 任務</code></pre>
+<p>其中第二層 Agent 只是它可承載的一種任務形態。</p>
+<h2>十一、實作建議</h2>
+<h3>如果要做第二層 Agent，不要把 Harness 和 Agent loop 混在一起</h3>
+<p>建議分層：</p>
+<pre><code>/harness
+  task-state
+  verification report
+  audit
+  close-out
+
+/agent-runtime
+  planner
+  tool registry
+  tool executor
+  state machine
+  verifier</code></pre>
+<p>Harness 不應該直接塞滿業務工具細節。</p>
+<p>Agent loop 也不應該自己處理整個任務生命週期治理。</p>
+<h3>Harness 應該看到什麼</h3>
+<p>Harness 需要的是摘要化 artifact：</p>
+<pre><code>action trace
+tool contract result
+state transition summary
+verification result
+approval record
+final deliverable</code></pre>
+<h3>第二層 Agent 應該看到什麼</h3>
+<p>第二層 Agent 需要的是任務內部上下文：</p>
+<pre><code>current state
+available tools
+tool descriptions
+business constraints
+user request
+recent tool results
+approval status</code></pre>
+<h3>邊界原則</h3>
+<pre><code>Harness 管「任務是否可靠完成」
+Agent 管「下一步該做什麼」
+Tool Executor 管「能不能真的做」
+Verifier 管「做完是否正確」
+Human Approval 管「高風險副作用是否允許」</code></pre>
+<h2>十二、常見混淆</h2>
+<h3>混淆 1：有 Harness 就等於有 Agent</h3>
+<p>不對。</p>
+<p>Harness 可以管理完全 deterministic 的流程，不需要 Agent 自主決策。</p>
+<h3>混淆 2：有 Agent loop 就等於有 Harness</h3>
+<p>也不對。</p>
+<p>Agent loop 可能能完成任務，但如果沒有 task-state、verification、audit、close-out，就很難治理。</p>
+<h3>混淆 3：第二層 Agent 可以取代 Harness</h3>
+<p>不建議。</p>
+<p>第二層 Agent 解決的是任務內的決策彈性，不負責整個 run 的治理閉環。</p>
+<h3>混淆 4：Harness 應該控制 Agent 每一步</h3>
+<p>也不一定。</p>
+<p>如果 Harness 把每一步都寫死，Agent 就退回第一層 workflow。比較好的做法是：Harness 設邊界與驗證，Agent 在邊界內自主決策。</p>
+<h2>十三、總結</h2>
+<p>兩者分工如下：</p>
+<pre><code>Harness：
+任務生命週期治理
+bootstrap → execution → verification → close-out → audit
+
+第二層 Agent：
+任務內部自主決策
+state → choose action → validate → execute tool → update state → finish</code></pre>
+<p>最重要的一句話：</p>
+<blockquote>Harness 是讓任務可靠落地的外層控制系統；第二層 Agent 是在固定工具與規則內做彈性決策的內層工作單元。</blockquote></main></body></html>

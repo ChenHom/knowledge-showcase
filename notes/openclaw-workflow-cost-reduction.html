@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OpenClaw workflow 降本改造方案</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>OpenClaw workflow 降本改造方案</h1><p class="meta">來源筆記：<code>OpenClaw workflow 降本改造方案.md</code></p><p class="excerpt">不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷…</p></section><h1>OpenClaw workflow 降本改造方案</h1>
+<h2>目標</h2>
+<p>不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。</p>
+<h2>改造項目</h2>
+<h3>1. 先縮上下文</h3>
+<ul>
+<li>只送任務相關片段</li>
+<li>長對話先摘要</li>
+<li>memory 先檢索，不整包送</li>
+</ul>
+<h3>2. 先分流任務</h3>
+<ul>
+<li>FAQ / 格式化 / 短摘要 -&gt; cheap/local</li>
+<li>長推理 / 高風險 -&gt; strong model</li>
+</ul>
+<h3>3. 先快取</h3>
+<ul>
+<li>重複問題先查 cache</li>
+<li>標準流程結果可快取</li>
+</ul>
+<h3>4. 先拆步驟</h3>
+<ul>
+<li>先做檢索，再做判斷</li>
+<li>先做粗分類，再做精推理</li>
+<li>能批次做的不要逐筆做</li>
+</ul>
+<h3>5. 先壓 prompt</h3>
+<ul>
+<li>刪冗詞</li>
+<li>長說明改條列</li>
+<li>只保留必要約束</li>
+</ul>
+<h2>如何驗證效果真的有</h2>
+<h3>測試方式</h3>
+<p>同一任務跑兩次：</p>
+<ul>
+<li>A：原始 workflow</li>
+<li>B：改造後 workflow</li>
+</ul>
+<h3>要比的東西</h3>
+<ul>
+<li>input tokens</li>
+<li>output tokens</li>
+<li>cost</li>
+<li>latency</li>
+<li>answer quality</li>
+<li>修正次數</li>
+</ul>
+<h3>合格條件</h3>
+<ul>
+<li>成本至少下降 30%</li>
+<li>品質沒有明顯崩壞</li>
+<li>修正次數沒有大增</li>
+</ul>
+<h2>判定</h2>
+<p>如果省錢，而且品質仍在，就保留。</p>
+<p>如果省錢但品質掉太多，就退回。</p>
+<h2>核心原則</h2>
+<p>少把不必要的 token 丟給 AI。</p></main></body></html>

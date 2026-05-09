@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文</h1><p class="meta">來源筆記：<code>Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文.md</code></p><p class="excerpt">這篇文章在講什麼 這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。 新手先記住這 6 件事…</p></section><p>這篇文章在講什麼</p>
+<p>這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。</p>
+<p>新手先記住這 6 件事</p>
+<ol>
+<li>Gemma 4 有四個型號：E2B、E4B、31B、26B A4B。全部都支援文字與圖片輸入；小模型 E2B、E4B 另外還支援音訊。官方模型卡另外補充：E2B/E4B 的前後文長度是 128K，26B A4B/31B 是 256K。 </li>
+<li>它不是每一層都看完整段文字。Gemma 4 會把「只看附近內容的 local attention」和「看整體內容的 global attention」交錯使用，目的是省計算量，同時保留全局理解能力；而且 Gemma 4 特別把最後一層固定成 global attention。 </li>
+<li>它很在意記憶體效率。文章花很多篇幅解釋 Gemma 4 如何讓 global attention 更省，包括 Grouped Query Attention、K=V，以及 p-RoPE。白話說：能共用的資料就共用，能少存的就少存，能避免位置資訊干擾語意的就避免。 </li>
+<li>它真的不是只會看正方形圖片。Gemma 4 的 vision encoder 支援可變長寬比與可變解析度，會把圖片切成 patch，再用 2D RoPE 表示二維位置，最後再用 token budget 控制送進語言模型的影像資訊量。這是它多模態能力的重要基礎。 </li>
+<li>26B A4B 的關鍵是 MoE。它總共有 26B 參數，但推論時只會啟動約 4B 的 active parameters。文章的核心意思是：模型本體很大，但每次不需要全部一起上工，所以速度會比你直覺以為的快。 </li>
+<li>E2B / E4B 的關鍵是 PLE（Per-Layer Embeddings）。它不是把所有能力都塞進主幹模型，而是把一部分資訊做成每層可查表的嵌入向量，讓模型在較小 RAM/VRAM 條件下也能維持不錯能力，所以特別適合手機、筆電、本機端部署。 </li>
+</ol>
+<p>白話版整理</p>
+<ol>
+<li>Dense 跟 MoE 到底差在哪</li>
+</ol>
+<p>Dense model 可以想成：每次回答問題，整個主力團隊都一起上。</p>
+<p>MoE（Mixture of Experts） 可以想成：公司裡有很多專家，但每次只叫幾位最適合的上場，其他人先坐著領乾薪，不是，先待命。Gemma 4 的 26B A4B 就是這種設計：總共有 128 個 experts，每次啟動 8 個，另外再加 1 個永遠在線的 shared expert。</p>
+<ol>
+<li>為什麼 attention 要分 local 和 global</li>
+</ol>
+<p>因為 global attention 很貴。</p>
+<p>如果每個 token 都要看完整串輸入，計算量和記憶體都會膨脹。Gemma 4 的做法是：大部分時間先看附近，偶爾再看全局，像開車時平常看前車和後照鏡，進交流道才抬頭看整張路網。這樣能兼顧速度與理解力。</p>
+<ol>
+<li>K=V、GQA、p-RoPE 是在幹嘛</li>
+</ol>
+<p>這三個名詞看起來像研究員故意不讓人下班，但本質都在做同一件事：讓長前後文不要太吃資源，也不要太容易失真。</p>
+<p>GQA 是讓多個 query 共用較少的 key/value；K=V 是在 global attention 裡讓 key 和 value 合併，減少 cache；p-RoPE 則是只對部分維度加位置資訊，降低長序列時位置旋轉帶來的語意干擾。</p>
+<ol>
+<li>圖片是怎麼餵給 Gemma 4 的</li>
+</ol>
+<p>Gemma 4 不是直接「看圖片」，而是先把圖片切成很多小塊 patch，再把每塊轉成嵌入向量。不同於老式做法把圖硬壓成正方形，Gemma 4 可以保留不同長寬比，並用 2D RoPE 分別表示寬度和高度位置。解析度則靠 soft token budget 控制，常見 budget 有 70、140、280、560、1120。budget 越高，保留的畫面細節越多，但運算也越重。</p>
+<ol>
+<li>音訊為什麼只有小模型有</li>
+</ol>
+<p>文章提到 E2B、E4B 額外有 audio encoder，能處理語音辨識和語音翻譯。流程大致是：原始音訊先轉成 mel spectrogram，再切成片段、下採樣、經過 conformer encoder，最後投影到語言模型能理解的嵌入空間。這代表小模型不只省資源，還更適合做裝置端語音任務。</p>
+<p>四個模型怎麼看</p>
+<p>E2B / E4B</p>
+<p>定位：輕量、裝置端、本機跑得動。</p>
+<p>特色：Dense 架構、支援文字/圖片/音訊、用了 PLE。官方資料顯示它們的基礎推論記憶體需求大約是：E2B 為 9.6GB（BF16）或 3.2GB（Q4_0），E4B 為 15GB（BF16）或 5GB（Q4_0）。</p>
+<p>26B A4B</p>
+<p>定位：效能與速度平衡型。</p>
+<p>特色：MoE，總參數 26B，但每次只動用約 4B active parameters；支援文字/圖片，前後文長度 256K。適合想要更強能力，但又不想直接上超大 dense 模型的人。</p>
+<p>31B</p>
+<p>定位：較傳統的大型 dense 主力模型。</p>
+<p>特色：沒有 PLE，也不是 MoE，比較像「正統大模型」路線；支援文字/圖片，前後文長度 256K。若你想理解 Gemma 4 的核心架構，31B 可以視為最直觀的代表。</p>
+<p>這篇文章真正想傳達的重點</p>
+<p>不是「Gemma 4 很強」這種空話。</p>
+<p>而是：</p>
+<ul>
+<li>同一個模型家族，可以用不同架構去適配不同硬體場景。 </li>
+<li>多模態不是把圖片或音訊硬接進去就算了，前面要有專門的 encoder 和投影機制。 </li>
+<li>長前後文能力的代價很高，所以設計重點不是只把前後文拉長，而是如何不把記憶體和速度一起炸掉。 </li>
+<li>小模型不代表只是縮水版；E2B/E4B 明顯是為裝置端做了特別工程化設計。 </li>
+</ul>
+<p>給新手的最終結論</p>
+<p>把 Gemma 4 想成一個家族，不是一顆模型。</p>
+<p>這個家族用三條路線解決不同問題：</p>
+<ul>
+<li>E2B / E4B：我想在手機、筆電、本機端跑，還要支援語音。 </li>
+<li>26B A4B：我想要更強能力，但不要每次都把整台機器燒成暖爐。 </li>
+<li>31B：我就是要一顆比較直球的大型 dense 模型。 </li>
+</ul>
+<p>而這篇文章最有價值的地方，是把背後設計講成人能讀的樣子。這在 AI 圈算稀有物種。</p>
+<p><a href="https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-gemma-4?fbclid=https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-gemma-4?fbclid=IwdGRleAQ_EStleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAo2NjI4NTY4Mzc5AAEeDF_V2ImEdqp0dQ4nphglw6A4VRM42MkAWsWMktFUtP4j1S1DXMdN0rYI1cI_aem_EXCKxuo61Hy3RW4OTvM03g">https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-gemma-4?fbclid=https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-gemma-4?fbclid=IwdGRleAQ_EStleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAo2NjI4NTY4Mzc5AAEeDF_V2ImEdqp0dQ4nphglw6A4VRM42MkAWsWMktFUtP4j1S1DXMdN0rYI1cI_aem_EXCKxuo61Hy3RW4OTvM03g</a></p>
+<p>[#ai](#ai) [#ai/llm](#ai/llm) [#ai/llm/gemma](#ai/llm/gemma) [#ai/moe](#ai/moe) [#ai/multimodal](#ai/multimodal) [#ai/long-context](#ai/long-context) [#ai/on-device](#ai/on-device) [#技術筆記](#技術筆記) [#新手向](#新手向)</p></main></body></html>

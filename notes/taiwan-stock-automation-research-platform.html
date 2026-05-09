@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>這篇文章在講什麼</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>這篇文章在講什麼</h1><p class="meta">來源筆記：<code>台股自動化研究平台：MVP 閉環與資料防禦實踐指南.md</code></p><p class="excerpt">這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。 1. 分層資料獲取策略 (Tiered…</p></section><h1>這篇文章在講什麼</h1>
+<p>這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。</p>
+<h1>新手先記住這 5 件事</h1>
+<ol>
+<li><strong>分層資料獲取策略 (Tiered Sourcing)</strong>：初篩層 (Screening) 必須使用 Bulk 資料源 (TWSE OpenAPI) 以避開頻率限制；深度研究層 (Research) 則針對 Top 標的精準調用進階 API (FinMind)。這能兼顧廣度與深度，同時節省 API 成本。</li>
+<li><strong>研究留痕的一致性 (Run-Level Traceability)</strong>：系統必須確保同一個 <code>runId</code> 貫穿全鏈路。若研究紀錄與成效回填、績效分析斷裂，系統會產生「資料幻覺」，導致優化建議毫無意義。</li>
+<li><strong>績效評估的語義重構 (Semantic Success)</strong>：在量化研究中，成功不代表只有上漲。<code>BUY</code> 漲了是正確，但 <code>BLOCK</code> (風險攔截) 或 <code>SELL</code> 動作後續股價下跌，代表成功規避雷區，應同樣視為正確判定。</li>
+<li><strong>論點狀態的自動生成 (Auto-Thesis)</strong>：系統不應只產出動作，必須為每個決策附帶「初始投資論點」。透過特徵分數自動建立 <code>active</code>, <code>weakened</code>, <code>broken</code> 狀態，讓後續的績效分析能精確追蹤論點的生命週期。</li>
+<li><strong>數據純淨化與防禦邏輯</strong>：嚴格處理 TWSE 的千分位逗號解析與 Header 偽裝，並針對 FinMind 實作「空參數過濾」與「節假日自動偏移 (Offset Retry)」。確保報表中只有 <code>N/A</code> 而沒有 <code>NaN%</code> 污染。</li>
+</ol>
+<h1>白話版整理</h1>
+<h3>1. 徹底治癒「平行世界」：資料鏈的接骨手術</h3>
+<p>在開發初期，我們發現 <code>run-candidates</code> 執行完後，<code>run-history</code> 卻查不到資料，或是查到舊資料。這是因為強制研究模式跳過了持久化層。我們進行了「接骨手術」：不論研究路徑為何，第一步必須建立 UUID 並持久化 <code>research_runs</code> 與 <code>results</code>。現在，系統的每個組件都鎖定同一個任務 ID，實現了真正的全鏈路追蹤。</p>
+<h3>2. 台灣 Open Data 的資料防禦術</h3>
+<p>對接 TWSE (證交所) 是最痛苦的環節：</p>
+<ul>
+<li><strong>偽裝與轉導</strong>：沒帶 <code>User-Agent</code> 會收到 302 或 HTML 錯誤。我們實作了 Header 偽裝與 Follow Redirect 邏輯。</li>
+<li><strong>逗號陷阱</strong>：<code>1,234.50</code> 被解析為 <code>NaN</code>。我們在正規化層加入了全局清洗，徹底根除數值污染。</li>
+<li><strong>上櫃盲區</strong>：TWSE 不包含上櫃股票 (OTC)。我們實作了「來源調度器」，當 TWSE 缺值時自動導向 FinMind 補強。</li>
+</ul>
+<h3>3. 解決 CLI 懸掛：讓 Node.js 優雅結束</h3>
+<p>在執行 MVP 腳本時，指令常在輸出報表後卡住。這是因為資料庫與快取的連線池 (Connection Pool) 尚未關閉。我們在所有核心指令末端加入了 <code>process.exit(0)</code>，並將執行環境升級為 <code>tsx</code>。這不僅解決了 <code>DEP0180</code> 棄用警告，更讓整個 MVP 測試流程變得流暢無比。</p>
+<h3>4. 從數據分析到策略進化：洞察引擎</h3>
+<p>目前的 <code>ResearchInsightsService</code> 已經能產出具有溫度的建議。它不只是顯示數字，而是會告訴你：「<code>risk.block_rule</code> 命中率極低 (0%)，建議降權」。此外，我們修正了 <code>BLOCK</code> 的勝率定義，現在當系統成功攔截一檔「後來真的跌了」的股票時，系統會給予規則加分，這才是真正的量化洞察。</p>
+<h3>5. Redis 與 PostgreSQL 的雙劍合璧</h3>
+<p>我們將快取層由 In-Memory 全面切換為 Redis，這讓不同指令間能共享 API 回傳資料，大幅降低了 400 錯誤的發生率。環境設定已完全鎖定在 <code>.env</code> 檔案中，實現了一鍵啟動 (PostgreSQL/Redis 模式) 的懶人體驗。</p>
+<h1>Hashtags</h1>
+<p>[#fintech](#fintech) [#量化交易](#量化交易) [#台股研究](#台股研究) [#NodeJS](#NodeJS) [#Postgresql](#Postgresql) [#Redis](#Redis) [#資料科學](#資料科學) [#MVP測試](#MVP測試) [#技術筆記](#技術筆記) [#新手向](#新手向)</p></main></body></html>

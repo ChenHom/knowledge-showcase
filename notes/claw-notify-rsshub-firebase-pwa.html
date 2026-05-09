@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1><p class="meta">來源筆記：<code>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md</code></p><p class="excerpt">Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：https://github.com/ruanyf/weekly Jacky Bing-Sheng Lee：https://jackyb…</p></section><h1>Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構</h1>
+<p>#rsshub #firebase #firestore #fcm #pwa #webpush #notification-system #openclaw #automation #obsidian</p>
+<h2>這是什麼</h2>
+<p>Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。</p>
+<p>核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流：</p>
+<pre><code>資料來源
+→ RSSHub feed
+→ 本機排程腳本
+→ Firebase Firestore
+→ Firebase Cloud Messaging
+→ PWA 收件箱</code></pre>
+<p>目前接入的來源包含：</p>
+<ul>
+<li>阮一峰科技愛好者週刊：<code>https://github.com/ruanyf/weekly</code></li>
+<li>Jacky Bing-Sheng Lee：<code>https://jackybingshenglee.substack.com</code></li>
+<li>JOJO 的運動產業觀察筆記：<code>https://jojo4sports.substack.com</code></li>
+</ul>
+<h2>核心結論</h2>
+<p>這套架構裡，各元件的責任要切清楚：</p>
+<ul>
+<li><strong>RSSHub</strong>：抓來源、轉 RSS、統一 feed 格式。</li>
+<li><strong>crontab / notify script</strong>：定時讀 feed、比對新舊、組通知 payload。</li>
+<li><strong>Firestore</strong>：保存歷史通知，扮演 cache / inbox database。</li>
+<li><strong>FCM</strong>：把新通知推到手機。</li>
+<li><strong>PWA</strong>：讓手機查看通知列表、分類、摘要與原文連結。</li>
+</ul>
+<p>Firebase 不會自己抓 RSSHub；目前是本機排程主動把資料推進 Firebase。</p>
+<h2>系統流程</h2>
+<h3>1. 資料來源層</h3>
+<p>原始來源格式不一致：</p>
+<ul>
+<li>GitHub repo / Markdown index</li>
+<li>Substack RSS / feed</li>
+<li>未來也可能是網站、API、GitHub release、論壇、YouTube 等</li>
+</ul>
+<p>因此不要讓通知系統直接耦合每個來源的解析方式，而是先交給 RSSHub 統一。</p>
+<p>目前本機 RSSHub 服務：</p>
+<pre><code>~/services/RSSHub
+http://127.0.0.1:1208</code></pre>
+<p>主要 feed：</p>
+<pre><code>http://127.0.0.1:1208/ruanyf/weekly?limit=3&amp;opencc=s2t
+http://127.0.0.1:1208/substack/subscribe/jackybingshenglee?limit=5&amp;opencc=s2t
+http://127.0.0.1:1208/substack/subscribe/jojo4sports?limit=5&amp;opencc=s2t</code></pre>
+<p>其中 <code>opencc=s2t</code> 用於把內容轉成正體中文。</p>
+<h3>2. RSSHub 層</h3>
+<p>RSSHub 的角色是「資料轉換層」，不是通知器。</p>
+<p>它負責：</p>
+<ul>
+<li>抓取來源內容</li>
+<li>解析來源結構</li>
+<li>轉成標準 RSS item</li>
+<li>提供 title / link / pubDate / description</li>
+<li>用 query parameter 控制數量與繁中轉換</li>
+</ul>
+<p>它不負責：</p>
+<ul>
+<li>判斷是否已通知過</li>
+<li>推播手機</li>
+<li>儲存歷史通知</li>
+<li>管理已讀 / 未讀</li>
+</ul>
+<p>這個切分很重要，因為 RSSHub 應保持 stateless，通知狀態交給後面的 script / database 處理。</p>
+<h3>3. 排程與新舊比對</h3>
+<p>目前由本機 <code>crontab</code> 觸發兩支腳本：</p>
+<pre><code>[workspace]/bin/ruanyf_weekly_notify.py
+[workspace]/bin/sports_substack_notify.py</code></pre>
+<p>排程規則：</p>
+<pre><code>阮一峰週刊：每週五 20:00，週六 09:00 補檢
+運動日報：每天 08:00</code></pre>
+<p>腳本會做：</p>
+<ol>
+<li>讀 RSSHub feed</li>
+<li>抽出最新 item / posts</li>
+<li>與本機 state 檔比對</li>
+<li>若沒有新內容，直接結束</li>
+<li>若有新內容，組成 Firebase notification payload</li>
+<li>呼叫 Firebase sender</li>
+</ol>
+<p>狀態檔：</p>
+<pre><code>[workspace]/memory/ruanyf-weekly-notify-state.json
+[workspace]/memory/sports-substack-notify-state.json</code></pre>
+<p>這些 state 檔的用途是避免重複通知。</p>
+<h3>4. Firebase sender</h3>
+<p>Firebase sender 位於：</p>
+<pre><code>~/services/openclaw-notify-inbox/scripts/firebase_sender.js</code></pre>
+<p>它接收 notify script 傳來的 JSON payload，負責兩件事：</p>
+<ol>
+<li>寫入 Firestore <code>notifications</code> collection</li>
+<li>讀取 Firestore <code>devices</code> collection 裡的 FCM token，送出 Web Push</li>
+</ol>
+<p>這裡的設計重點是：</p>
+<blockquote>先寫入 Firestore，再送推播。</blockquote>
+<p>因此即使推播失敗，通知資料仍會留在 inbox 裡，手機打開 PWA 還是能回查。</p>
+<h2>Firebase 資料模型</h2>
+<p>Firebase project：</p>
+<pre><code>openclaw-notify-inbox-hom</code></pre>
+<p>PWA：</p>
+<pre><code>https://openclaw-notify-inbox-hom.web.app</code></pre>
+<p>本機 Firebase 專案：</p>
+<pre><code>~/services/openclaw-notify-inbox</code></pre>
+<p>Firestore database：</p>
+<pre><code>(default)
+location: asia-east1</code></pre>
+<h3>notifications</h3>
+<p><code>notifications</code> 是主要歷史資料表，每一筆代表一則可回查通知。</p>
+<p>建議欄位：</p>
+<pre><code>{
+  &quot;type&quot;: &quot;tech_weekly&quot;,
+  &quot;source&quot;: &quot;ruanyf_weekly&quot;,
+  &quot;sourceName&quot;: &quot;阮一峰科技愛好者週刊&quot;,
+  &quot;title&quot;: &quot;科技愛好者週刊（第 394 期）：第二次 API 開放浪潮&quot;,
+  &quot;summary&quot;: &quot;摘要文字...&quot;,
+  &quot;url&quot;: &quot;https://...&quot;,
+  &quot;publishedAt&quot;: &quot;2026-04-23T23:46:46Z&quot;,
+  &quot;createdAt&quot;: &quot;2026-05-06T...&quot;,
+  &quot;tags&quot;: [&quot;tech&quot;, &quot;weekly&quot;],
+  &quot;read&quot;: false
+}</code></pre>
+<p>目前類型：</p>
+<pre><code>tech_weekly    阮一峰週刊
+sports_jacky   Jacky Bing-Sheng Lee
+sports_jojo    JOJO 的運動產業觀察筆記</code></pre>
+<h3>devices</h3>
+<p><code>devices</code> 保存手機 / 瀏覽器註冊的 FCM token。</p>
+<p>PWA 按下「啟用推播」後，前端會取得 token 並寫入這個 collection。</p>
+<p>典型欄位：</p>
+<pre><code>{
+  &quot;token&quot;: &quot;FCM token&quot;,
+  &quot;platform&quot;: &quot;iPhone&quot;,
+  &quot;userAgent&quot;: &quot;...&quot;,
+  &quot;createdAt&quot;: &quot;...&quot;,
+  &quot;updatedAt&quot;: &quot;...&quot;
+}</code></pre>
+<h2>PWA 接收端</h2>
+<p>Claw Notify 是 Firebase Hosting 上的一個 PWA。</p>
+<p>目前 UI 先保持簡單：</p>
+<ul>
+<li>標題：<code>Claw Notify</code></li>
+<li>類型篩選</li>
+<li>重新整理</li>
+<li>未啟用時顯示「啟用推播」按鈕</li>
+<li>已啟用時隱藏推播按鈕</li>
+<li>通知列表顯示來源、時間、標題、摘要、原文連結</li>
+</ul>
+<p>PWA 相關檔案：</p>
+<pre><code>~/services/openclaw-notify-inbox/public/index.html
+~/services/openclaw-notify-inbox/public/app.js
+~/services/openclaw-notify-inbox/public/firebase-messaging-sw.js
+~/services/openclaw-notify-inbox/public/manifest.json</code></pre>
+<p>Web Push 注意事項：</p>
+<ul>
+<li>Telegram 內建瀏覽器不支援 Firebase Web Messaging。</li>
+<li>iPhone 需要用 Safari 開啟，加入主畫面後從 PWA 啟用推播。</li>
+<li>Android 通常可直接用 Chrome 啟用。</li>
+<li>若 Web Push token 取得失敗，可能需要在 Firebase Console 產生 VAPID key，填入 <code>public/firebase-config.js</code>。</li>
+</ul>
+<h2>為什麼不用 Telegram 當通知中心</h2>
+<p>Telegram 很適合聊天，但不適合做可治理的通知資料庫。</p>
+<p>主要問題：</p>
+<ul>
+<li>通知會混在對話裡</li>
+<li>不好分類</li>
+<li>不好回查</li>
+<li>不適合擴充已讀 / 未讀 / source filter</li>
+<li>多來源通知容易變成聊天噪音</li>
+</ul>
+<p>改成 Firebase + PWA 後：</p>
+<ul>
+<li>Telegram 回到聊天用途</li>
+<li>通知有自己的 inbox</li>
+<li>Firestore 保存歷史資料</li>
+<li>FCM 負責即時提醒</li>
+<li>PWA 負責查詢與閱讀</li>
+</ul>
+<h2>目前部署與運維位置</h2>
+<h3>RSSHub</h3>
+<pre><code>~/services/RSSHub
+systemd user service: rsshub-ruanyf.service
+http://127.0.0.1:1208</code></pre>
+<h3>Notify scripts</h3>
+<pre><code>[workspace]/bin/ruanyf_weekly_notify.py
+[workspace]/bin/sports_substack_notify.py</code></pre>
+<h3>Firebase / PWA</h3>
+<pre><code>~/services/openclaw-notify-inbox
+https://openclaw-notify-inbox-hom.web.app</code></pre>
+<h3>Firebase sender</h3>
+<pre><code>~/services/openclaw-notify-inbox/scripts/firebase_sender.js</code></pre>
+<h3>本機 state / logs</h3>
+<pre><code>[workspace]/memory/ruanyf-weekly-notify-state.json
+[workspace]/memory/sports-substack-notify-state.json
+[workspace]/memory/ruanyf-weekly-notify.log
+[workspace]/memory/sports-substack-notify.log</code></pre>
+<h2>這套架構的取捨</h2>
+<h3>優點</h3>
+<ul>
+<li>資料來源與推播通道解耦</li>
+<li>Firestore 可保存歷史通知</li>
+<li>PWA 可依類型瀏覽與回查</li>
+<li>RSSHub 可繼續接更多來源</li>
+<li>Telegram 不再被通知洗版</li>
+</ul>
+<h3>限制</h3>
+<ul>
+<li>Firebase 不會自己抓資料；依賴本機 cron 正常運作</li>
+<li>本機 RSSHub 掛掉時，排程抓不到 feed</li>
+<li>Web Push 在 iOS 上需要 PWA / Safari 條件</li>
+<li>Firebase sender 目前是輕量自製腳本，不是完整後台服務</li>
+</ul>
+<h2>後續可擴充方向</h2>
+<ul>
+<li>加入已讀 / 未讀同步</li>
+<li>加入通知搜尋</li>
+<li>加入 source 設定頁</li>
+<li>加入摘要品質分級</li>
+<li>將排程狀態寫入 Firestore，例如 <code>jobs</code> collection</li>
+<li>改成 Cloud Run / Cloud Scheduler，讓 Firebase/GCP 端自行拉 RSSHub 或來源 API</li>
+<li>將 RSSHub 也容器化部署到雲端，降低本機依賴</li>
+<li>加入通知失敗重試與 dead-letter queue</li>
+</ul>
+<h2>可重用設計原則</h2>
+<p>這套流程可抽象成：</p>
+<pre><code>Source Adapter → Normalized Feed → Dedup State → Notification Store → Push Channel → Reader UI</code></pre>
+<p>其中最重要的原則是：</p>
+<ol>
+<li><strong>來源解析與通知推送分離</strong></li>
+<li><strong>先持久化，再推播</strong></li>
+<li><strong>推播只做提醒，完整內容放 inbox</strong></li>
+<li><strong>每個來源都要有 stable id / guid，避免重複通知</strong></li>
+<li><strong>本機 state 負責排程 dedup，Firestore 負責使用者可見歷史</strong></li>
+</ol>
+<p>這樣未來要新增來源時，只要新增 feed route 與 payload mapping，不需要重寫整套推播系統。</p>
+<h2>補充：摘要生成與防回歸設計</h2>
+<p>後續修正後，Claw Notify 不應把 RSS 原文片段直接塞進推播 body。推播應顯示整理後的 <code>summary</code>，完整內容與原文連結留在 inbox 裡。</p>
+<p>目前摘要流程應維持：</p>
+<pre><code>RSS item title / description
+→ notify_summary.py
+→ ollama-presets/scripts/ollama-article
+→ clean_article_text / forbidden pattern cleanup
+→ Firebase payload.summary
+→ Firestore notifications.summary
+→ FCM push body = doc.summary
+→ PWA 顯示 summary</code></pre>
+<h3>設計重點</h3>
+<ol>
+<li><strong>摘要器走 skill，不直接打 Ollama API</strong>  </li>
+</ol>
+<p>本機腳本應呼叫：</p>
+<p>```txt</p>
+<p>~/.agents/skills/ollama-presets/scripts/ollama-article</p>
+<p>```</p>
+<p>不要在通知腳本中直接呼叫：</p>
+<p>```txt</p>
+<p>http://127.0.0.1:11434/api/generate</p>
+<p>```</p>
+<ol>
+<li><strong>fallback 也不能回退成原文截斷</strong>  </li>
+</ol>
+<p>如果 Ollama 摘要失敗，fallback 應使用 title-based summary，而不是把 RSS description 前幾百字直接塞出去。</p>
+<ol>
+<li><strong>清理原文雜訊</strong>  </li>
+</ol>
+<p>summary cleaner 至少要移除：</p>
+<ul>
+<li><code>http://</code> / <code>https://</code></li>
+<li><code>pan.baidu</code></li>
+<li><code>提取碼</code></li>
+<li><code>複製這段內容</code></li>
+<li>下載鏈接 / raw link noise</li>
+</ul>
+<ol>
+<li><strong>推播 body 使用 <code>doc.summary</code></strong>  </li>
+</ol>
+<p>Firebase sender 寫入 Firestore 後，送 FCM 時 body 應優先使用 <code>doc.summary</code>，不要用原始 description。</p>
+<ol>
+<li><strong>只推最新 device token</strong>  </li>
+</ol>
+<p>如果同一支手機 / PWA 反覆註冊 device，sender 應排序 <code>updatedAt</code> / <code>createdAt</code> 後只取最新一筆，避免同一則通知連續響多次。</p>
+<h2>補充：Claw Notify Live Eval</h2>
+<p>Claw Notify 的 regression eval 不只檢查程式碼，也要檢查 Firestore live state。</p>
+<p>目前第一版 live eval 會看：</p>
+<ul>
+<li>最新 Firestore <code>notifications</code></li>
+<li><code>summary</code> 不可空白</li>
+<li>不可含 URL</li>
+<li>不可含 <code>pan.baidu</code></li>
+<li>不可含 <code>提取碼</code></li>
+<li>不可含「複製這段內容」</li>
+<li>不可過長</li>
+<li>不可像 title + raw excerpt</li>
+<li>Firestore <code>devices</code></li>
+<li>至少有一筆 device</li>
+<li>sender 程式仍維持只推最新 token</li>
+</ul>
+<p>對這類通知系統來說，live eval 很重要，因為程式碼看起來正確，不代表實際 Firestore 裡的新資料沒有退化。</p>
+<p>可用 runner：</p>
+<pre><code>cd [workspace]
+python3 evals/runners/system_regression_eval.py</code></pre>
+<p>這個 eval 的定位是：</p>
+<blockquote>把「新的通知還是沒有摘要」這種真實踩過的問題，變成以後每次都能自動抓到的防回歸檢查。</blockquote></main></body></html>

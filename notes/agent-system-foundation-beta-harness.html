@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Agent System Foundation：從多步任務骨架到可治理 Beta Harness</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>Agent System Foundation：從多步任務骨架到可治理 Beta Harness</h1><p class="meta">來源筆記：<code>Agent System Foundation：從多步任務骨架到可治理 Beta Harness.md</code></p><p class="excerpt">agent-system-foundation 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。 它的核心重點不是 prompt 本身，而是把以下幾件事制度化： workflow state verification run orchestration human handoff…</p></section><h1>Agent System Foundation：從多步任務骨架到可治理 Beta Harness</h1>
+<h2>這是什麼</h2>
+<p><code>agent-system-foundation</code> 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。</p>
+<p>它的核心重點不是 prompt 本身，而是把以下幾件事制度化：</p>
+<ul>
+<li>workflow</li>
+<li>state</li>
+<li>verification</li>
+<li>run orchestration</li>
+<li>human handoff</li>
+<li>observability</li>
+<li>artifact governance</li>
+</ul>
+<p>簡單講，它想解的不是模型夠不夠聰明，而是：</p>
+<blockquote>當任務跨多步、有副作用、需要驗證、需要之後接回來時，系統要怎麼不靠聊天上下文硬撐，而是有可追蹤、可驗證、可恢復、可演化的工作骨架。</blockquote>
+<h2>它解決什麼問題</h2>
+<p>在一般聊天式 AI workflow 裡，常見問題有：</p>
+<ul>
+<li>任務狀態只活在對話裡，過幾輪就漂掉</li>
+<li>改了什麼、驗了什麼、還缺什麼不清楚</li>
+<li>多步任務容易做到一半停住，之後難接回</li>
+<li>multi-agent handoff 常把主線搞髒</li>
+<li>run 結束後，學到的規則與摩擦沒有穩定沉澱</li>
+</ul>
+<p><code>agent-system-foundation</code> 的價值，就是把這些東西拆成能被明確管理的 artifacts 與流程。</p>
+<h2>核心演進脈絡</h2>
+<p>這套 foundation 不是一開始就衝向重型 orchestration 平台，而是逐步補：</p>
+<h3>Phase 1：Foundation skeleton</h3>
+<p>先建立：</p>
+<ul>
+<li>task-state</li>
+<li>verification report</li>
+<li>tool contract</li>
+<li>memory governance</li>
+<li>workflow recommendation</li>
+</ul>
+<h3>Phase 2：Run-capable foundation</h3>
+<p>再補：</p>
+<ul>
+<li>run bootstrap</li>
+<li>capability routing</li>
+<li>multi-agent handoff protocol</li>
+<li>verify → revise → re-verify loop</li>
+<li>close-out 與 memory routing</li>
+</ul>
+<h3>Phase 3：Governance layer</h3>
+<p>再往下補：</p>
+<ul>
+<li>tool orchestration</li>
+<li>human handoff lifecycle</li>
+<li>observability</li>
+<li>artifact schemas</li>
+<li>audit / repair / re-audit</li>
+<li>foundation-wide repair orchestration</li>
+</ul>
+<p>截至 2026-04-10，這條線已經從「有骨架」推到：</p>
+<blockquote><strong>具備 run orchestration + artifact governance + repair loop 的 beta harness</strong></blockquote>
+<h2>現在已經有哪些核心能力</h2>
+<h3>1. Workflow 與 state</h3>
+<p>系統已能把真實任務落成：</p>
+<ul>
+<li>workflow recommendation</li>
+<li>task-state</li>
+<li>run bootstrap</li>
+<li>bounded deliverable</li>
+<li>verification plan</li>
+</ul>
+<p>也就是不再只是「先做看看」，而是任務一開始就有較明確的結構。</p>
+<h3>2. Run orchestration</h3>
+<p>已補上：</p>
+<ul>
+<li>execution / verification / revision / escalation routing</li>
+<li>tool orchestration plan</li>
+<li>run-level artifacts</li>
+<li>autonomous loop scaffolding</li>
+</ul>
+<p>這代表 run 不只是「開始做」，也開始知道：</p>
+<ul>
+<li>誰負責做</li>
+<li>誰負責驗</li>
+<li>驗失敗後誰修</li>
+<li>哪些情況應升級</li>
+</ul>
+<h3>3. Human handoff lifecycle</h3>
+<p>高風險步驟已不只是在文件裡說「要問人」，而是有：</p>
+<ul>
+<li>must-confirm gate</li>
+<li>handoff payload</li>
+<li>approve / reject / safe-alternative</li>
+<li>blocked → resume lifecycle</li>
+<li>lifecycle consistency audit</li>
+</ul>
+<p>也就是高風險 run 已能真的停下來，不會默默穿越。</p>
+<h3>4. Observability</h3>
+<p>目前已有：</p>
+<ul>
+<li>per-run observability</li>
+<li>run quality grading</li>
+<li>friction taxonomy</li>
+<li>multi-run aggregation</li>
+</ul>
+<p>這讓系統不只知道有沒有做完，也開始知道：</p>
+<ul>
+<li>卡在哪裡</li>
+<li>是 routing 問題、tooling 問題還是 handoff 問題</li>
+<li>某個 patch 之後摩擦是否真的下降</li>
+</ul>
+<h3>5. Artifact governance</h3>
+<p>這是 2026-04-10 之後成熟很多的一段。</p>
+<p>目前已補：</p>
+<ul>
+<li>run artifact schema</li>
+<li>observability schema</li>
+<li>decision-log schema</li>
+<li>human-handoff schema</li>
+<li>task-state schema</li>
+<li>verification-report schema</li>
+<li>memory-closeout schema</li>
+<li>remediation log schema</li>
+<li>audit report schema</li>
+<li>repair batch report schema</li>
+</ul>
+<p>也就是說，foundation 不只開始治理流程，也開始治理自己產出的資料結構。</p>
+<h3>6. Audit / Repair / Re-audit loop</h3>
+<p>現在這套已能：</p>
+<ul>
+<li>validate artifacts</li>
+<li>用 audit 找 lifecycle / schema 問題</li>
+<li>對常見 drift 做 safe repair</li>
+<li>再重跑 audit 確認是否清乾淨</li>
+</ul>
+<p>而且 repair 已不只限於 run lifecycle，還開始涵蓋：</p>
+<ul>
+<li>verification report</li>
+<li>task state</li>
+<li>memory closeout</li>
+</ul>
+<p>這表示它已經從「有流程」走到「有基本治理閉環」。</p>
+<h2>目前的成熟度怎麼看</h2>
+<p>比較準的描述是：</p>
+<h3>已經是 Beta Harness</h3>
+<p>因為現在它已具備：</p>
+<ul>
+<li>多步 run 進場方式</li>
+<li>verification / revise 節奏</li>
+<li>human handoff control</li>
+<li>observability</li>
+<li>artifact schema validation</li>
+<li>audit / repair / repair orchestration</li>
+</ul>
+<h3>但還不是 Product-Grade Platform</h3>
+<p>因為它仍缺：</p>
+<ul>
+<li>更完整的 policy coverage</li>
+<li>更產品化的 dashboard / batch UX</li>
+<li>更成熟的語意修復能力</li>
+<li>更完整的 control plane / adapter portability</li>
+</ul>
+<p>所以最適合的定位是：</p>
+<blockquote><strong>可以先穩定使用的 beta harness baseline</strong></blockquote>
+<p>而不是一個要無止盡繼續擴功能的半成品。</p>
+<h2>現在最好的使用策略</h2>
+<p>截至目前，最合理的策略不是再無限擴 feature，而是：</p>
+<ol>
+<li>先把這套 baseline 拿去跑真實任務</li>
+<li>觀察實際 friction</li>
+<li>只針對重複、結構性缺口補 patch</li>
+<li>不為了 completeness 繼續堆規格</li>
+</ol>
+<p>這也是為什麼目前已有一份 freeze note，建議把這個狀態先視為可收的 beta 基線。</p>
+<h2>適合記住的核心觀點</h2>
+<h3>1. 模型能力不等於系統能力</h3>
+<p>一個會寫、會答的模型，不代表它已經是一個能穩定交付多步工作的系統。</p>
+<h3>2. 真正的可靠，不只來自 prompt</h3>
+<p>而來自：</p>
+<ul>
+<li>workflow</li>
+<li>state</li>
+<li>verification</li>
+<li>governance</li>
+<li>repair</li>
+</ul>
+<h3>3. human handoff 不是例外，而是系統的一部分</h3>
+<p>當風險牽涉到 production、權限、外部影響時，真正好的系統不是偷偷做完，而是能在正確的時間停下來，把高品質決策材料交給人。</p>
+<h3>4. 治理不只是抓錯，也要能修</h3>
+<p>只有 audit 沒有 repair，系統還是會越用越髒。真正成熟的一步，是開始建立：</p>
+<ul>
+<li>schema</li>
+<li>validator</li>
+<li>repair policy</li>
+<li>remediation log</li>
+<li>repair orchestration</li>
+</ul>
+<h2>一句話總結</h2>
+<p><code>agent-system-foundation</code> 的本質，是把 AI 從聊天代理，逐步推向一個具備 workflow、run orchestration、verification、handoff、observability 與 artifact governance 的可治理工作系統；截至 2026-04-10，它已經到達值得先 freeze、先真實使用、再依摩擦演化的 beta harness 狀態。</p>
+<p>#AI #AgentSystemFoundation #OpenClaw #Workflow #Orchestration #Verification #Observability #KnowledgeManagement #MultiAgent #Governance #Harness</p></main></body></html>

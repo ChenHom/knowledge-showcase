@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TiDB RAG：從自架技能包到可重用知識基線</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>TiDB RAG：從自架技能包到可重用知識基線</h1><p class="meta">來源筆記：<code>TiDB RAG：從自架技能包到可重用知識基線.md</code></p><p class="excerpt">這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational d…</p></section><h1>TiDB RAG：從自架技能包到可重用知識基線</h1>
+<h2>這是什麼</h2>
+<p>這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：</p>
+<blockquote><strong>TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。</strong></blockquote>
+<p>如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是：</p>
+<ul>
+<li>TiDB：metadata / relational data</li>
+<li>Qdrant：vector retrieval</li>
+<li>MinIO：檔案物件儲存</li>
+<li>rag-api / rag-worker：upload / ingest / search / reindex / delete workflow</li>
+</ul>
+<p>也就是說，TiDB-based RAG 的價值，不是「TiDB 一個全包」，而是它在整套資料與治理架構裡扮演很好的核心資料底座。</p>
+<h2>核心觀點</h2>
+<h3>1. TiDB 不是完整 retrieval engine</h3>
+<p>這是最重要的一點。</p>
+<p>TiDB / TiKV / PD 可以很好地承接：</p>
+<ul>
+<li>document metadata</li>
+<li>ingestion bookkeeping</li>
+<li>task / collection state</li>
+<li>結構化查詢與管理面資料</li>
+</ul>
+<p>但在 query-time retrieval 這件事上，若要做語意搜尋與向量近鄰查詢，仍應搭配專門的 vector engine，例如 Qdrant。</p>
+<p>所以比較務實的理解應是：</p>
+<ul>
+<li><strong>TiDB 擅長資料管理與 relational/transactional 部分</strong></li>
+<li><strong>Qdrant 擅長 embedding retrieval</strong></li>
+<li><strong>MinIO 擅長原始檔案儲存</strong></li>
+</ul>
+<p>把這三者拆開，整體系統會比硬把所有責任塞到單一元件更穩。</p>
+<h3>2. 最實用的 stack 不是「最純」，而是最能先打通閉環</h3>
+<p>一開始做自架 RAG 時，最容易卡死在：</p>
+<ul>
+<li>embedding provider</li>
+<li>ingestion pipeline</li>
+<li>parser/chunking</li>
+<li>collection / dimension mismatch</li>
+<li>upload/search/reindex/delete 全流程沒打通</li>
+</ul>
+<p>比較穩的做法不是一開始就追求最完整模型，而是：</p>
+<ol>
+<li>先用 mock embedding 打通系統閉環</li>
+<li>確認 upload / ingest / search / reindex / delete 都能走通</li>
+<li>再切到 OpenAI-compatible embeddings 或其他正式 embedding provider</li>
+</ol>
+<p>這樣可以把問題切開：</p>
+<ul>
+<li>先驗證 pipeline</li>
+<li>再驗證 embedding 品質</li>
+</ul>
+<h3>3. embedding model 切換時，最容易踩的是維度</h3>
+<p>這是 RAG 系統常見但容易被忽略的坑。</p>
+<p>當你更換 embedding model 時，不能只改模型名稱，還要同步檢查：</p>
+<ul>
+<li><code>EMBEDDING_DIMENSIONS</code></li>
+<li>Qdrant collection 的 vector 維度</li>
+</ul>
+<p>如果維度不一致，就必須：</p>
+<ul>
+<li>重建 collection</li>
+<li>或換新的 collection 名稱</li>
+</ul>
+<p>否則 ingestion/search 很容易出現難查的錯誤。</p>
+<h3>4. parser / chunking 不該一開始就把結構壓扁</h3>
+<p>對 RAG 品質來說，parser/chunking 的策略很重要。</p>
+<p>比較穩的原則是：</p>
+<h4>Markdown / HTML</h4>
+<ul>
+<li>保留原始結構</li>
+<li>再做 structured chunking</li>
+<li>不要先壓平成純文字再反推標題</li>
+</ul>
+<h4>PDF</h4>
+<ul>
+<li>至少做 page-aware parsing</li>
+<li>保留 <code>page_no</code></li>
+<li>第一版可以先以每頁為 section</li>
+<li>之後再談 OCR / 表格 / 多欄修正</li>
+</ul>
+<p>這樣做的原因很簡單：</p>
+<blockquote>如果一開始就把文件結構打爛，後面的 retrieval 與 answer grounding 會一起變差。</blockquote>
+<h2>如果要做成可重用技能包，應該包含什麼</h2>
+<p>先前這條知識曾被整理成一個 <code>tidb-rag-stack</code> skill。從可重用角度看，這種 skill 應包含：</p>
+<ul>
+<li>architecture</li>
+<li>deployment runbook</li>
+<li>config examples</li>
+<li>API contract</li>
+<li>usage examples</li>
+<li>troubleshooting</li>
+<li>templates</li>
+<li>evals</li>
+</ul>
+<p>但後來更務實的判斷是：</p>
+<blockquote><strong>先停在已具備半自動可執行 skill 的程度，不急著再補成更一致的 CLI 或更完整防呆。</strong></blockquote>
+<p>也就是說，目前最值得保留的是這條知識方向，而不是急著把所有最後一哩都產品化。</p>
+<h2>與一般聊天式 AI workflow 的關係</h2>
+<p>這類 TiDB RAG 知識還帶出一個更大的觀點：</p>
+<h3>模型能力不等於系統能力</h3>
+<p>光有模型，不等於你就有一套可穩定 ingest、search、reindex、delete 的 RAG 系統。</p>
+<p>真正可用的系統還需要：</p>
+<ul>
+<li>state</li>
+<li>verification</li>
+<li>repair</li>
+<li>runbook</li>
+<li>troubleshooting path</li>
+<li>artifact governance</li>
+</ul>
+<p>也因為這個觀點，後面才延伸出更完整的 <code>agent-system-foundation</code> 思路。</p>
+<h2>現在最值得記住的實務結論</h2>
+<p>如果你之後再做一套 TiDB-based RAG，最值得先記住的是這幾條：</p>
+<ol>
+<li><strong>TiDB 不要誤當成完整 retrieval engine</strong></li>
+<li><strong>務實架構是 TiDB + Qdrant + MinIO + API/worker</strong></li>
+<li><strong>先用 mock embedding 打通閉環，再切正式 embedding provider</strong></li>
+<li><strong>切 embedding model 時，一定檢查 dimension 與 collection 相容性</strong></li>
+<li><strong>Markdown / HTML 要保留結構；PDF 至少做 page-aware parsing</strong></li>
+<li><strong>先把可執行 skill 做到夠用，不要急著把最後一哩產品化</strong></li>
+</ol>
+<h2>一句話總結</h2>
+<p>TiDB-based 自架 RAG 的真正價值，不是讓 TiDB 一個人包辦所有 retrieval，而是把它放在資料與治理骨架的正確位置，搭配 vector engine、object storage 與穩定的 ingest/search workflow，形成一條務實、可維運、可逐步演進的 RAG 基線。</p>
+<p>#AI #RAG #TiDB #Qdrant #MinIO #Embeddings #KnowledgeManagement #SelfHosted #VectorSearch #harness</p></main></body></html>

@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>第二層 Agent 實作設計：固定工具下的受控自主工作流</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb} 
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}
+h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}
+</style></head>
+<body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>第二層 Agent 實作設計：固定工具下的受控自主工作流</h1><p class="meta">來源筆記：<code>第二層 Agent 實作設計：固定工具下的受控自主工作流.md</code></p><p class="excerpt">這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」…</p></section><h1>第二層 Agent 實作設計：固定工具下的受控自主工作流</h1>
+<p>#agent #agentic-workflow #ai-engineering #tool-calling #system-design #eval</p>
+<h2>這是什麼</h2>
+<p>這份文件說明如何實作「第二層 Agent 系統」。</p>
+<p>所謂第二層 Agent，指的是：</p>
+<pre><code>工具固定
+權限固定
+任務邊界固定
+但步驟由 Agent 自己決定</code></pre>
+<p>也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。</p>
+<p>它介於兩者之間：</p>
+<pre><code>第一層：Hardcoded Steps
+→ 步驟全部寫死，LLM 只做局部判斷
+
+第二層：Hardcoded Tools + Agent decides steps
+→ 工具固定，但 Agent 自己決定下一步
+
+第三層：Fully Autonomous
+→ Agent 自己找工具、寫工具、決定完整策略</code></pre>
+<p>第二層的核心價值是：</p>
+<blockquote>人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。</blockquote>
+<h2>核心結論</h2>
+<p>第二層 Agent 不應該是「完全放飛的 AI」，而是 <strong>受控自主</strong>。</p>
+<p>最穩定的架構是：</p>
+<pre><code>User Request
+→ Agent Controller / Planner
+→ Tool Registry
+→ Tool Execution Layer
+→ State Store
+→ Guardrails / Policy Checks
+→ Verifier
+→ Response</code></pre>
+<p>實作原則：</p>
+<ul>
+<li>工具由工程師定義，不讓 Agent 任意創工具。</li>
+<li>Agent 可以決定工具呼叫順序。</li>
+<li>每個 tool 都要有 schema、驗證、權限控制。</li>
+<li>高風險行為要 human approval。</li>
+<li>系統要記錄每一步 action trace，而不是依賴不可審計的隱含推理。</li>
+<li>必須有 component eval 與 end-to-end eval。</li>
+</ul>
+<p>一句話：</p>
+<blockquote>第二層 Agent 是「固定工具箱 + 可控自主規劃 + 嚴格執行護欄」。</blockquote>
+<h2>一、如何判斷 Agent 系統是哪一層</h2>
+<p>可以用三個問題判斷：</p>
+<pre><code>1. 步驟是誰決定的？
+2. 工具是誰決定的？
+3. 高風險行為是否受控？</code></pre>
+<h3>第一層：Hardcoded Steps</h3>
+<p>定義：</p>
+<pre><code>步驟固定
+工具固定
+LLM 只處理局部任務</code></pre>
+<p>例子：客服改地址流程。</p>
+<pre><code>1. extract_intent()
+2. extract_order_id()
+3. get_order()
+4. check_policy()
+5. update_address()
+6. generate_reply()</code></pre>
+<p>每一步都由程式寫死。</p>
+<p>特徵：</p>
+<ul>
+<li>安全</li>
+<li>好測試</li>
+<li>好 debug</li>
+<li>例外處理僵硬</li>
+<li>不像真正 agent，比較像 LLM-enhanced workflow</li>
+</ul>
+<p>適合：</p>
+<ul>
+<li>高風險流程</li>
+<li>金流</li>
+<li>醫療</li>
+<li>法務</li>
+<li>固定 SOP</li>
+</ul>
+<h3>第二層：Hardcoded Tools + Agent Decides Steps</h3>
+<p>定義：</p>
+<pre><code>工具固定
+任務目標固定
+安全邊界固定
+Agent 自己決定下一步</code></pre>
+<p>例子：給 Agent 一組工具：</p>
+<pre><code>get_order()
+search_policy()
+update_address()
+send_email()
+ask_user()</code></pre>
+<p>使用者說：</p>
+<pre><code>我要改 A127 訂單地址，搬到建國南路。</code></pre>
+<p>Agent 自己決定：</p>
+<pre><code>1. 先呼叫 get_order(A127)
+2. 發現未出貨
+3. 呼叫 search_policy(address_change)
+4. 判斷可修改
+5. 呼叫 update_address()
+6. 呼叫 send_email()
+7. 回覆使用者</code></pre>
+<p>如果使用者沒給 order ID，Agent 可以先問：</p>
+<pre><code>請提供訂單編號。</code></pre>
+<p>特徵：</p>
+<ul>
+<li>比第一層有彈性</li>
+<li>比第三層安全</li>
+<li>是多數 production agent 的合理起點</li>
+<li>需要較完整的 tool guardrails 與 eval</li>
+</ul>
+<h3>第三層：Fully Autonomous</h3>
+<p>定義：</p>
+<pre><code>工具不固定
+步驟不固定
+Agent 甚至可以自己寫 code、找 API、部署流程</code></pre>
+<p>例子：</p>
+<pre><code>幫我做一套退貨自動化系統。
+你可以搜尋文件、寫程式、改資料庫、部署服務。</code></pre>
+<p>特徵：</p>
+<ul>
+<li>能力強</li>
+<li>風險高</li>
+<li>難測試</li>
+<li>難預測</li>
+<li>不適合直接接正式資料與外部副作用</li>
+</ul>
+<p>適合：</p>
+<ul>
+<li>sandbox</li>
+<li>研究</li>
+<li>內部 coding assistant</li>
+<li>有人類審查的任務</li>
+</ul>
+<h2>二、第二層 Agent 的系統架構</h2>
+<p>整體架構：</p>
+<pre><code>                  ┌────────────────────┐
+                  │    User Request     │
+                  └─────────┬──────────┘
+                            │
+                            ▼
+                  ┌────────────────────┐
+                  │ Agent Controller    │
+                  │ goal + state + LLM  │
+                  └─────────┬──────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+     ┌─────────────────┐         ┌─────────────────┐
+     │ Tool Registry   │         │ State Store      │
+     │ schemas + docs  │         │ task/session     │
+     └────────┬────────┘         └─────────────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ Tool Executor   │
+     │ validate + run  │
+     └────────┬────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ Guardrails      │
+     │ policy + auth   │
+     └────────┬────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ Verifier        │
+     │ check result    │
+     └────────┬────────┘
+              │
+              ▼
+     ┌─────────────────┐
+     │ Final Response   │
+     └─────────────────┘</code></pre>
+<h3>1. Agent Controller</h3>
+<p>負責：</p>
+<ul>
+<li>接收使用者請求</li>
+<li>讀取目前狀態</li>
+<li>決定下一步</li>
+<li>選擇要呼叫哪個 tool</li>
+<li>判斷是否需要問使用者</li>
+<li>判斷是否完成任務</li>
+</ul>
+<p>Controller 不直接做事，只能透過 tool。</p>
+<h3>2. Tool Registry</h3>
+<p>保存 Agent 可用工具。</p>
+<p>每個工具應包含：</p>
+<pre><code>{
+  &quot;name&quot;: &quot;get_order&quot;,
+  &quot;description&quot;: &quot;查詢訂單狀態與基本資訊&quot;,
+  &quot;input_schema&quot;: {
+    &quot;order_id&quot;: &quot;string&quot;
+  },
+  &quot;side_effect&quot;: false,
+  &quot;risk_level&quot;: &quot;low&quot;,
+  &quot;requires_approval&quot;: false
+}</code></pre>
+<p>工具 metadata 很重要，因為 Agent 要靠 description 判斷何時使用。</p>
+<h3>3. Tool Executor</h3>
+<p>負責真正執行工具。</p>
+<p>它不能盲目信任 Agent 傳來的參數。</p>
+<p>必須做：</p>
+<ul>
+<li>schema validation</li>
+<li>type validation</li>
+<li>permission check</li>
+<li>rate limit</li>
+<li>idempotency check</li>
+<li>timeout</li>
+<li>retry policy</li>
+<li>error normalization</li>
+<li>audit log</li>
+</ul>
+<h3>4. State Store</h3>
+<p>記錄任務狀態。</p>
+<p>例如：</p>
+<pre><code>{
+  &quot;task_id&quot;: &quot;task_123&quot;,
+  &quot;user_intent&quot;: &quot;change_address&quot;,
+  &quot;order_id&quot;: &quot;A127&quot;,
+  &quot;new_address&quot;: &quot;建國南路...&quot;,
+  &quot;order_status&quot;: &quot;not_shipped&quot;,
+  &quot;policy_checked&quot;: true,
+  &quot;address_updated&quot;: false,
+  &quot;email_sent&quot;: false,
+  &quot;current_state&quot;: &quot;READY_TO_UPDATE&quot;
+}</code></pre>
+<p>State Store 的價值：</p>
+<ul>
+<li>可恢復</li>
+<li>可 debug</li>
+<li>可追蹤</li>
+<li>可 eval</li>
+<li>可避免 Agent 忘記前面做過什麼</li>
+</ul>
+<h3>5. Guardrails</h3>
+<p>Guardrails 是第二層 Agent 的安全核心。</p>
+<h4>權限護欄</h4>
+<pre><code>這個使用者能不能查這筆資料？
+這個 agent 能不能改這張訂單？</code></pre>
+<h4>業務規則護欄</h4>
+<pre><code>已出貨訂單不得改地址
+超過 7 天不得退款
+退款金額不可超過付款金額</code></pre>
+<h4>副作用護欄</h4>
+<pre><code>寄 email 前是否需要確認？
+退款前是否需要 approval？
+刪除資料是否禁止？</code></pre>
+<h4>輸出護欄</h4>
+<pre><code>不得承諾政策外事項
+不得捏造處理時間
+不得輸出內部錯誤細節</code></pre>
+<h3>6. Verifier</h3>
+<p>Verifier 負責檢查 Agent 的結果是否合理。</p>
+<p>例如：</p>
+<pre><code>Agent 說地址已更新
+→ verifier 查 DB 確認地址真的更新
+
+Agent 說訂單不可退款
+→ verifier 檢查政策來源是否支持
+
+Agent 要寄信
+→ verifier 檢查 email 內容是否包含必要資訊</code></pre>
+<p>Verifier 可以是：</p>
+<ul>
+<li>deterministic code</li>
+<li>rule engine</li>
+<li>another LLM</li>
+<li>human approval</li>
+</ul>
+<h2>三、第二層 Agent 的實作流程</h2>
+<h3>Step 1：定義任務邊界</h3>
+<p>先不要寫 prompt，先定義 agent 可以處理什麼。</p>
+<p>例如客服 agent：</p>
+<pre><code>可以處理：
+- 查訂單
+- 改地址
+- 查退款政策
+- 草擬客服回覆
+
+不能處理：
+- 直接退款
+- 刪除訂單
+- 修改付款資料
+- 承諾政策外補償</code></pre>
+<p>這一步決定安全邊界。</p>
+<h3>Step 2：定義工具</h3>
+<p>工具要小而清楚。</p>
+<p>不要做一個巨大工具：</p>
+<pre><code>handle_customer_request()</code></pre>
+<p>而是拆成：</p>
+<pre><code>extract_order_info()
+get_order()
+search_policy()
+update_address()
+draft_email()
+send_email()
+ask_user()</code></pre>
+<p>工具越清楚，Agent 越容易正確組合。</p>
+<h3>Step 3：替每個工具標註風險</h3>
+<p>| Tool | Side Effect | Risk | Approval |</p>
+<p>|---|---:|---:|---:|</p>
+<p>| get_order | no | low | no |</p>
+<p>| search_policy | no | low | no |</p>
+<p>| draft_email | no | low | no |</p>
+<p>| update_address | yes | medium | maybe |</p>
+<p>| send_email | yes | medium | yes |</p>
+<p>| refund_payment | yes | high | yes |</p>
+<p>| delete_order | yes | critical | forbidden |</p>
+<p>這張表是 production agent 的基本安全設計。</p>
+<h3>Step 4：設計 Agent System Prompt</h3>
+<p>範例：</p>
+<pre><code>你是客服任務處理 agent。
+
+你的目標：
+協助使用者處理訂單相關問題，包括查訂單、改地址、查政策、草擬回覆。
+
+限制：
+- 你只能使用提供的工具。
+- 不得猜測訂單狀態。
+- 不得承諾政策外的退款或補償。
+- 如果缺少必要資訊，必須先詢問使用者。
+- 高風險操作必須等待 approval。
+- 若工具結果與使用者說法衝突，以工具結果為準。
+- 任務完成前，請持續根據工具結果決定下一步。</code></pre>
+<h3>Step 5：設計 Agent Loop</h3>
+<p>第二層 Agent 通常是一個 loop。</p>
+<pre><code>while not done:
+    1. read state
+    2. ask LLM what next action to take
+    3. validate action
+    4. execute tool
+    5. update state
+    6. verify result
+    7. decide continue / ask user / finish</code></pre>
+<p>Pseudo code：</p>
+<pre><code>while True:
+    state = load_state(task_id)
+
+    action = planner.decide(
+        user_message=user_message,
+        state=state,
+        tools=tool_registry,
+        constraints=policy
+    )
+
+    if action.type == &quot;ask_user&quot;:
+        return ask_user(action.message)
+
+    if action.type == &quot;finish&quot;:
+        return final_response(action.message)
+
+    validate_action(action, state, user)
+
+    if requires_approval(action):
+        return request_approval(action)
+
+    result = tool_executor.run(action)
+
+    state = update_state(state, action, result)
+
+    verification = verifier.check(state, action, result)
+
+    if not verification.ok:
+        state = handle_failure(state, verification)</code></pre>
+<h2>四、第二層 Agent 的工具設計</h2>
+<p>一個好 tool 應該：</p>
+<ul>
+<li>名稱清楚</li>
+<li>description 明確</li>
+<li>input schema 嚴格</li>
+<li>output schema 穩定</li>
+<li>error 格式一致</li>
+<li>side effect 明確</li>
+<li>可重試</li>
+<li>可追蹤</li>
+<li>可測試</li>
+</ul>
+<h3>get_order</h3>
+<pre><code>{
+  &quot;name&quot;: &quot;get_order&quot;,
+  &quot;description&quot;: &quot;根據訂單編號查詢訂單狀態、收件地址、付款狀態與是否已出貨。&quot;,
+  &quot;input_schema&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;properties&quot;: {
+      &quot;order_id&quot;: { &quot;type&quot;: &quot;string&quot; }
+    },
+    &quot;required&quot;: [&quot;order_id&quot;]
+  },
+  &quot;side_effect&quot;: false,
+  &quot;risk_level&quot;: &quot;low&quot;
+}</code></pre>
+<p>Output：</p>
+<pre><code>{
+  &quot;order_id&quot;: &quot;A127&quot;,
+  &quot;status&quot;: &quot;paid&quot;,
+  &quot;shipping_status&quot;: &quot;not_shipped&quot;,
+  &quot;address&quot;: &quot;台北市...&quot;,
+  &quot;customer_email&quot;: &quot;user@example.com&quot;
+}</code></pre>
+<h3>search_policy</h3>
+<pre><code>{
+  &quot;name&quot;: &quot;search_policy&quot;,
+  &quot;description&quot;: &quot;查詢公司政策，例如退款、改地址、出貨後處理方式。&quot;,
+  &quot;input_schema&quot;: {
+    &quot;policy_type&quot;: &quot;refund | address_change | shipping&quot;
+  },
+  &quot;side_effect&quot;: false,
+  &quot;risk_level&quot;: &quot;low&quot;
+}</code></pre>
+<p>Output：</p>
+<pre><code>{
+  &quot;policy_type&quot;: &quot;address_change&quot;,
+  &quot;allowed&quot;: true,
+  &quot;conditions&quot;: [
+    &quot;訂單尚未出貨&quot;,
+    &quot;地址格式有效&quot;
+  ],
+  &quot;source&quot;: &quot;退款與出貨政策 v2026，第 4 頁&quot;
+}</code></pre>
+<h3>update_address</h3>
+<pre><code>{
+  &quot;name&quot;: &quot;update_address&quot;,
+  &quot;description&quot;: &quot;更新尚未出貨訂單的收件地址。&quot;,
+  &quot;input_schema&quot;: {
+    &quot;order_id&quot;: &quot;string&quot;,
+    &quot;new_address&quot;: &quot;string&quot;
+  },
+  &quot;side_effect&quot;: true,
+  &quot;risk_level&quot;: &quot;medium&quot;,
+  &quot;requires_approval&quot;: true
+}</code></pre>
+<p>Executor 內部必須再檢查：</p>
+<pre><code>order exists
+order belongs to user
+shipping_status == not_shipped
+new_address is valid
+policy allows address change</code></pre>
+<p>不能只因為 Agent 說可以就真的更新。</p>
+<h2>五、狀態機設計</h2>
+<p>即使第二層 Agent 讓模型決定步驟，也建議保留狀態機。</p>
+<p>範例：</p>
+<pre><code>START
+→ NEED_ORDER_ID
+→ NEED_ADDRESS
+→ CHECK_ORDER
+→ CHECK_POLICY
+→ READY_FOR_APPROVAL
+→ UPDATE_ADDRESS
+→ SEND_CONFIRMATION
+→ DONE</code></pre>
+<p>例外狀態：</p>
+<pre><code>ORDER_NOT_FOUND
+ADDRESS_INVALID
+POLICY_DENIED
+TOOL_FAILED
+NEED_HUMAN</code></pre>
+<p>好處：</p>
+<ul>
+<li>限制 Agent 亂跳</li>
+<li>每一步可觀察</li>
+<li>可恢復</li>
+<li>可測試</li>
+<li>可做 component eval</li>
+</ul>
+<h2>六、錯誤處理與恢復</h2>
+<p>第二層 Agent 一定要設計錯誤處理。</p>
+<p>常見錯誤：</p>
+<pre><code>缺少必要資訊
+工具 timeout
+工具回傳格式錯
+政策查不到
+資料庫查無訂單
+Agent 選錯工具
+Agent 重複呼叫同一工具
+Agent 嘗試未授權操作</code></pre>
+<p>處理策略：</p>
+<p>| 錯誤 | 處理 |</p>
+<p>|---|---|</p>
+<p>| 缺少資訊 | ask_user |</p>
+<p>| 查無訂單 | 要求使用者確認 |</p>
+<p>| 工具 timeout | retry with limit |</p>
+<p>| 政策查不到 | escalate human |</p>
+<p>| 未授權操作 | block + log |</p>
+<p>| 高風險操作 | request approval |</p>
+<p>| 重複失敗 | stop loop |</p>
+<p>Loop 防爆一定要設：</p>
+<pre><code>max_steps
+max_tool_calls
+max_retries
+timeout
+cost budget</code></pre>
+<p>例如：</p>
+<pre><code>{
+  &quot;max_steps&quot;: 12,
+  &quot;max_tool_calls&quot;: 8,
+  &quot;max_retries_per_tool&quot;: 2,
+  &quot;timeout_seconds&quot;: 60
+}</code></pre>
+<h2>七、Human Approval 設計</h2>
+<p>第二層 Agent 可以自主，但不能對所有事情自主。</p>
+<p>需要 approval 的操作：</p>
+<ul>
+<li>寄外部 email</li>
+<li>退款</li>
+<li>修改正式資料</li>
+<li>刪除資料</li>
+<li>對外發文</li>
+<li>下單 / 付款</li>
+<li>高金額操作</li>
+</ul>
+<p>Approval request 應該包含：</p>
+<pre><code>{
+  &quot;action&quot;: &quot;update_address&quot;,
+  &quot;reason&quot;: &quot;訂單尚未出貨，政策允許改地址&quot;,
+  &quot;tool_input&quot;: {
+    &quot;order_id&quot;: &quot;A127&quot;,
+    &quot;new_address&quot;: &quot;建國南路...&quot;
+  },
+  &quot;risk_level&quot;: &quot;medium&quot;,
+  &quot;source_evidence&quot;: [
+    &quot;訂單查詢結果&quot;,
+    &quot;地址修改政策 v2026&quot;
+  ]
+}</code></pre>
+<p>人類批准後才執行。</p>
+<h2>八、Observability：要記錄什麼</h2>
+<p>Production agent 必須留下 trace。</p>
+<p>但不一定要記錄模型完整 chain-of-thought；應記錄可審計的 action trace。</p>
+<p>建議記錄：</p>
+<pre><code>{
+  &quot;task_id&quot;: &quot;task_123&quot;,
+  &quot;step&quot;: 4,
+  &quot;state&quot;: &quot;CHECK_POLICY&quot;,
+  &quot;agent_action&quot;: &quot;search_policy&quot;,
+  &quot;tool_input&quot;: {
+    &quot;policy_type&quot;: &quot;address_change&quot;
+  },
+  &quot;tool_output_summary&quot;: &quot;尚未出貨可改地址&quot;,
+  &quot;duration_ms&quot;: 320,
+  &quot;success&quot;: true,
+  &quot;timestamp&quot;: &quot;2026-05-07T10:00:00Z&quot;
+}</code></pre>
+<p>不建議記錄：</p>
+<ul>
+<li>完整 private credentials</li>
+<li>使用者敏感資訊全文</li>
+<li>模型隱含推理全文</li>
+<li>無遮罩的個資</li>
+</ul>
+<h2>九、Eval：第二層 Agent 要怎麼測</h2>
+<p>第二層 Agent 至少要測三層。</p>
+<h3>1. Tool Eval</h3>
+<p>每個 tool 單獨測：</p>
+<pre><code>schema validation
+permission check
+error handling
+idempotency
+timeout
+retry</code></pre>
+<p>例：</p>
+<pre><code>update_address 不可更新已出貨訂單
+refund_payment 不可超過付款金額
+send_email 必須有 recipient</code></pre>
+<h3>2. Planner / Action Eval</h3>
+<p>測 Agent 是否選對下一步。</p>
+<p>測資：</p>
+<pre><code>{
+  &quot;user_message&quot;: &quot;我要改 A127 地址到建國南路&quot;,
+  &quot;state&quot;: {
+    &quot;order_id&quot;: &quot;A127&quot;,
+    &quot;new_address&quot;: &quot;建國南路&quot;,
+    &quot;order_status&quot;: null
+  },
+  &quot;expected_next_action&quot;: &quot;get_order&quot;
+}</code></pre>
+<p>要測：</p>
+<pre><code>缺 order_id 時會 ask_user
+有 order_id 會 get_order
+未查政策前不 update_address
+已出貨不 update_address</code></pre>
+<h3>3. End-to-End Eval</h3>
+<p>完整跑任務。</p>
+<p>測：</p>
+<pre><code>任務是否完成
+工具呼叫順序是否合理
+是否違反政策
+是否需要 approval
+使用者回覆是否清楚
+latency 是否可接受</code></pre>
+<p>Eval 指標：</p>
+<pre><code>task success rate
+tool call accuracy
+policy violation rate
+unnecessary tool call rate
+human escalation rate
+approval precision
+latency
+cost per task
+user satisfaction</code></pre>
+<p>最重要的是：</p>
+<pre><code>policy violation rate 必須接近 0</code></pre>
+<h2>十、第二層 Agent 的實作範例：客服改地址</h2>
+<p>使用者輸入：</p>
+<pre><code>我要改 A127 訂單的地址，因為我搬家到建國南路了。</code></pre>
+<p>Agent 流程：</p>
+<pre><code>1. 抽出 order_id=A127, new_address=建國南路
+2. get_order(A127)
+3. 發現 shipping_status=not_shipped
+4. search_policy(address_change)
+5. 發現政策允許未出貨訂單改地址
+6. request_approval(update_address)
+7. approval 通過
+8. update_address(A127, 建國南路)
+9. draft_email()
+10. request_approval(send_email)
+11. send_email()
+12. 回覆使用者完成</code></pre>
+<p>為什麼這是第二層：</p>
+<pre><code>工具是固定的
+Agent 自己決定下一步
+高風險操作需要 approval
+業務規則由 executor / guardrails 檢查</code></pre>
+<p>不是第一層，因為步驟不是完全寫死。</p>
+<p>不是第三層，因為 Agent 不能自己創工具、不能自己繞過權限。</p>
+<h2>十一、常見錯誤</h2>
+<h3>1. 把 Agent 當萬能大腦</h3>
+<p>錯誤：</p>
+<pre><code>讓 LLM 自己決定所有事，工具也隨便用</code></pre>
+<p>正確：</p>
+<pre><code>工具固定，權限固定，副作用受控</code></pre>
+<h3>2. Tool 太大</h3>
+<p>錯誤：</p>
+<pre><code>handle_order_problem()</code></pre>
+<p>正確：</p>
+<pre><code>get_order()
+check_policy()
+update_address()
+send_email()</code></pre>
+<h3>3. 沒有狀態</h3>
+<p>錯誤結果：</p>
+<ul>
+<li>Agent 忘記查過什麼</li>
+<li>重複呼叫工具</li>
+<li>無法恢復</li>
+<li>無法 debug</li>
+</ul>
+<h3>4. 只靠 prompt 約束</h3>
+<p>錯誤：</p>
+<pre><code>Prompt 寫「不要退款超過付款金額」</code></pre>
+<p>正確：</p>
+<pre><code>Executor 裡用程式檢查退款金額</code></pre>
+<p>Prompt 不是安全機制。</p>
+<h3>5. 沒有 approval</h3>
+<p>Agent 不應直接做高風險副作用。</p>
+<p>尤其是：</p>
+<ul>
+<li>發送外部訊息</li>
+<li>修改資料</li>
+<li>刪除資料</li>
+<li>金流操作</li>
+</ul>
+<h3>6. 沒有 eval</h3>
+<p>沒 eval 的 agent 只是 demo。</p>
+<p>Production 至少要有：</p>
+<ul>
+<li>tool tests</li>
+<li>planner tests</li>
+<li>end-to-end tests</li>
+<li>regression cases</li>
+</ul>
+<h2>十二、實作優先順序</h2>
+<h3>MVP</h3>
+<p>先做：</p>
+<pre><code>固定工具集
+tool schema
+tool executor
+basic state store
+max_steps
+approval gate
+action trace
+少量 end-to-end eval</code></pre>
+<h3>第二階段</h3>
+<p>再加：</p>
+<pre><code>planner eval dataset
+component eval
+policy verifier
+retry strategy
+error recovery
+observability dashboard</code></pre>
+<h3>第三階段</h3>
+<p>最後加：</p>
+<pre><code>multi-agent
+dynamic routing
+LLM-as-Judge
+online feedback
+自動 regression suite</code></pre>
+<h2>十三、總結</h2>
+<p>第二層 Agent 的設計重點是：</p>
+<pre><code>不要寫死全部步驟
+也不要完全放飛
+
+工具固定
+規則固定
+權限固定
+副作用受控
+步驟讓 Agent 自己決定</code></pre>
+<p>最重要的一句話：</p>
+<blockquote>第二層 Agent 是 production agent 的實用起點：用工程系統控制邊界，用 LLM 在邊界內做彈性決策。</blockquote></main></body></html>
