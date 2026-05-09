@@ -1,0 +1,213 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Claude 提示詞十則：情境、推理、誠實與風險檢查</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#7c3aed;--accent2:#0369a1;--code:#0f172a;--codeText:#e5e7eb}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#c4b5fd;--accent2:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--accent) 8%,var(--bg)));color:var(--text)}main{max-width:1180px;margin:0 auto;padding:36px 20px 90px}.hero,.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 55px rgba(15,23,42,.08)}.hero{padding:32px}.tag{color:var(--accent);font-weight:800;letter-spacing:.04em}h1{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1.04;margin:.2em 0}h2{margin:0 0 .5rem}p,li{line-height:1.75}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:22px}.card{overflow:hidden}.card-body{padding:20px}.card img{width:100%;display:block;background:#111827}.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--accent);color:white;font-weight:800;margin-right:.5rem}.prompt{white-space:pre-wrap;background:var(--code);color:var(--codeText);padding:14px;border-radius:16px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92rem}.btn{border:0;border-radius:12px;padding:10px 12px;font-weight:700;background:var(--accent2);color:white;cursor:pointer}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.search{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1rem;background:var(--bg);color:var(--text);margin-top:18px}.table{overflow:auto}.panel{padding:22px;margin-top:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}a{color:var(--accent2)}.back{display:inline-block;margin-bottom:18px}.hidden{display:none!important}
+</style></head><body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Prompt Toolkit / Claude</p><h1>Claude 提示詞十則</h1><p class="muted">把老闆常用的十個提示詞整理成正體中文、可查詢、可複製、可依情境選用的提示詞庫。重點是讓我之後能主動判斷當下該套用哪條規則。</p><input id="search" class="search" type="search" placeholder="搜尋：風險、短答、假設、上線、角色、範圍、壓縮…"></section><section class="panel"><h2>我應該主動套用的選擇規則</h2><div class="table"><table><thead><tr><th>老闆當下情境</th><th>我應主動啟用</th></tr></thead><tbody><tr><td>只給一句模糊方向</td><td>情境簡報</td></tr><tr><td>問「你覺得怎樣」</td><td>誠實約束 + 假設審計</td></tr><tr><td>給計畫要我看</td><td>魔鬼代言人</td></tr><tr><td>要上線 / 部署 / 發布</td><td>前期驗屍</td></tr><tr><td>要求短答</td><td>格式命令</td></tr><tr><td>對話變長、資訊很多</td><td>壓縮循環</td></tr><tr><td>資料來源有限</td><td>範圍鎖定</td></tr><tr><td>需要專業判斷</td><td>角色設定</td></tr><tr><td>技術 / 策略方案</td><td>推理要求 + 假設審計</td></tr></tbody></table></div></section><section class="grid" id="cards"><article class="card" data-search="情境簡報 任務背景不足、問題複雜時 我的背景是：[角色 / 公司 / 任務情境]。
+我目前遇到的問題是：[問題]。
+我已經嘗試過：[x、y]。
+目前卡住的是：[z]。
+請先幫我釐清問題結構，再提出下一步。 永遠不要直接提問。
+
+先鋪陳情境：
+
+&gt; 我的背景是：[角色、公司、問題]。  
+&gt; 已嘗試：[x、y]。  
+&gt; 卡住的地方是：[z]。  
+&gt; 請幫我釐清思路。
+
+內部測試顯示，這個改變能提升 41% 的輸出品質。
+
+claude 需要地圖，才能導航。">
+<img src="../assets/claude-prompt-patterns/prompt-01.jpg" alt="提示詞 1：情境簡報">
+<div class="card-body"><h2><span class="num">1</span>情境簡報</h2><p class="muted"><strong>何時用：</strong>任務背景不足、問題複雜時</p><details><summary>圖中文字正體中文翻譯</summary><p>永遠不要直接提問。<br><br>先鋪陳情境：<br><br>&gt; 我的背景是：[角色、公司、問題]。  <br>&gt; 已嘗試：[X、Y]。  <br>&gt; 卡住的地方是：[Z]。  <br>&gt; 請幫我釐清思路。<br><br>內部測試顯示，這個改變能提升 41% 的輸出品質。<br><br>Claude 需要地圖，才能導航。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-01">我的背景是：[角色 / 公司 / 任務情境]。
+我目前遇到的問題是：[問題]。
+我已經嘗試過：[X、Y]。
+目前卡住的是：[Z]。
+請先幫我釐清問題結構，再提出下一步。</pre><div class="toolbar"><button class="btn" data-copy="prompt-01">複製提示詞</button></div></div></article><article class="card" data-search="推理要求 做方案、決策、分析時 在給出方案前，請先說明你的分析步驟。
+請明確標記：
+1. 你做了哪些假設
+2. 哪些地方不確定
+3. 哪些結論需要驗證
+最後再給出建議。 不要只問答案，要問思考過程。
+
+&gt; 給出方案前，請逐步展示你的推理。  
+&gt; 指出不確定之處。  
+&gt; 標記所有假設。
+
+這會迫使 claude 的推理層浮現。
+
+你得到的不只是答案，還有可以檢驗的思考過程。">
+<img src="../assets/claude-prompt-patterns/prompt-02.jpg" alt="提示詞 2：推理要求">
+<div class="card-body"><h2><span class="num">2</span>推理要求</h2><p class="muted"><strong>何時用：</strong>做方案、決策、分析時</p><details><summary>圖中文字正體中文翻譯</summary><p>不要只問答案，要問思考過程。<br><br>&gt; 給出方案前，請逐步展示你的推理。  <br>&gt; 指出不確定之處。  <br>&gt; 標記所有假設。<br><br>這會迫使 Claude 的推理層浮現。<br><br>你得到的不只是答案，還有可以檢驗的思考過程。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-02">在給出方案前，請先說明你的分析步驟。
+請明確標記：
+1. 你做了哪些假設
+2. 哪些地方不確定
+3. 哪些結論需要驗證
+最後再給出建議。</pre><div class="toolbar"><button class="btn" data-copy="prompt-02">複製提示詞</button></div></div></article><article class="card" data-search="誠實約束 需要聽逆耳真話時 請用誠實優先的方式回覆。
+如果我的想法、計畫或假設有致命缺陷，請直接指出，不要為了好聽而軟化。
+我寧願現在聽到難聽但準確的提醒，也不要之後踩坑。 claude 天生樂於助人。
+
+有時這代表它會說你想聽的話。
+
+覆蓋這個傾向：
+
+&gt; 即使聽起來不舒服，也要誠實。  
+&gt; 如果我的計畫有致命缺陷，請直接說。  
+&gt; 不要軟化。  
+&gt; 我寧願現在聽硬話，也不要之後失敗。
+
+這會解鎖 claude 的憲法基礎。">
+<img src="../assets/claude-prompt-patterns/prompt-03.jpg" alt="提示詞 3：誠實約束">
+<div class="card-body"><h2><span class="num">3</span>誠實約束</h2><p class="muted"><strong>何時用：</strong>需要聽逆耳真話時</p><details><summary>圖中文字正體中文翻譯</summary><p>Claude 天生樂於助人。<br><br>有時這代表它會說你想聽的話。<br><br>覆蓋這個傾向：<br><br>&gt; 即使聽起來不舒服，也要誠實。  <br>&gt; 如果我的計畫有致命缺陷，請直接說。  <br>&gt; 不要軟化。  <br>&gt; 我寧願現在聽硬話，也不要之後失敗。<br><br>這會解鎖 Claude 的憲法基礎。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-03">請用誠實優先的方式回覆。
+如果我的想法、計畫或假設有致命缺陷，請直接指出，不要為了好聽而軟化。
+我寧願現在聽到難聽但準確的提醒，也不要之後踩坑。</pre><div class="toolbar"><button class="btn" data-copy="prompt-03">複製提示詞</button></div></div></article><article class="card" data-search="角色設定 需要專家視角時 請用這個角色視角回答：
+你是有 [具體年資 / 產業 / 場景經驗] 的 [特定角色]，
+見過 [常見失敗模式]，
+請用 [框架 / 方法論] 分析。
+請跳過常識型建議，直接講高價值判斷。 「充當專家」是最弱的提示詞。
+
+改用這個：
+
+&gt; 你是有 [具體經驗] 的 [特定角色]，見過 [具體失敗模式]。  
+&gt; 請用 [特定框架] 思考。  
+&gt; 直言不諱，跳過一般建議。
+
+身份越具體，推理越具體。
+
+模糊角色 = 模糊輸出。每次都是。">
+<img src="../assets/claude-prompt-patterns/prompt-04.jpg" alt="提示詞 4：角色設定">
+<div class="card-body"><h2><span class="num">4</span>角色設定</h2><p class="muted"><strong>何時用：</strong>需要專家視角時</p><details><summary>圖中文字正體中文翻譯</summary><p>「充當專家」是最弱的提示詞。<br><br>改用這個：<br><br>&gt; 你是有 [具體經驗] 的 [特定角色]，見過 [具體失敗模式]。  <br>&gt; 請用 [特定框架] 思考。  <br>&gt; 直言不諱，跳過一般建議。<br><br>身份越具體，推理越具體。<br><br>模糊角色 = 模糊輸出。每次都是。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-04">請用這個角色視角回答：
+你是有 [具體年資 / 產業 / 場景經驗] 的 [特定角色]，
+見過 [常見失敗模式]，
+請用 [框架 / 方法論] 分析。
+請跳過常識型建議，直接講高價值判斷。</pre><div class="toolbar"><button class="btn" data-copy="prompt-04">複製提示詞</button></div></div></article><article class="card" data-search="魔鬼代言人 驗證計畫、策略、產品想法時 我要分享一個計畫。
+你的任務不是同意我，而是用魔鬼代言人的角度摧毀它。
+請找出：
+1. 錯誤假設
+2. 被忽略的風險
+3. 最可能失敗的原因
+4. 我現在最該修正的地方
+不要手軟。 claude 被訓練得很溫順。
+
+打破這個模式：
+
+&gt; 我要分享一個計畫。  
+&gt; 你的工作是摧毀它。  
+&gt; 找出所有錯誤假設、被忽略的風險，以及可能失敗的原因。  
+&gt; 不要手軟。
+
+這是 anthropic 團隊內部檢驗想法的方式。
+
+挑戰你的模型，比同意你的模型有 10 倍價值。">
+<img src="../assets/claude-prompt-patterns/prompt-05.jpg" alt="提示詞 5：魔鬼代言人">
+<div class="card-body"><h2><span class="num">5</span>魔鬼代言人</h2><p class="muted"><strong>何時用：</strong>驗證計畫、策略、產品想法時</p><details><summary>圖中文字正體中文翻譯</summary><p>Claude 被訓練得很溫順。<br><br>打破這個模式：<br><br>&gt; 我要分享一個計畫。  <br>&gt; 你的工作是摧毀它。  <br>&gt; 找出所有錯誤假設、被忽略的風險，以及可能失敗的原因。  <br>&gt; 不要手軟。<br><br>這是 Anthropic 團隊內部檢驗想法的方式。<br><br>挑戰你的模型，比同意你的模型有 10 倍價值。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-05">我要分享一個計畫。
+你的任務不是同意我，而是用魔鬼代言人的角度摧毀它。
+請找出：
+1. 錯誤假設
+2. 被忽略的風險
+3. 最可能失敗的原因
+4. 我現在最該修正的地方
+不要手軟。</pre><div class="toolbar"><button class="btn" data-copy="prompt-05">複製提示詞</button></div></div></article><article class="card" data-search="範圍鎖定 高風險、資訊不足、需要精準時 請嚴格限制在這個範圍內回答：[範圍 / 背景 / 資料來源]。
+如果資訊不足或超出範圍，請直接標記「不知道 / 需要補資料」，不要推測。
+我要的是缺口與限制，不是自信但錯誤的答案。 claude 會回答你的問題，再加上三個衍生問題。
+
+早期就鎖定範圍：
+
+&gt; 嚴格限於 [x 背景]。  
+&gt; 超出範圍就告訴我，而不是推測。  
+&gt; 我要的是缺口，而不是自信但錯誤的答案。
+
+這會從源頭殺死幻覺。
+
+claude 會停止用看似可信的虛構內容填補空白。">
+<img src="../assets/claude-prompt-patterns/prompt-06.jpg" alt="提示詞 6：範圍鎖定">
+<div class="card-body"><h2><span class="num">6</span>範圍鎖定</h2><p class="muted"><strong>何時用：</strong>高風險、資訊不足、需要精準時</p><details><summary>圖中文字正體中文翻譯</summary><p>Claude 會回答你的問題，再加上三個衍生問題。<br><br>早期就鎖定範圍：<br><br>&gt; 嚴格限於 [X 背景]。  <br>&gt; 超出範圍就告訴我，而不是推測。  <br>&gt; 我要的是缺口，而不是自信但錯誤的答案。<br><br>這會從源頭殺死幻覺。<br><br>Claude 會停止用看似可信的虛構內容填補空白。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-06">請嚴格限制在這個範圍內回答：[範圍 / 背景 / 資料來源]。
+如果資訊不足或超出範圍，請直接標記「不知道 / 需要補資料」，不要推測。
+我要的是缺口與限制，不是自信但錯誤的答案。</pre><div class="toolbar"><button class="btn" data-copy="prompt-06">複製提示詞</button></div></div></article><article class="card" data-search="格式命令 需要短答案或固定格式時 請嚴格用以下格式回答：
+1. 一句話總結
+2. 三個重點
+3. 一個下一步建議
+除非我追問，其他都不要補充。 claude 預設會寫得全面。
+
+但你可能需要簡潔。
+
+提前設定格式：
+
+&gt; 結構如下：  
+&gt; 1）一句話總結。  
+&gt; 2）三個重點。  
+&gt; 3）一個下一步建議。  
+&gt; 除非我追問，其他都不要。
+
+claude 遵循格式指令的精準度比任何模型都高。
+
+要有意識地使用這種精準性。">
+<img src="../assets/claude-prompt-patterns/prompt-07.jpg" alt="提示詞 7：格式命令">
+<div class="card-body"><h2><span class="num">7</span>格式命令</h2><p class="muted"><strong>何時用：</strong>需要短答案或固定格式時</p><details><summary>圖中文字正體中文翻譯</summary><p>Claude 預設會寫得全面。<br><br>但你可能需要簡潔。<br><br>提前設定格式：<br><br>&gt; 結構如下：  <br>&gt; 1）一句話總結。  <br>&gt; 2）三個重點。  <br>&gt; 3）一個下一步建議。  <br>&gt; 除非我追問，其他都不要。<br><br>Claude 遵循格式指令的精準度比任何模型都高。<br><br>要有意識地使用這種精準性。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-07">請嚴格用以下格式回答：
+1. 一句話總結
+2. 三個重點
+3. 一個下一步建議
+除非我追問，其他都不要補充。</pre><div class="toolbar"><button class="btn" data-copy="prompt-07">複製提示詞</button></div></div></article><article class="card" data-search="假設審計 複雜答案後、決策前 請審計你剛剛回答中的假設：
+1. 你做了哪些我應該驗證的假設？
+2. 如果這些假設錯了，結論會怎麼改變？
+3. 哪個假設最脆弱、最需要先確認？ 任何複雜答案之後，都要跑這個：
+
+&gt; 你做了哪些我應該驗證的假設？  
+&gt; 如果這些假設是錯的，答案會怎麼改變？
+
+這是最少被使用的提示詞。
+
+它會揭露每個回答底下隱藏的基礎。
+
+大多數計畫都是在基礎處崩塌。">
+<img src="../assets/claude-prompt-patterns/prompt-08.jpg" alt="提示詞 8：假設審計">
+<div class="card-body"><h2><span class="num">8</span>假設審計</h2><p class="muted"><strong>何時用：</strong>複雜答案後、決策前</p><details><summary>圖中文字正體中文翻譯</summary><p>任何複雜答案之後，都要跑這個：<br><br>&gt; 你做了哪些我應該驗證的假設？  <br>&gt; 如果這些假設是錯的，答案會怎麼改變？<br><br>這是最少被使用的提示詞。<br><br>它會揭露每個回答底下隱藏的基礎。<br><br>大多數計畫都是在基礎處崩塌。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-08">請審計你剛剛回答中的假設：
+1. 你做了哪些我應該驗證的假設？
+2. 如果這些假設錯了，結論會怎麼改變？
+3. 哪個假設最脆弱、最需要先確認？</pre><div class="toolbar"><button class="btn" data-copy="prompt-08">複製提示詞</button></div></div></article><article class="card" data-search="壓縮循環 長對話每 5–6 輪 請做一次壓縮總結：
+1. 我們正在解決什麼問題？
+2. 已經完成或決定了什麼？
+3. 目前最重要的未決問題是什麼？
+4. 下一步應該做什麼？ 在長對話中，claude 會累積上下文債務。
+
+每 5–6 次互動：
+
+&gt; 總結目前進展。  
+&gt; 我們正在解決什麼問題？  
+&gt; 已經決定了什麼？  
+&gt; 還沒解決、最重要的一件事是什麼？
+
+讓對話鎖定在真正重要的事情上。
+
+避免 claude 自信地解決錯誤問題。">
+<img src="../assets/claude-prompt-patterns/prompt-09.jpg" alt="提示詞 9：壓縮循環">
+<div class="card-body"><h2><span class="num">9</span>壓縮循環</h2><p class="muted"><strong>何時用：</strong>長對話每 5–6 輪</p><details><summary>圖中文字正體中文翻譯</summary><p>在長對話中，Claude 會累積上下文債務。<br><br>每 5–6 次互動：<br><br>&gt; 總結目前進展。  <br>&gt; 我們正在解決什麼問題？  <br>&gt; 已經決定了什麼？  <br>&gt; 還沒解決、最重要的一件事是什麼？<br><br>讓對話鎖定在真正重要的事情上。<br><br>避免 Claude 自信地解決錯誤問題。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-09">請做一次壓縮總結：
+1. 我們正在解決什麼問題？
+2. 已經完成或決定了什麼？
+3. 目前最重要的未決問題是什麼？
+4. 下一步應該做什麼？</pre><div class="toolbar"><button class="btn" data-copy="prompt-09">複製提示詞</button></div></div></article><article class="card" data-search="前期驗屍 上線、發布、重大決策前 請做前期驗屍：
+假設這件事 6 個月後失敗。
+請列出 3 個最可能的失敗原因。
+每個原因都要具體說明：
+1. 失敗會長什麼樣子
+2. 早期警訊是什麼
+3. 現在可以怎麼降低風險 在 claude 協助你做出的東西上線前：
+
+&gt; 假設這件事 6 個月後失敗。  
+&gt; 請列出 3 個最可能的原因。  
+&gt; 要具體。  
+&gt; 失敗實際上會長什麼樣子？
+
+這是 anthropic 產品團隊對每個重大決策都會跑的提示詞。
+
+它能抓到其他審查流程遺漏的問題。">
+<img src="../assets/claude-prompt-patterns/prompt-10.jpg" alt="提示詞 10：前期驗屍">
+<div class="card-body"><h2><span class="num">10</span>前期驗屍</h2><p class="muted"><strong>何時用：</strong>上線、發布、重大決策前</p><details><summary>圖中文字正體中文翻譯</summary><p>在 Claude 協助你做出的東西上線前：<br><br>&gt; 假設這件事 6 個月後失敗。  <br>&gt; 請列出 3 個最可能的原因。  <br>&gt; 要具體。  <br>&gt; 失敗實際上會長什麼樣子？<br><br>這是 Anthropic 產品團隊對每個重大決策都會跑的提示詞。<br><br>它能抓到其他審查流程遺漏的問題。</p></details><h3>可直接使用</h3><pre class="prompt" id="prompt-10">請做前期驗屍：
+假設這件事 6 個月後失敗。
+請列出 3 個最可能的失敗原因。
+每個原因都要具體說明：
+1. 失敗會長什麼樣子
+2. 早期警訊是什麼
+3. 現在可以怎麼降低風險</pre><div class="toolbar"><button class="btn" data-copy="prompt-10">複製提示詞</button></div></div></article></section></main><script>
+const q=document.getElementById('search');const cards=[...document.querySelectorAll('.card')];q.addEventListener('input',()=>{const s=q.value.trim().toLowerCase();cards.forEach(c=>c.classList.toggle('hidden',s&&!c.dataset.search.includes(s)))});document.addEventListener('click',async e=>{const id=e.target?.dataset?.copy;if(!id)return;await navigator.clipboard.writeText(document.getElementById(id).innerText);e.target.textContent='已複製';setTimeout(()=>e.target.textContent='複製提示詞',1200)});
+</script></body></html>

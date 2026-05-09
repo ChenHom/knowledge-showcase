@@ -1,5 +1,12 @@
 [
   {
+    "title": "Claude 提示詞十則：情境、推理、誠實與風險檢查",
+    "rel": "AI/Claude提示詞十則/Claude 提示詞十則：情境、推理、誠實與風險檢查.md",
+    "slug": "claude-prompt-patterns",
+    "url": "notes/claude-prompt-patterns.html",
+    "excerpt": "十個常用 Claude 提示詞：情境簡報、推理要求、誠實約束、角色設定、魔鬼代言人、範圍鎖定、格式命令、假設審計、壓縮循環、前期驗屍。"
+  },
+  {
     "title": "AI 時代的 PM 新技能：語音化工作流程設計實戰",
     "rel": "AI/語音化工作流程設計實戰/AI 時代的 PM 新技能：語音化工作流程設計實戰.md",
     "slug": "voice-workflow-design",
