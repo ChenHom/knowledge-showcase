@@ -1,0 +1,49 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}.search{margin-top:22px;display:flex;gap:10px;align-items:center}.search input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1rem;background:var(--bg);color:var(--text)}.count{margin:14px 0 20px;color:var(--muted)}.empty{padding:28px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--card)}
+</style></head><body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡</h1><p class="meta">來源筆記：<code>策略驗證方法論：從看起來會賺到證明真的賺的五道關卡.md</code></p><p class="excerpt">整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…</p></section><h1>策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡</h1>
+<p>#backtesting #quant-finance #bias #benchmark #llm-evaluation</p>
+<h2>這是什麼</h2>
+<p>整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。</p>
+<h2>核心結論</h2>
+<ul>
+<li>「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。</li>
+<li>順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡 2），贏的標準要選對（關卡 3），贏了還要夠久才算數（關卡 4），如果評審用 LLM，歷史評審本身可能失真（關卡 5）。</li>
+<li>越晚的關卡越容易被忽略，因為前面關卡過了會讓人有「已經驗證過」的錯覺。</li>
+</ul>
+<h2>背景 / 問題</h2>
+<p>很多策略驗證流程做到「跑一次回測、看報酬曲線、贏大盤就上線」就停了。但這個結論可能在五個不同地方造假：用了未來才知道的資訊、對照組本身不可比、贏的基準選錯、贏的時間太短不代表統計顯著、或評審本身被資料污染。下面用一次真實案例貫穿說明。</p>
+<p><strong>案例背景</strong>：一個價格型態突破策略，在「事後篩出來的標的池」上回測，年化報酬亮眼、最大回撤只有 9–14%，2022 大盤跌 25% 時只跌 3.6%，看起來像是「報酬接近大盤、風險小很多」的理想策略。逐關重新驗證後，結論完全反轉。</p>
+<h2>五道關卡</h2>
+<h3>關卡 1：資料是否看到了未來（look-ahead / survivorship bias）</h3>
+<p>回測用的「標的池」如果是事後篩出來的（例如「現在還活著、現在還在大盤指數內的股票」），就已經偷看了未來——倖存者偏誤會讓策略在倖存者身上特別好看。正確做法是用 <strong>point-in-time（PIT）</strong>標的池：每個時間點只能用「那個時間點當下」可得的名單與資訊重新排名/篩選，不能用現在的全知視角往回套。</p>
+<blockquote>案例：同一策略，「事後篩出的池子」上最大回撤 9–14%；換成 PIT 池子重跑，最大回撤變成 27.7%，幾乎跟大盤一樣大——「風險小很多」的假象來自標的池偷看了未來。</blockquote>
+<h3>關卡 2：對照組（反事實）設計對不對</h3>
+<p>驗證「這個規則有沒有用」，常見作法是拿「有規則」vs「沒規則」比較。陷阱在於：如果「沒規則」那組用的是一個<strong>本身就受限</strong>的模擬（例如資金有限、同時持倉數有上限、有交易成本/滑價的模擬帳本），它跟「有規則」那組就不是同一個可比的反事實——受限模擬會被它自己的限制拖累，差異可能來自限制而不是規則本身。</p>
+<p>正確的反事實是<strong>機械反事實</strong>：直接用同一份歷史資料，分別算「規則命中就執行」與「規則不命中也執行」兩組的理論報酬，兩組共享同樣的資金/成本假設，只有規則這一個變因不同。</p>
+<blockquote>案例：原本想拿「自動執行的模擬帳」當對照組，但模擬帳有現金與持倉數限制、報酬不可比；改成直接用價格資料算「命中組 vs 不命中組」的機械報酬才站得住。</blockquote>
+<h3>關卡 3：贏的標準選對了嗎（benchmark 選擇）</h3>
+<p>策略贏了，要先問「贏了什麼」。常見誤用是拿「絕對報酬贏大盤 buy-and-hold」當標準——但策略往往沒有 100% 曝險、波動也比大盤低，這種比較對策略不公平也對自己不誠實（反過來看，曝險拉滿才贏大盤也不代表風險調整後更好）。</p>
+<p>正確標準是<strong>風險調整後的同曝險/同波動 benchmark</strong>：如果策略平均只用了 60% 資金，就該拿「60% 曝險的大盤」比；如果策略波動只有大盤一半，就該拿「縮小到同波動的大盤」比。「報酬接近大盤但風險小很多」也可以算成功，但要先換算成同一個風險水平才能下這個結論。</p>
+<blockquote>案例：某策略總報酬 +8.75%，看起來輸大盤 buy-hold（+9.8%）不多；但換算成同曝險/同波動的大盤版本，比較標準分別拉到 +9.8% 與 +11.9%——風險調整後其實是打平甚至落後，不是「風險小很多」。</blockquote>
+<h3>關卡 4：贏的時間夠長嗎（統計顯著性 / 樣本量）</h3>
+<p>就算前三關都過了，還要問：這段勝出的時間，長度夠不夠在統計上排除「只是運氣好」？量化金融有個常用的粗估法則：要讓一個 Sharpe 比率的估計值在統計上顯著（標準誤不蓋過估計值本身），大約需要 <strong><code>年數 ≈ (2 / Sharpe)²</code></strong> 年的資料。Sharpe 越薄，需要的年數呈平方成長——Sharpe=0.5 大約要 16 年，Sharpe=0.1 要到 400 年，現實上不可能等到。</p>
+<blockquote>案例：策略的逐筆期望值 Sharpe 約 0.1，年報酬信賴區間橫跨零；依法則需要約 400 年資料才能排除雜訊，現有的歷史長度遠遠不夠——這就是「技術上 bootstrap 信賴區間下界 ≥ 0」但仍被認定是薄 edge 的原因。</blockquote>
+<h3>關卡 5：如果評審用了 LLM，歷史評審可能本身就失真</h3>
+<p>如果驗證流程裡有一關是「把歷史的進出場決策丟給 LLM 評審合不合理」，要注意 LLM 的訓練資料可能已經見過那段歷史的真實結果——它的判斷可能不是真的在「事前」判斷，而是模型記得「事後」發生了什麼（一種記憶洩漏／資料污染）。這跟前四關的偏誤性質不同，是評審者本身被污染，而不是資料或對照組設計的問題。</p>
+<p>唯一可靠的解法是<strong>只做 forward 評審</strong>：每次都讓 LLM 對「還沒發生結果的當下」下判斷，事後再記錄它的判斷與真實結果，累積到有意義的樣本量後再統計「LLM 說做 vs 說不做 vs 全都做」三組的實際報酬差異。歷史回放式的事後評審，對 LLM 評審者來說無效。</p>
+<h2>注意事項 / 限制</h2>
+<ul>
+<li>五道關卡是「必要條件」的串接，不是互斥的選項——全部要過，缺一個都可能讓結論不可信。</li>
+<li>關卡 4 的 <code>(2/Sharpe)²</code> 是粗估法則（rule of thumb），假設報酬序列獨立常態，實務上可當篩選用的快速判斷，不是嚴謹的統計檢定。</li>
+<li>關卡 1、2 的偏誤通常在「回測結果意外地好」時最該懷疑；如果策略回測表現普通，這兩關造假的動機反而較低（但仍該檢查）。</li>
+</ul>
+<h2>後續可擴充方向</h2>
+<ul>
+<li>可以把五道關卡寫成一份檢查清單（checklist），每次策略驗證跑過一輪逐項打勾。</li>
+<li>關卡 4 的樣本量法則可以延伸寫一篇「Sharpe 比率估計的標準誤」的數學推導與直覺解釋。</li>
+<li>關卡 5（LLM 評審記憶洩漏）可以獨立延伸成「如何設計 forward-only 的 LLM 評審實驗」，包含樣本量、分組、統計檢定方法的選擇。</li>
+</ul>
+<p>來源：tw-day-trading 專案的策略驗證實戰（2026-06）。</p>
+<p>更新時間：2026-06-27</p></main></body></html>

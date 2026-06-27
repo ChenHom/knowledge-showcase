@@ -140,6 +140,13 @@
     "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。 第二層 Agent 則一定有「Agent 自…"
   },
   {
+    "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
+    "rel": "策略驗證方法論：從看起來會賺到證明真的賺的五道關卡.md",
+    "slug": "strategy-validation-five-gates",
+    "url": "notes/strategy-validation-five-gates.html",
+    "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
+  },
+  {
     "title": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口",
     "rel": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md",
     "slug": "high-write-message-system-cassandra-tombstone",
