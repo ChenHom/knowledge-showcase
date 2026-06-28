@@ -1,0 +1,194 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷</title><style>
+:root{color-scheme:light dark;--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--card:#fff;--line:#cbd5e1;--accent:#0369a1;--code:#0f172a;--codeText:#e5e7eb}
+@media (prefers-color-scheme:dark){:root{--bg:#0f172a;--text:#e5e7eb;--muted:#94a3b8;--card:#111827;--line:#334155;--accent:#7dd3fc;--code:#020617;--codeText:#e5e7eb}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}main{max-width:980px;margin:0 auto;padding:36px 20px 80px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 18px 55px rgba(15,23,42,.08)}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;margin:.2em 0}h2{margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line)}h3{color:var(--accent)}p,li{line-height:1.78}a{color:var(--accent)}.meta,.excerpt{color:var(--muted)}.back{margin-bottom:22px;display:inline-block}pre{overflow:auto;padding:1rem;border-radius:16px;background:var(--code);color:var(--codeText)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}blockquote{border-left:4px solid var(--accent);padding:.5rem 1rem;margin:1rem 0;background:color-mix(in srgb,var(--accent) 10%,transparent)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{display:block;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card);text-decoration:none;color:inherit}.card:hover{border-color:var(--accent)}.tag{color:var(--accent);font-weight:700}.search{margin-top:22px;display:flex;gap:10px;align-items:center}.search input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:1rem;background:var(--bg);color:var(--text)}.count{margin:14px 0 20px;color:var(--muted)}.empty{padding:28px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:var(--card)}
+</style></head><body><main><a class="back" href="../index.html">← 回 knowledge index</a><section class="hero"><p class="tag">Knowledge Mirror</p><h1>agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷</h1><p class="meta">來源筆記：<code>agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷.md</code></p><p class="excerpt">整理日期：2026-06-28 這篇不是單純記錄 agy-content 新增了哪些 command，而是整理一條比較可複用的判斷脈絡：什麼時候一個內容工具還停留在 one-shot prompt 階段，什麼時候已經值得升級成 content workflow，以及為什麼這次 agy-content 會自然長出 base + overlay、checklist、self-rev…</p></section><h1>agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷</h1>
+<p>整理日期：2026-06-28</p>
+<p>這篇不是單純記錄 <code>agy-content</code> 新增了哪些 command，而是整理一條比較可複用的判斷脈絡：什麼時候一個內容工具還停留在 one-shot prompt 階段，什麼時候已經值得升級成 content workflow，以及為什麼這次 <code>agy-content</code> 會自然長出 <code>base + overlay</code>、<code>checklist</code>、<code>self-review</code>、二段式 workflow 這些結構。</p>
+<h2>核心結論</h2>
+<p><code>agy-content</code> 這次的演進，重點不是「多包幾個 prompt」，而是從「一次生成工具」往「可控的內容生產流程」跨了一步。</p>
+<p>真正的定位改變有兩個：</p>
+<ol>
+<li>它不再只是幫忙快速翻譯、摘要、潤稿、發想。</li>
+<li>它開始承擔輸出品質、驗收與可回查的責任。</li>
+</ol>
+<p>所以這次最重要的定案不是 token 省不省，而是：</p>
+<ul>
+<li><code>agy-content</code> 的定位是<strong>產文件工作器</strong></li>
+<li>品質流程先固定在 <strong>generate -&gt; self-review</strong></li>
+<li>暫時<strong>不做自動重寫</strong></li>
+</ul>
+<h2>什麼時候 one-shot tool 還夠</h2>
+<p>維持單次 prompt 工具通常有這些特徵：</p>
+<ul>
+<li>任務短、低風險、可快速人工掃過</li>
+<li>失誤成本低，重跑一次就好</li>
+<li>不需要固定驗收標準</li>
+<li>任務重複率不高</li>
+<li>產出不會成為後續流程的重要輸入</li>
+</ul>
+<p>典型例子：</p>
+<ul>
+<li>短訊息潤稿</li>
+<li>一小段英文快速翻中</li>
+<li>臨時摘要一篇文章</li>
+<li>快速丟幾個標題或點子</li>
+</ul>
+<p>這種情況下，one-shot 夠快，也夠省心。</p>
+<h2>什麼時候該升級成 content workflow</h2>
+<p>當內容工具開始碰到下面任兩項，就值得考慮升級：</p>
+<ol>
+<li><strong>重複率高</strong>：同類內容持續重做，代表規則值得顯式化。</li>
+<li><strong>失誤成本高</strong>：內容錯了會影響決策、對外溝通、求職、商業判斷、規格理解。</li>
+<li><strong>有固定驗收標準</strong>：例如一定要保留數字、先講結論、不能跑掉語氣。</li>
+<li><strong>產出會被下游繼續使用</strong>：例如摘要再變 briefing、翻譯再變正式文件、草稿再進下一輪編修。</li>
+<li><strong>需要 explainability</strong>：開始在意「這份內容為什麼長這樣」、「哪條規則在影響它」、「為什麼判 PASS / REVISE」。</li>
+<li><strong>開始想加 routing / review / reject</strong>：也就是不只是生成，而是想控制過程。</li>
+</ol>
+<p>一句話講白：</p>
+<p>如果要的是「幫我生一份」，one-shot 通常夠。</p>
+<p>如果要的是「幫我穩定地一直生出可用的東西」，就該升級成 workflow。</p>
+<h2>為什麼 <code>agy-content</code> 這次會演變到 <code>base + overlay</code></h2>
+<p><code>base + overlay</code> 不是為了 prompt 架構漂亮，而是工具長大後很自然會被逼出來的結構。</p>
+<p>原因是：</p>
+<h3>1. 共用規則開始穩定</h3>
+<p>像這些規則：</p>
+<ul>
+<li>用正體中文</li>
+<li>避免簡體</li>
+<li>避免某些用詞</li>
+<li>只輸出結果</li>
+</ul>
+<p>一開始散在每個 template 還勉強可忍，但當它們變成整個工具的共同地板時，就需要單一來源，不然每個 task 會慢慢漂掉。</p>
+<h3>2. task 差異開始清楚</h3>
+<p>不同內容任務的價值點不一樣：</p>
+<ul>
+<li><code>translate</code> 重 fidelity、術語與保結構</li>
+<li><code>summarize</code> 重結論優先、重點排序、風險提示</li>
+<li><code>polish</code> 重保留原意、流暢度與語氣</li>
+<li><code>ideate</code> 重建議方向、trade-off 與下一步</li>
+</ul>
+<p>如果把這些差異硬塞進同一大坨 prompt，很快就會變成難懂又難改的雜湊物。</p>
+<p>所以共同地板與任務特化必須拆開。</p>
+<h3>3. 開始需要 debug</h3>
+<p>當輸出有問題時，會開始問：</p>
+<ul>
+<li>是 style profile 太硬？</li>
+<li>是共用規則設錯？</li>
+<li>還是某個 task 的規則有偏？</li>
+</ul>
+<p><code>base + overlay</code> 的實際價值，就是讓這種問題有邊界，能定位是 base 問題還是 task 問題。</p>
+<h3>4. 後面準備接 workflow</h3>
+<p>只要下一步要做：</p>
+<ul>
+<li><code>self-review</code></li>
+<li>生成後驗收</li>
+<li>review routing</li>
+<li>多階段 workflow</li>
+</ul>
+<p>就很難接受 prompt 還是一堆彼此複製貼上的字串。因為之後每多一層流程，維護成本都會一起爆。</p>
+<h2>這次 <code>base + overlay</code> 的真實價值</h2>
+<p>這次實作後有一個很重要的現象：</p>
+<p>runtime token 沒有省，甚至還微幅增加。</p>
+<p>但這不代表這步是錯的。</p>
+<p>這步真正換來的是：</p>
+<ol>
+<li><strong>共用規則有單一來源</strong></li>
+<li><strong>task 差異有清楚邊界</strong></li>
+<li><strong>debug 可拆 base 與 task 來看</strong></li>
+<li><strong>之後比較容易接上 workflow</strong></li>
+</ol>
+<p>也就是說，這不是 token optimization，而是 quality engineering / workflow engineering。</p>
+<h2>為什麼先做 checklist，而不是直接做自動重寫</h2>
+<p>這次的品質控制是刻意分三層長出來的：</p>
+<ol>
+<li><strong>Checklist</strong></li>
+<li><strong>Self-review prompt</strong></li>
+<li><strong>Workflow integration</strong></li>
+</ol>
+<p>這個順序比一開始就做「生成後不滿意就自動重寫」穩很多。</p>
+<p>原因有三個：</p>
+<h3>1. 先定驗收標準，再定 review 行為</h3>
+<p>如果連什麼叫好輸出都還沒講清楚，就讓系統自動改第二輪，最後只會變成模型自己評自己、自己改自己，但人類其實不知道它是根據什麼在改。</p>
+<h3>2. 先讓 review 可見</h3>
+<p><code>self-review</code> 先做成顯式 command，再嵌進 workflow，價值在於你可以看到：</p>
+<ul>
+<li>它怎麼判 PASS / REVISE / REJECT</li>
+<li>它抓到哪些問題</li>
+<li>它的審稿邏輯有沒有跑偏</li>
+</ul>
+<p>這樣之後要不要自動化，決策才有根。</p>
+<h3>3. 先 review，不直接 revise</h3>
+<p>這次刻意停在：</p>
+<pre><code>generate -&gt; self-review</code></pre>
+<p>而不是：</p>
+<pre><code>generate -&gt; self-review -&gt; auto revise</code></pre>
+<p>因為對文件型輸出來說，第二輪自動重寫的風險很明確：</p>
+<ul>
+<li>可能把原意改掉</li>
+<li>可能加入模型自己腦補的內容</li>
+<li>可能讓語氣變得更一致，但內容更不忠實</li>
+</ul>
+<p>所以比較穩的邊界是：</p>
+<ul>
+<li>先 review</li>
+<li>先讓人看</li>
+<li>真的需要時，再決定要不要把 review 建議餵進下一輪</li>
+</ul>
+<h2><code>agy-content</code> 目前的成熟度在哪裡</h2>
+<p>如果把內容工具成熟度粗分，大概可以這樣看：</p>
+<ol>
+<li><strong>One-shot prompt</strong></li>
+<li><strong>Template tool</strong></li>
+<li><strong>Template + shared base</strong></li>
+<li><strong>Template + review loop</strong></li>
+<li><strong>Content workflow</strong></li>
+<li><strong>Production content pipeline</strong></li>
+</ol>
+<p><code>agy-content</code> 現在大概在第 4 與第 5 之間：</p>
+<ul>
+<li>已有模板</li>
+<li>已有 base + overlay</li>
+<li>已有品質 checklist</li>
+<li>已有 self-review command</li>
+<li>已能跑 <code>generate -&gt; self-review</code></li>
+</ul>
+<p>但還沒到 fully automated production pipeline，因為它目前刻意不做：</p>
+<ul>
+<li><code>REVISE</code> 後自動重寫</li>
+<li>review 決策後的下一步 routing</li>
+<li>task / risk 導向的專屬 review routing</li>
+</ul>
+<p>這不是缺點，而是邊界選擇。</p>
+<h2>這次定下來的工程判斷</h2>
+<p>這次我認為值得固定下來的判斷有這些：</p>
+<ol>
+<li><code>agy-content</code> 的定位是產文件工作器，不是省 token 工具。</li>
+<li><code>base + overlay</code> 的主要價值是規則集中、品質穩定、debug 邊界與 workflow 接軌。</li>
+<li>品質控制先走 <code>checklist -&gt; self-review prompt -&gt; workflow integration</code>。</li>
+<li><code>self-review</code> 先做成顯式 command，再嵌進內容 command。</li>
+<li>二段式 workflow 先固定在 <code>generate -&gt; self-review</code>。</li>
+<li><code>REVISE</code> 暫時交給人看，不讓工具默默第二輪亂改。</li>
+</ol>
+<h2>對未來的啟發</h2>
+<p>這次的經驗不只適用於 <code>agy-content</code>。</p>
+<p>它其實給了一個很通用的升級判斷：</p>
+<p>當一個內容工具開始承擔：</p>
+<ul>
+<li>穩定輸出</li>
+<li>明確驗收</li>
+<li>下游依賴</li>
+<li>review 可見性</li>
+<li>決策可回查</li>
+</ul>
+<p>它就不再只是 prompt wrapper，而會自然演變成 workflow。</p>
+<p>而當它演變成 workflow 之後，最先長出來的通常不是更花的模型 routing，而是：</p>
+<ul>
+<li>shared base</li>
+<li>task overlay</li>
+<li>quality checklist</li>
+<li>review loop</li>
+</ul>
+<p>這些才是後面自動化的地基。</p>
+<h2>一句話總結</h2>
+<p><code>agy-content</code> 這次不是單純多了幾個 prompt，而是從「幾個可用的內容命令」跨到「有規則分層、有品質驗收、有自評流程的內容產線雛形」。</p></main></body></html>

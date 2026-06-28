@@ -98,11 +98,25 @@
     "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data…"
   },
   {
+    "title": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷",
+    "rel": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷.md",
+    "slug": "agy-content-one-shot-prompt-workflow",
+    "url": "notes/agy-content-one-shot-prompt-workflow.html",
+    "excerpt": "整理日期：2026-06-28 這篇不是單純記錄 agy-content 新增了哪些 command，而是整理一條比較可複用的判斷脈絡：什麼時候一個內容工具還停留在 one-shot prompt 階段，什麼時候已經值得升級成 content workflow，以及為什麼這次 agy-content 會自然長出 base + overlay、checklist、self-rev…"
+  },
+  {
     "title": "OpenClaw Usage",
     "rel": "openclaw-cost-control-usage.md",
     "slug": "openclaw-cost-control-usage",
     "url": "notes/openclaw-cost-control-usage.html",
     "excerpt": "OpenClaw 要做降本增效，通常會這樣落地： 1. 先分流任務 FAQ / 格式化 / 短摘要 - 便宜模型或本地模型 長文推理 / 高風險判斷 - 強模型 2. 先縮上下文 先檢索相關片段 先摘要歷史對話 不把整包 memory 塞給模型 3. 把高頻回覆快取起來 重複問題先查 cache 標準流程先存中間結果 4. 把 prompt 壓短 system prompt 只…"
+  },
+  {
+    "title": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄",
+    "rel": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄.md",
+    "slug": "tw-day-trading-mcp-cli-wrapper-openclaw",
+    "url": "notes/tw-day-trading-mcp-cli-wrapper-openclaw.html",
+    "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。…"
   },
   {
     "title": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式",
