@@ -1,5 +1,12 @@
 [
   {
+    "title": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運",
+    "rel": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運.md",
+    "slug": "browser-automation-anti-bot-and-login-ops",
+    "url": "notes/browser-automation-anti-bot-and-login-ops.html",
+    "excerpt": "用瀏覽器自動化去操作一個需要登入的網站時，真正讓你卡關的常常不是商業邏輯，而是兩件「環境現實」：對方的反 Bot 機制會認出你不是真人，以及你的登入狀態會過期、而重新登入往往需要人介入。這裡用一個實際案例（自動化操作自己授權的帳號）把這兩道現實與應對心法簡單記一下，刻意不深入操作細節。 無頭瀏覽器（headless）帶著一堆「我是機器人」的指紋：User-Agent 出現 He…"
+  },
+  {
     "title": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷",
     "rel": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷.md",
     "slug": "agy-content-one-shot-prompt-workflow",
