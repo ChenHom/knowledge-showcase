@@ -204,6 +204,46 @@ main {
   color: var(--muted);
   background: var(--card);
 }
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>台股自動化研究平台：MVP 閉環與資料防禦實踐指南.md</code></span></nav><div class="article-container"><article class="article-content"><h1>這篇文章在講什麼</h1>
 <p>這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。</p>
 <h1>新手先記住這 5 件事</h1>

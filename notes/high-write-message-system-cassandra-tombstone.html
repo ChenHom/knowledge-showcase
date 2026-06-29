@@ -204,6 +204,46 @@ main {
   color: var(--muted);
   background: var(--card);
 }
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md</code></span></nav><div class="article-container"><article class="article-content"><h2>文章主題</h2>
 <p>這篇是 Discord 在 <strong>2017-01-13</strong> 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 <strong>MongoDB</strong> 遷移到 <strong>Cassandra</strong>，以支撐已經超過 <strong>每日 1.2 億則訊息</strong> 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](<a href="https://discord.com/blog/how-discord-stores-billions-of-messages" target="_blank" rel="noopener noreferrer" title="https://discord.com/blog/how-discord-stores-billions-of-messages">discord.com/blog/how-discord-stores-billions-of-messages</a> "How Discord Stores Billions of Messages"))</p>
 <h2>重點整理</h2>

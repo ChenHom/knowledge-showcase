@@ -204,6 +204,46 @@ main {
   color: var(--muted);
   background: var(--card);
 }
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>Antigravity CLI 內容處理器：agy-content 的設計與封裝原則.md</code></span></nav><div class="article-container"><article class="article-content"><h1>Antigravity CLI 內容處理器：agy-content 的設計與封裝原則</h1>
 <p>整理日期：2026-06-27</p>
 <p>這份筆記整理一次把 Antigravity CLI (<code>agy</code>) 包成內容處理工具的討論與實作重點。目標不是打造完整 agent，也不是把 OpenClaw 直接改成 Antigravity runtime，而是先做一個小而穩的 CLI wrapper，讓翻譯、總結、創意發想、潤稿這類低到中風險內容任務可以快速交給 <code>agy</code> 處理。</p>

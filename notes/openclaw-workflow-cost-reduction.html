@@ -204,6 +204,46 @@ main {
   color: var(--muted);
   background: var(--card);
 }
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>OpenClaw workflow 降本改造方案.md</code></span></nav><div class="article-container"><article class="article-content"><h1>OpenClaw workflow 降本改造方案</h1>
 <h2>目標</h2>
 <p>不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。</p>

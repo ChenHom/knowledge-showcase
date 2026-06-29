@@ -204,6 +204,46 @@ main {
   color: var(--muted);
   background: var(--card);
 }
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>Agent System Foundation：從多步任務骨架到可治理 Beta Harness.md</code></span></nav><div class="article-container"><article class="article-content"><h1>Agent System Foundation：從多步任務骨架到可治理 Beta Harness</h1>
 <h2>這是什麼</h2>
 <p><code>agent-system-foundation</code> 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。</p>
