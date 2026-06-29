@@ -1,0 +1,441 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄</title><style>
+:root {
+  color-scheme: light dark;
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --card-hover: #ffffff;
+  --line: #e2e8f0;
+  --accent: #0284c7;
+  --accent-light: #f0f9ff;
+  --code: #0f172a;
+  --codeText: #f8fafc;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 6px 16px rgba(2, 132, 199, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f19;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --card: #151d2a;
+    --card-hover: #1a2436;
+    --line: #243144;
+    --accent: #38bdf8;
+    --accent-light: #0c2a40;
+    --code: #070a12;
+    --codeText: #f1f5f9;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 6px 20px rgba(56, 189, 248, 0.12);
+  }
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+main {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 16px 12px 80px;
+}
+
+/* Nav & Top Header */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  filter: brightness(0.95);
+  transform: translateX(-2px);
+}
+.nav-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.hero-compact {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.hero-compact h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+.hero-compact p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* Article Content Container (Restricted width for readability) */
+.article-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.article-content h1 { font-size: 1.85rem; margin: 0 0 1rem 0; line-height: 1.25; font-weight: 800; }
+.article-content h2 { font-size: 1.3rem; margin-top: 1.8rem; margin-bottom: 0.7rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); font-weight: 700; }
+.article-content h3 { font-size: 1.08rem; color: var(--accent); margin-top: 1.3rem; margin-bottom: 0.4rem; font-weight: 600; }
+.article-content p, .article-content li { line-height: 1.72; font-size: 0.98rem; }
+.article-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.article-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: rgba(100,116,139,0.12); padding: 2px 6px; border-radius: 4px; }
+.article-content pre { overflow-x: auto; padding: 14px 18px; border-radius: 10px; background: var(--code); color: var(--codeText); border: 1px solid var(--line); margin: 1.2rem 0; }
+.article-content pre code { background: none; padding: 0; color: inherit; }
+.article-content blockquote { border-left: 4px solid var(--accent); padding: 8px 16px; margin: 1.2rem 0; background: var(--accent-light); border-radius: 0 8px 8px 0; }
+
+/* Grid & Cards (Strict 4-column layout on wide screens) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1150px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 850px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 550px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: all 0.18s ease;
+}
+.card:hover {
+  border-color: var(--accent);
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.card-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 6px 0;
+  color: var(--text);
+}
+.card:hover .card-title {
+  color: var(--accent);
+}
+.card-excerpt {
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.48;
+  margin: 0 0 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-meta {
+  font-size: 0.73rem;
+  color: var(--muted);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+}
+.card-meta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Search bar */
+.search-box {
+  margin-top: 10px;
+}
+.search-box input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+}
+.count {
+  margin: 12px 0 10px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.empty {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--card);
+}
+</style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄.md</code></span></nav><div class="article-container"><article class="article-content"><h1>tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄</h1>
+<p>#tw-day-trading #MCP #OpenClaw #CLI-wrapper #交易系統 #AI協作</p>
+<h2>這篇文章在講什麼</h2>
+<p>這篇是 <code>tw-day-trading</code> 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。</p>
+<h2>新手先記住這 5 件事</h2>
+<ol>
+<li><strong>MCP 是入口層，不是交易邏輯層</strong>：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。</li>
+<li><strong>allowlist 是安全邊界</strong>：第一版只允許查詢、dry-run、報告、對帳，以及明確指定的 <code>record_fill</code>。</li>
+<li><strong>record-fill 是成交事實回填，不是下單</strong>：它記錄外部券商已發生的成交，預設帳號是「國泰」。</li>
+<li><strong>summary/data 是 AI 使用體驗層</strong>：保留原始 <code>stdout/stderr/argv/exit_code</code>，但常用輸出額外整理成結構化資料。</li>
+<li><strong>查資料必須走 MCP 入口</strong>：後續 agent 不應直接手打專案 CLI 查資料；即使 MCP 底層是 CLI wrapper，操作入口仍必須是 MCP。</li>
+</ol>
+<h2>系統定位</h2>
+<p>這次 MCP 的核心定位是「有安全欄杆的 CLI 遙控層」：</p>
+<pre><code>AI / OpenClaw
+  -&gt; MCP tool call
+  -&gt; tw-day-trading MCP server
+  -&gt; static allowlist
+  -&gt; argv builder
+  -&gt; subprocess.run(argv, cwd=project root)
+  -&gt; stdout / stderr / exit_code / argv
+  -&gt; optional summary / data</code></pre>
+<p>它不做這些事：</p>
+<ul>
+<li>不直接下單。</li>
+<li>不重寫策略、帳務、回測或對帳邏輯。</li>
+<li>不接受任意 shell command。</li>
+<li>不在 P0/P2 階段開啟長任務或危險 mutation。</li>
+</ul>
+<h2>已完成的階段</h2>
+<h3>P0：專案內 MCP server 與受控 CLI wrapper</h3>
+<p>P0 建立最小可用架構：</p>
+<ul>
+<li><code>src/mcp/server.py</code>：MCP tools 入口。</li>
+<li><code>src/mcp/cli_registry.py</code>：P0 command allowlist 與 argv builder。</li>
+<li><code>src/mcp/cli_runner.py</code>：<code>subprocess.run</code> wrapper。</li>
+<li><code>tests/unit/test_mcp_cli.py</code>：allowlist、argv、record_fill、runner 測試。</li>
+<li><code>requirements-mcp.txt</code>：MCP SDK 依賴。</li>
+</ul>
+<p>P0 tools：</p>
+<ul>
+<li><code>list_cli_capabilities</code></li>
+<li><code>run_cli</code></li>
+<li><code>record_fill</code></li>
+</ul>
+<p><code>run_cli</code> 只允許白名單內的查詢或 dry-run 指令，例如：</p>
+<ul>
+<li><code>approval list</code></li>
+<li><code>signal list</code></li>
+<li><code>portfolio reconcile</code></li>
+<li><code>report pnl</code></li>
+<li><code>report daily</code></li>
+<li><code>corporate-action list/check</code></li>
+</ul>
+<p><code>record_fill</code> 對應既有 CLI：</p>
+<pre><code>python3 -m app trade record-fill ...</code></pre>
+<p>但 MCP 介面會把帳號預設為「國泰」，並要求最基本成交欄位：</p>
+<ul>
+<li><code>symbol</code></li>
+<li><code>side</code></li>
+<li><code>quantity</code></li>
+<li><code>price</code></li>
+</ul>
+<h3>P1：接入 OpenClaw MCP client</h3>
+<p>OpenClaw managed MCP server：</p>
+<pre><code>name: tw-day-trading-cli
+command: /home/hom/services/stock/tw-day-trading/.venv/bin/python
+args: -m src.mcp.server
+cwd: /home/hom/services/stock/tw-day-trading
+tools: list_cli_capabilities, run_cli, record_fill</code></pre>
+<p>驗證方式：</p>
+<pre><code>openclaw mcp probe tw-day-trading-cli --json</code></pre>
+<p>probe 看到三個 tools：</p>
+<ul>
+<li><code>tw-day-trading-cli__list_cli_capabilities</code></li>
+<li><code>tw-day-trading-cli__run_cli</code></li>
+<li><code>tw-day-trading-cli__record_fill</code></li>
+</ul>
+<p>注意：正在運行中的 Codex tool registry 不一定會熱載新 MCP；需要下一個 runtime build 才會直接出現在工具搜尋裡。</p>
+<h3>P2：常用輸出整理成 summary/data</h3>
+<p>P2 沒有改變 CLI 行為，只是在 MCP 回傳中增加 AI 更好使用的欄位。</p>
+<p>所有結果仍保留：</p>
+<ul>
+<li><code>stdout</code></li>
+<li><code>stderr</code></li>
+<li><code>exit_code</code></li>
+<li><code>argv</code></li>
+</ul>
+<p>額外增加：</p>
+<ul>
+<li><code>summary</code>：一句人類可讀摘要。</li>
+<li><code>data</code>：結構化資料。</li>
+</ul>
+<p>目前解析三類常用輸出：</p>
+<ol>
+<li><code>report pnl</code> + <code>by_strategy=true</code></li>
+</ol>
+<ul>
+<li>帳號</li>
+<li>日期</li>
+<li>現金</li>
+<li>策略分組</li>
+<li>持倉明細</li>
+<li>長期標記</li>
+<li>未實現損益</li>
+</ul>
+<ol>
+<li><code>signal list</code></li>
+</ol>
+<ul>
+<li>訊號數量</li>
+<li>表格列資料</li>
+</ul>
+<ol>
+<li><code>portfolio reconcile</code></li>
+</ol>
+<ul>
+<li>帳號</li>
+<li>reconcile 成功狀態</li>
+</ul>
+<p><code>record_fill</code> 也回傳 normalized data：</p>
+<ul>
+<li>account</li>
+<li>symbol</li>
+<li>side</li>
+<li>quantity</li>
+<li>price</li>
+<li>strategy_id</li>
+<li>long_term</li>
+<li>date</li>
+</ul>
+<h2>被明確延後的階段</h2>
+<h3>P3：低風險寫入 tools</h3>
+<p>只記錄，不實作。</p>
+<p>候選項目：</p>
+<ul>
+<li><code>reject_signal</code></li>
+<li><code>un_reject_signal</code></li>
+<li><code>set_long_term</code></li>
+<li>corporate-action record/apply</li>
+</ul>
+<p>原則：等真的需要時，優先做專用 tool，不要急著做通用 mutation runner。</p>
+<h3>P4：長任務 operator tools</h3>
+<p>只記錄，不實作。</p>
+<p>候選項目：</p>
+<ul>
+<li><code>simulation run-daily</code></li>
+<li><code>market sync</code></li>
+<li><code>market backfill</code></li>
+<li><code>backtest run</code></li>
+<li><code>market build-universe</code></li>
+</ul>
+<p>原則：這類工具需要 timeout、log path、重複執行保護與 operator intent，不應混進查詢工具。</p>
+<h2>本輪重要修正</h2>
+<p>實作過程中也修掉一個既有 bug：</p>
+<p><code>approval list</code> 會因為 strategy manifest 的 <code>expires_at</code> 是 date-only，而 current time 是 timezone-aware，導致 Python 比較時噴 <code>TypeError</code>。</p>
+<p>修正方向：</p>
+<ul>
+<li>date-only manifest time 若遇到 aware current time，補上同樣 tzinfo。</li>
+<li>補單元測試覆蓋 date-only expiry。</li>
+</ul>
+<h2>驗證紀錄</h2>
+<p>本輪驗證包含：</p>
+<pre><code>pytest tests/unit/test_mcp_cli.py tests/unit/test_manifest_validator.py -q</code></pre>
+<p>結果：18 passed。</p>
+<pre><code>python -m py_compile src/mcp/*.py src/approval/validator.py tests/unit/test_mcp_cli.py tests/unit/test_manifest_validator.py</code></pre>
+<p>結果：passed。</p>
+<pre><code>pytest tests/ -q</code></pre>
+<p>結果：344 passed, 1 warning。</p>
+<p>MCP client probe：</p>
+<pre><code>openclaw mcp probe tw-day-trading-cli --json</code></pre>
+<p>結果：tools=3，diagnostics empty。</p>
+<h2>可重用設計原則</h2>
+<p>這次設計有幾個可重用原則：</p>
+<ol>
+<li><strong>先包現有 CLI，不急著 import 內部 handler</strong></li>
+</ol>
+<ul>
+<li>對既有專案風險最低。</li>
+<li>CLI contract 已經是人類熟悉的操作界面。</li>
+</ul>
+<ol>
+<li><strong>先做 allowlist，不做通用 command runner</strong></li>
+</ol>
+<ul>
+<li>避免 AI 可以組出任意危險指令。</li>
+<li>新能力需要明確加進 registry。</li>
+</ul>
+<ol>
+<li><strong>常用輸出再解析，不預付完整 parser 成本</strong></li>
+</ol>
+<ul>
+<li>先保留 stdout。</li>
+<li>只對高頻查詢補 <code>summary/data</code>。</li>
+</ul>
+<ol>
+<li><strong>寫入工具用專用 tool，不做大而全 mutation 平台</strong></li>
+</ol>
+<ul>
+<li><code>record_fill</code> 是明確需求，所以獨立。</li>
+<li>其他寫入等 P3 再逐一討論。</li>
+</ul>
+<ol>
+<li><strong>長任務獨立成 operator layer</strong></li>
+</ol>
+<ul>
+<li><code>run-daily</code>、backtest、market sync 都不是普通查詢。</li>
+<li>需要不同 timeout、log、狀態與重入保護。</li>
+</ul>
+<h2>下次入口</h2>
+<p>確認 MCP 是否可連：</p>
+<pre><code>openclaw mcp probe tw-day-trading-cli --json</code></pre>
+<p>查國泰損益應從 MCP tool 入口：</p>
+<pre><code>{
+  &quot;command&quot;: &quot;report pnl&quot;,
+  &quot;args&quot;: {
+    &quot;account&quot;: &quot;國泰&quot;,
+    &quot;by_strategy&quot;: true
+  }
+}</code></pre>
+<p>手動回填成交應用 <code>record_fill</code> tool，不要直接手打 CLI：</p>
+<pre><code>{
+  &quot;symbol&quot;: &quot;2330&quot;,
+  &quot;side&quot;: &quot;BUY&quot;,
+  &quot;quantity&quot;: 10,
+  &quot;price&quot;: 1000,
+  &quot;strategy_id&quot;: &quot;trend_breakout&quot;
+}</code></pre>
+<p>未指定 <code>account</code> 時，MCP 會預設為「國泰」。</p>
+<h2>後續沉澱規則</h2>
+<p>這次起，工程任務 close-out 的沉澱若具有可回查價值，除了寫入專案 docs、workspace memory 或 <code>.learnings/</code>，也要同步整理一份到 <code>know</code>。</p>
+<p><code>know</code> 版本應該是可獨立閱讀的知識文章，不只是聊天紀錄；內容要避開秘密、token、private key 與不適合公開的帳務細節。</p></article></div></main></body></html>
