@@ -1,5 +1,19 @@
 [
   {
+    "title": "MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測",
+    "rel": "MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測.md",
+    "slug": "mtf-macd-concepts-and-taiwan-backtest",
+    "url": "notes/mtf-macd-concepts-and-taiwan-backtest.html",
+    "excerpt": "技術分析常用的「多時間框架（MTF）」與「金叉 / MACD 金叉 / MACD 趨勢向上」概念速查， 加上一個容易踩的「還原股價」坑，與台股一支候選策略（多週期共振 mtf_resonance）的實測結果。  驗證方法論（怎麼證明一支策略真的會賺、別自欺）不在此篇，見  「策略驗證方法論：從看起來會賺到證明真的賺的五道關卡」。本篇只講概念與實測。 不是一個指標，是「同一指標套…"
+  },
+  {
+    "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
+    "rel": "策略驗證方法論：從看起來會賺到證明真的賺的五道關卡.md",
+    "slug": "strategy-validation-five-gates",
+    "url": "notes/strategy-validation-five-gates.html",
+    "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
+  },
+  {
     "title": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運",
     "rel": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運.md",
     "slug": "browser-automation-anti-bot-and-login-ops",
@@ -19,13 +33,6 @@
     "slug": "tw-day-trading-mcp-cli-wrapper-openclaw",
     "url": "notes/tw-day-trading-mcp-cli-wrapper-openclaw.html",
     "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。…"
-  },
-  {
-    "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
-    "rel": "策略驗證方法論：從看起來會賺到證明真的賺的五道關卡.md",
-    "slug": "strategy-validation-five-gates",
-    "url": "notes/strategy-validation-five-gates.html",
-    "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
   },
   {
     "title": "Antigravity CLI 內容處理器：agy-content 的設計與封裝原則",

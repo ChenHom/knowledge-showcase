@@ -1,0 +1,286 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測</title><style>
+:root {
+  color-scheme: light dark;
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --card-hover: #ffffff;
+  --line: #e2e8f0;
+  --accent: #0284c7;
+  --accent-light: #f0f9ff;
+  --code: #0f172a;
+  --codeText: #f8fafc;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 6px 16px rgba(2, 132, 199, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f19;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --card: #151d2a;
+    --card-hover: #1a2436;
+    --line: #243144;
+    --accent: #38bdf8;
+    --accent-light: #0c2a40;
+    --code: #070a12;
+    --codeText: #f1f5f9;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 6px 20px rgba(56, 189, 248, 0.12);
+  }
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 14px 80px;
+}
+
+/* Nav & Top Header */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  filter: brightness(0.95);
+  transform: translateX(-2px);
+}
+.nav-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.hero-compact {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.hero-compact h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+.hero-compact p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* Article Content Container (Restricted width for readability) */
+.article-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.article-content h1 { font-size: 1.85rem; margin: 0 0 1rem 0; line-height: 1.25; font-weight: 800; }
+.article-content h2 { font-size: 1.3rem; margin-top: 1.8rem; margin-bottom: 0.7rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); font-weight: 700; }
+.article-content h3 { font-size: 1.08rem; color: var(--accent); margin-top: 1.3rem; margin-bottom: 0.4rem; font-weight: 600; }
+.article-content p, .article-content li { line-height: 1.72; font-size: 0.98rem; }
+.article-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.article-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: rgba(100,116,139,0.12); padding: 2px 6px; border-radius: 4px; }
+.article-content pre { overflow-x: auto; padding: 14px 18px; border-radius: 10px; background: var(--code); color: var(--codeText); border: 1px solid var(--line); margin: 1.2rem 0; }
+.article-content pre code { background: none; padding: 0; color: inherit; }
+.article-content blockquote { border-left: 4px solid var(--accent); padding: 8px 16px; margin: 1.2rem 0; background: var(--accent-light); border-radius: 0 8px 8px 0; }
+
+/* Grid & Cards (3-column layout) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 950px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: all 0.18s ease;
+}
+.card:hover {
+  border-color: var(--accent);
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.card-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 6px 0;
+  color: var(--text);
+}
+.card:hover .card-title {
+  color: var(--accent);
+}
+.card-excerpt {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.48;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-meta {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+}
+.card-meta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Search bar */
+.search-box {
+  margin-top: 10px;
+}
+.search-box input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+}
+.count {
+  margin: 12px 0 10px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.empty {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--card);
+}
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+</style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測.md</code></span></nav><div class="article-container"><article class="article-content"><h1>MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測</h1>
+<p>#trading #technical-analysis #mtf #macd #openclaw</p>
+<p>技術分析常用的「多時間框架（MTF）」與「金叉 / MACD 金叉 / MACD 趨勢向上」概念速查，</p>
+<p>加上一個容易踩的「還原股價」坑，與台股一支候選策略（多週期共振 mtf_resonance）的實測結果。</p>
+<blockquote>驗證方法論（怎麼證明一支策略真的會賺、別自欺）不在此篇，見</blockquote>
+<blockquote>「策略驗證方法論：從看起來會賺到證明真的賺的五道關卡」。本篇只講概念與實測。</blockquote>
+<h2>1. MTF（多時間框架）</h2>
+<p>不是一個指標，是「同一指標套到不同 K 線週期」。同一個「站上 20MA」在 5 分 K 與週 K 意義天差地遠。</p>
+<p>| 框架 | 一個「20 根」跨度 | 用途 |</p>
+<p>|---|---|---|</p>
+<p>| 5 分 / 15 分 / 60 分 | 100 分鐘 / 5 小時 / 3–4 天 | 盤中擇時、短波段 |</p>
+<p>| 日 K | ≈ 1 個月 | 波段主判斷 |</p>
+<p>| 週 K | 20 週 ≈ 5 個月 | 長期趨勢方向 |</p>
+<p>原則：<strong>高框定方向、低框給觸發</strong>。看哪個框架 = 匹配你的持有週期——波段系統以<strong>日 K 為主、週 K 濾網</strong>，盤後日頻系統用不到 5 分（5 分訊號一天發生幾十次、多是雜訊，時間尺度與持有期錯配）。</p>
+<p>判讀：多框同時站上 = 多方共振（趨勢一致、勝率較高）；高框正、低框負 = 長多短回。可把「幾個框架站上」當一個對齊分數。</p>
+<h2>2. 金叉 / MACD</h2>
+<ul>
+<li><strong>金叉（均線）</strong>：短均線由下往上穿長均線（如 20MA 上穿 60MA）→ 偏多。均線是過去價格平均，屬<strong>落後訊號</strong>（確認趨勢、不預測）。反向＝死叉。</li>
+<li><strong>MACD</strong>（12,26,9）：DIF＝EMA(12)−EMA(26)（快線）；DEA＝EMA(9) of DIF（慢線/訊號線）；柱狀＝DIF−DEA。</li>
+<li><strong>MACD 金叉</strong>：DIF 上穿 DEA（柱狀翻紅、負轉正）。因用 EMA 又測「快慢均線差距」，通常比均線金叉<strong>更早發訊</strong>。</li>
+<li><strong>零軸</strong>：金叉在零軸上方（DIF&gt;0，本就多頭、回檔再起）較強；在零軸下方（空頭反彈）較弱、易失敗。</li>
+<li><strong>MACD 趨勢向上</strong>：DIF／柱狀持續走高——是「<strong>狀態</strong>」，不是「金叉那一瞬間的<strong>事件</strong>」。MACD 可以趨勢向上卻沒有新金叉；常當續抱／濾網條件。</li>
+</ul>
+<p>三者關係：金叉／MACD 金叉是<strong>事件</strong>（進場觸發）；MACD 趨勢向上是<strong>狀態</strong>（續抱／濾網）；均線金叉最慢、MACD 較快。實務組合：價站上均線（趨勢）＋ MACD 零軸上金叉（動能觸發）＋ 柱狀放大（動能延續）。</p>
+<h2>3. 還原股價的坑（重要實測教訓）</h2>
+<p>日／週 MA 用「未還原（raw）價」時，除權息／分割會扭曲均線。</p>
+<p><strong>教訓：看到超大偏離，先問有沒有 CA（公司行動），別急著當失真。</strong></p>
+<ul>
+<li>台股某案例：週 20MA 偏離 +125%，一度懷疑是配息失真；用現金股利回溯還原後<strong>只動 &lt;2.7%</strong>——其實是<strong>真實動能</strong>（股價 5 個月大漲）。</li>
+<li>判斷 CA vs 真動能：看原始日線<strong>有無跳空</strong>（分割/大額配息會跳空；平滑上漲是真動能）。</li>
+<li>還原真正修好的是「<strong>近期大額配息</strong>」造成的向下失真（某檔除息 144 元落在測量窗內，還原後對齊分數由 3/5 升到 4/5）。</li>
+<li>時間框架越長越易受 CA 影響：分 K（近 12 天）幾乎不受影響、日 K（近 1 月）大致乾淨、<strong>週 K（近 5 月）最容易失真</strong>。</li>
+</ul>
+<h2>4. 台股實測：多週期共振（mtf_resonance）</h2>
+<p>把「週 MACD DIF&gt;0 ＋ 日 MACD 金叉零軸上」組成進場、出場交寬移動停利（讓贏家跑）的策略。</p>
+<ul>
+<li>資料：Shioaji 1 分 K resample 5/15/60 分；FinMind 日 K resample 週 K；現金股利回溯還原。</li>
+<li>全窗回測（2019–2026 含 2022 空頭、liquidity-top150 PIT 池、含成本）：<strong>CAGR 4.8%、Sharpe 0.42、PF 1.22、MDD 19%、alpha +3.9%、beta 0.10</strong>。</li>
+</ul>
+<p><strong>結論：技術上做得出來、但嚴謹裁決下 modest 且脆弱</strong>——輸買進持有（0050 +50%／等權 universe +144%）、成本吃 52% 毛利、去掉最佳 5 筆交易就淨虧、年化報酬 bootstrap 95% CI 含負。唯一亮點是低 beta（可當小額分散）。→「<strong>做得出來 ≠ 值得用</strong>」，多數技術指標策略卡在第二件。詳細的「別自欺」驗證過程見「五道關卡」那篇。</p></article></div></main></body></html>
