@@ -1,5 +1,19 @@
 [
   {
+    "title": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API",
+    "rel": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API.md",
+    "slug": "ios26-liquid-glass-widget-background-swiftui-api",
+    "url": "notes/ios26-liquid-glass-widget-background-swiftui-api.html",
+    "excerpt": "iOS 26 導入 Liquid Glass 設計語言後，「Home Screen Widget 要怎麼做出跟原生 Widget 一樣的玻璃背景」這個問題的調查筆記。結論跟直覺不同：Widget 的玻璃背景不是 App 端寫程式碼指定出來的，而是系統在特定使用者設定下自動套用的。順帶整理 App 內一般畫面（非 Widget）可用的 Liquid Glass SwiftUI A…"
+  },
+  {
+    "title": "AIQuota Widget 開發決策紀錄：動態字體折行、App Group 警告與模擬器憑證信任",
+    "rel": "AIQuota Widget 開發決策紀錄：動態字體折行、App Group 警告與模擬器憑證信任.md",
+    "slug": "aiquota-widget-decisions-dynamic-type-app-group-cert",
+    "url": "notes/aiquota-widget-decisions-dynamic-type-app-group-cert.html",
+    "excerpt": "開發 AIQuota（iPhone App + Home Screen Widget，顯示 Codex、Claude、AGY 額度）時遇到的三個問題的排查與決策紀錄：Widget 文字動態字體折行、App Group 偏好設定的警告訊息判讀、以及模擬器信任自簽憑證的操作方式。整理成可回查的知識，避免下次遇到類似狀況重新排查一次。 WidgetKit 內固定寬度欄位裡的文字，不要…"
+  },
+  {
     "title": "服務資料對外暴露設計：淨化白名單、systemd Sandbox 陷阱與存取控制取捨",
     "rel": "服務資料對外暴露設計：淨化白名單、systemd Sandbox 陷阱與存取控制取捨.md",
     "slug": "exposing-internal-service-data-safely",
