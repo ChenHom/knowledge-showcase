@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-First Testing：收斂、探索與可重複執行</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1b2d;--text:#e8f0f8;--muted:#9db0c5;--line:#263b52;--blue:#53b7ff;--green:#62d6a7;--amber:#ffc766}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07111f,#0b1625 55%,#101c2c);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;line-height:1.75}
+main{max-width:1080px;margin:auto;padding:28px 18px 80px}.nav a,a{color:#79c8ff}.hero{padding:32px;border:1px solid var(--line);border-radius:22px;background:rgba(13,27,45,.9);box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.eyebrow{color:var(--green);font-weight:800;letter-spacing:.08em}.hero h1{font-size:clamp(2rem,5vw,3.8rem);line-height:1.12;margin:.2em 0}.lead{font-size:1.12rem;color:#c6d6e5}.meta{color:var(--muted);font-size:.9rem}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.step,.card{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:16px}.step b{display:block;color:var(--blue);margin-bottom:4px}
+section{margin-top:34px}h2{font-size:1.55rem;border-bottom:1px solid var(--line);padding-bottom:8px}h3{color:var(--blue);margin-top:26px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.callout{border-left:4px solid var(--amber);background:#1d2430;padding:14px 18px;border-radius:0 12px 12px 0}
+.role{display:grid;grid-template-columns:120px 1fr;gap:10px;margin:8px 0}.role strong{color:var(--green)}
+code{background:#15273a;padding:2px 6px;border-radius:5px}ul,ol{padding-left:1.35rem}.refs li{margin:.55rem 0}
+@media(max-width:760px){.flow,.grid{grid-template-columns:1fr}.role{grid-template-columns:1fr}.hero{padding:22px}}
+</style>
+</head>
+<body><main>
+<div class="nav"><a href="../index.html">← 回 knowledge index</a></div>
+<header class="hero">
+<div class="eyebrow">AI-FIRST TESTING / READING NOTE</div>
+<h1>收斂、探索與可重複執行</h1>
+<p class="lead">AI 不應取代測試框架。人決定什麼才是正確，AI 探索怎麼驗證，固定程式碼負責廉價、穩定、反覆執行。</p>
+<p class="meta">整理日期：2026-07-17 · 來源：安德魯〈AI-First Testing〉</p>
+</header>
+
+<div class="flow">
+<div class="step"><b>01 收斂</b>用 Decision Table 決定哪些情境值得測</div>
+<div class="step"><b>02 抽象</b>把「測什麼」與「怎麼操作」分離</div>
+<div class="step"><b>03 探索</b>AI 實際找出操作與驗證步驟</div>
+<div class="step"><b>04 轉化</b>生成固定 Test Code，交給 CI 執行</div>
+</div>
+
+<section><h2>角色分工</h2>
+<div class="role"><strong>Brain</strong><span>領域專家確認條件、風險、錯誤優先順序與預期結果。</span></div>
+<div class="role"><strong>GPU</strong><span>AI 展開候選情境、探索 API／UI 操作、整理 session log、產生 Test Code。</span></div>
+<div class="role"><strong>CPU</strong><span>Pest、xUnit、Playwright 等固定程式由 CI 或排程反覆執行。</span></div>
+<div class="callout">測試只能證明已定義且已涵蓋的條件目前符合預期，不能證明整個程式完全無誤。</div>
+</section>
+
+<section><h2>Decision Table：不是自動答案，而是把問題攤開</h2>
+<div class="grid">
+<div class="card"><h3>組成</h3><ul><li>Criteria：影響結果的條件</li><li>Action：系統應採取的行為</li><li>Rule：條件組合與預期結果</li></ul></div>
+<div class="card"><h3>人工校正</h3><ul><li>成功、全面失敗、部分成立</li><li>上下限與邊界外</li><li>不可能狀態</li><li>多錯誤的優先順序</li><li>條件相依</li></ul></div>
+</div>
+<p>AI 可以產生第一版表格，但是否符合實際領域規則，必須由人確認。Decision Table 也不能單獨解決組合爆炸，仍要搭配等價類別、邊界值、Pairwise、風險導向與歷史缺陷。</p>
+</section>
+
+<section><h2>抽象 Test Case</h2>
+<div class="callout"><strong>核心：</strong>把「測什麼」與「怎麼操作」分離。</div>
+<p>Test Case 只保留 Given、When、Then，不寫死 endpoint、HTTP Header、按鈕、selector 或測試框架。同一個商業情境才能搭配 OpenAPI、Web UI 或 App 規格，分別生成 API、Web、App 測試。</p>
+<p>REST API、Web UI、Android、iOS 是操作介面；Pest、PHPUnit、Playwright、Appium 是測試框架或工具，不能混為一談。</p>
+</section>
+
+<section><h2>AI 探索到底在做什麼</h2>
+<p>探索不是再找一次漏測情境，而是針對已確定的 Test Case 找出：</p>
+<ul>
+<li>如何建立及清理測試資料</li><li>如何登入、取得授權、呼叫 API 或操作 UI</li><li>結果要從回應、資料庫、事件、Queue 或外部呼叫的哪裡驗證</li><li>如何隔離資料與穩定重現</li>
+</ul>
+<p>AI 根據規格與失敗回應反覆修正。Session log 讓人審查探索是否正確，也成為產生 Test Code 的操作範例。探索不是 CI/CD 每次都要執行的工作。</p>
+</section>
+
+<section><h2>舊方法與改良流程的真正差異</h2>
+<div class="grid">
+<div class="card"><h3>Vibe Testing</h3><p>每次都讓 AI 重新理解案例、操作系統、觀察結果並判斷。成本來自整個 Agent 推論與工具呼叫，不是「啟動測試」本身。</p></div>
+<div class="card"><h3>固定 Test Code</h3><p>AI 只在建立階段探索並產生程式。之後由 CI 直接執行固定 assertion，模型不參與回歸測試。</p></div>
+</div>
+<p>文章的估算是從 40,000 次 AI 任務，改成 400 次探索、400 次程式碼產生，以及 40,000 次一般 CPU 測試。觸發者仍可都是 CI；改變的是執行者。</p>
+</section>
+
+<section><h2>MCP 的建立理念</h2>
+<ul>
+<li>MCP 是 AI 與受測系統之間的受控工具層，不是測試框架。</li>
+<li>登入、API 呼叫、狀態查詢、資料準備與清理要有結構化輸出。</li>
+<li>保留 session log、規格快照與稽核紀錄。</li>
+<li>限制可操作環境、動作、資料範圍與敏感資訊。</li>
+<li>不能把無邊界的管理員 API 直接交給 Agent。</li>
+</ul>
+</section>
+
+<section><h2>無障礙也是 Agent 的操作介面</h2>
+<p>Playwright MCP 可利用語意化 HTML、ARIA 與 Accessibility Tree 提取精簡結構，避免完整 HTML 塞滿前後文，也比視覺辨識與座標點擊穩定。</p>
+<ul><li>使用正確的 button、label、input、nav</li><li>欄位有明確 label</li><li>按鈕與連結有可理解名稱</li><li>錯誤與狀態能由 ARIA 表達</li><li>不只依賴顏色、座標或圖示</li></ul>
+<p>無障礙的主要服務對象仍是人；AI Friendly 是相同語意基礎帶來的延伸效益。</p>
+</section>
+
+<section><h2>正式導入時原文沒有處理完的部分</h2>
+<div class="grid">
+<div class="card"><h3>Test Oracle</h3><p>HTTP 200 不代表完整成功。還要驗證資料、事件、Queue、外部呼叫、回滾與冪等性。</p></div>
+<div class="card"><h3>可重複性</h3><p>固定時間、亂數、非同步、外部服務、資料隔離與環境差異。</p></div>
+<div class="card"><h3>規格漂移</h3><p>需求變動後，要判斷 Decision Table、Test Case、操作規格或 Test Code 哪一層需要更新。</p></div>
+<div class="card"><h3>維護責任</h3><p>AI 降低首次建立成本，但不會消除 AC、規格、session log 與程式碼的同步成本。</p></div>
+</div>
+</section>
+
+<section><h2>套用到 Laravel 金流專案</h2>
+<p>第一個試點適合選「代付訂單建立前置驗證」，條件包含商戶、IP、簽章、timestamp、nonce、錢包、幣種、餘額、通道與限額。</p>
+<ol><li>選一項 AC</li><li>AI 產生第一版 Decision Table</li><li>領域人員確認條件與預期結果</li><li>收斂為 5～15 個抽象 Test Case</li><li>探索 2～3 個高價值案例</li><li>依 Laravel route、Form Request、Service、Factory、Seeder 與既有 Pest 產生 Test Code</li><li>人工審查 assertion、隔離與副作用</li><li>納入 CI</li><li>經過數次需求變更後，再判斷是否建立 MCP</li></ol>
+<div class="callout">不要先開發 TestKit 或 MCP。只有登入、簽章、建立商戶、調整錢包、查詢事件與清理資料等工作反覆出現時，才值得封裝。</div>
+</section>
+
+<section><h2>參考資訊</h2>
+<ol class="refs">
+<li><a href="https://columns.chicken-house.net/2025/11/10/ai-first-testing-workflow/">原文：AI-First Testing</a></li>
+<li><a href="https://www.facebook.com/share/p/177qgafB5Z/">安德魯 2025/11/03 Facebook</a></li>
+<li><a href="https://www.facebook.com/share/p/1BYCtCqZod/">安德魯 2025/10/21 Facebook</a></li>
+<li><a href="https://www.facebook.com/share/p/1HoM5rq2D9/">楊大成 2025/10/11 Facebook</a></li>
+<li><a href="https://columns.chicken-house.net/2025/09/28/reading-a16z-emerging-developer-patterns-for-the-ai-era/">A16Z AI Era：Accessibility as the universal interface</a></li>
+<li><a href="https://ithelp.ithome.com.tw/articles/10375192">Decision Table Testing－DTT</a></li>
+<li><a href="https://www.youtube.com/watch?v=uVEjlRK0VWE">Sam Altman：ChatGPT as an operating system</a></li>
+<li><a href="https://www.facebook.com/share/p/1D7ZeAAZPT/">安德魯 2025/09/08 Facebook</a></li>
+<li><a href="https://www.trychroma.com/research/context-rot">Context Rot 研究報告</a></li>
+</ol>
+</section>
+</main></body></html>
