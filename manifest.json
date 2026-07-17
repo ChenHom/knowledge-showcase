@@ -1,5 +1,12 @@
 [
   {
+    "title": "AI-First Testing：收斂、探索與可重複執行",
+    "rel": "AI-First Testing：收斂、探索與可重複執行.md",
+    "slug": "ai-first-testing-workflow",
+    "url": "notes/ai-first-testing-workflow.html",
+    "excerpt": "重新分配測試工作：人確認什麼才是正確，AI 用 Decision Table 收斂情境並探索操作步驟，再把結果轉成固定測試程式，交由 CI 穩定重複執行。補充 Test Oracle、MCP 安全邊界、無障礙與 Laravel 金流導入方式。"
+  },
+  {
     "title": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API",
     "rel": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API.md",
     "slug": "ios26-liquid-glass-widget-background-swiftui-api",
