@@ -1,0 +1,305 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>驗證與追蹤：在開發前發現規格錯誤</title><style>
+:root {
+  color-scheme: light dark;
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --card-hover: #ffffff;
+  --line: #e2e8f0;
+  --accent: #0284c7;
+  --accent-light: #f0f9ff;
+  --code: #0f172a;
+  --codeText: #f8fafc;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 6px 16px rgba(2, 132, 199, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f19;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --card: #151d2a;
+    --card-hover: #1a2436;
+    --line: #243144;
+    --accent: #38bdf8;
+    --accent-light: #0c2a40;
+    --code: #070a12;
+    --codeText: #f1f5f9;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 6px 20px rgba(56, 189, 248, 0.12);
+  }
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 14px 80px;
+}
+
+/* Nav & Top Header */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: var(--accent-light);
+  transition: all 0.2s ease;
+}
+.back-link:hover {
+  filter: brightness(0.95);
+  transform: translateX(-2px);
+}
+.nav-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.hero-compact {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.hero-compact h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+.hero-compact p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* Article Content Container (Restricted width for readability) */
+.article-container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.article-content h1 { font-size: 1.85rem; margin: 0 0 1rem 0; line-height: 1.25; font-weight: 800; }
+.article-content h2 { font-size: 1.3rem; margin-top: 1.8rem; margin-bottom: 0.7rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--line); font-weight: 700; }
+.article-content h3 { font-size: 1.08rem; color: var(--accent); margin-top: 1.3rem; margin-bottom: 0.4rem; font-weight: 600; }
+.article-content p, .article-content li { line-height: 1.72; font-size: 0.98rem; }
+.article-content a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.article-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; background: rgba(100,116,139,0.12); padding: 2px 6px; border-radius: 4px; }
+.article-content pre { overflow-x: auto; padding: 14px 18px; border-radius: 10px; background: var(--code); color: var(--codeText); border: 1px solid var(--line); margin: 1.2rem 0; }
+.article-content pre code { background: none; padding: 0; color: inherit; }
+.article-content blockquote { border-left: 4px solid var(--accent); padding: 8px 16px; margin: 1.2rem 0; background: var(--accent-light); border-radius: 0 8px 8px 0; }
+
+/* Grid & Cards (3-column layout) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 950px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 15px 17px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: all 0.18s ease;
+}
+.card:hover {
+  border-color: var(--accent);
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.card-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 6px 0;
+  color: var(--text);
+}
+.card:hover .card-title {
+  color: var(--accent);
+}
+.card-excerpt {
+  font-size: 0.86rem;
+  color: var(--muted);
+  line-height: 1.48;
+  margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-meta {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed var(--line);
+}
+.card-meta code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Search bar */
+.search-box {
+  margin-top: 10px;
+}
+.search-box input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.9rem;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: var(--accent);
+}
+.count {
+  margin: 12px 0 10px;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.empty {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  background: var(--card);
+}
+
+/* Pagination Bar */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.page-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+</style></head><body><main><nav class="top-nav"><a class="back-link" href="../index.html">← 回首頁</a><span class="nav-meta"><code>notes/ai-specification-engineering/03-驗證與追蹤：在開發前發現規格錯誤.md</code></span></nav><div class="article-container"><article class="article-content"><h1>驗證與追蹤：在開發前發現規格錯誤</h1>
+<p>#specification-validation #decision-table #property-based-testing #traceability #architecture-review</p>
+<h2>這是什麼</h2>
+<p>規格工程的價值不在文件數量，而在規格能否被攻擊、被檢查、被重播。驗證要在開發前找出矛盾、缺口、不可達狀態與錯誤優先順序。</p>
+<h2>核心結論</h2>
+<p>每條重要規則至少需要三種證據：來源證據、Given／When／Then 或 Decision Table 的行為證據，以及 schema validation、狀態機測試、property test 或 model simulation 的執行證據。</p>
+<h2>驗證層次</h2>
+<h3>靜態一致性</h3>
+<ul>
+<li>每個規格 ID 唯一。</li>
+<li>每個狀態轉移引用已定義的命令、事件與錯誤。</li>
+<li>每條不變量至少被一個情境覆蓋。</li>
+<li>已刪除欄位未被其他文件引用。</li>
+<li><code>open_questions</code> 不可被實作當成已確認規則。</li>
+</ul>
+<h3>Decision Table</h3>
+<p>| Rule | 訂單可付款 | 金額相符 | 幣種相符 | 結果 |</p>
+<p>|---|---:|---:|---:|---|</p>
+<p>| R1 | 是 | 是 | 是 | 確認付款 |</p>
+<p>| R2 | 否 | - | - | ORDER_NOT_PAYABLE |</p>
+<p>| R3 | 是 | 否 | 是 | PAYMENT_AMOUNT_MISMATCH |</p>
+<p>| R4 | 是 | 是 | 否 | PAYMENT_CURRENCY_MISMATCH |</p>
+<p><code>-</code> 代表該條件在前一條件失敗後不再影響結果。這同時定義錯誤優先順序。</p>
+<h3>狀態可達性</h3>
+<p>檢查是否存在永遠到不了的狀態、離不開的非終止狀態、錯誤終止狀態，以及重複或併發命令如何處理。</p>
+<h3>Property-based Testing</h3>
+<pre><code>it(&#x27;任何命令序列都不會讓已付金額為負&#x27;, function (array $commands) {
+    $order = runModel($commands);
+
+    expect($order-&gt;paidAmount()-&gt;minorUnits)-&gt;toBeGreaterThanOrEqual(0);
+})-&gt;with(&#x27;generated command sequences&#x27;);</code></pre>
+<h3>反例與失敗注入</h3>
+<p>要求 AI 攻擊重複 callback、寫入成功但事件發布失敗、外部逾時後其實成功、跨時區、併發更新、舊資料違反新規則與流程中途撤銷權限。AI 提出的反例仍需人工判定是否屬於系統承諾。</p>
+<h2>追蹤矩陣</h2>
+<p>| Spec ID | Invariant | Scenario | Test | Decision |</p>
+<p>|---|---|---|---|---|</p>
+<p>| ORDER-PAY-001 | INV-ORDER-002 | PAY-001、PAY-004 | OrderPaymentSpecTest | ADR-001 |</p>
+<p>追蹤矩陣用來回答變更衝擊。當不變量改變時，可以明確找到受影響的情境、測試與架構決策。</p>
+<h2>AI 審查 Prompt</h2>
+<pre><code>你是敵對式規格審查者。只能使用 repository 內已確認規則。
+找出：
+1. 互相矛盾的前置條件與後置條件。
+2. 沒有任何情境覆蓋的不變量。
+3. 沒有合法入口或出口的狀態。
+4. 未定義的錯誤優先順序。
+5. 被當成事實使用的 open question。
+6. 無法追蹤來源的欄位與資料表。
+每項問題必須引用規格 ID，給出最小反例，不可自行補需求。</code></pre>
+<h2>核可門檻</h2>
+<ul>
+<li>詞彙表無同義詞混用。</li>
+<li>核心正常與拒絕路徑完整。</li>
+<li>不變量與錯誤優先順序由領域人員核可。</li>
+<li>高風險狀態轉移有可執行驗證。</li>
+<li>待決問題有負責人，不會被默默實作。</li>
+<li>模型已收斂到有證據支持的最小集合。</li>
+<li>規格變更能透過 CI 重新執行檢查。</li>
+</ul>
+<p>更新日期：2026-07-21</p></article></div></main></body></html>
