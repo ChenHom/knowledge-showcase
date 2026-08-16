@@ -19,7 +19,7 @@
 <script>
 (()=>{
 const PAGE_SIZE=9;
-const latest={title:'RESTful 退款 API 設計：從 Resource Modeling 到 Idempotency、Concurrency 與 Reconciliation',rel:'notes/backend/api/restful-refund-api-design.md',slug:'restful-refund-api-design',url:'note.html?slug=restful-refund-api-design',excerpt:'以退款 API 為例，整理 Resource Modeling、Idempotency、部分與多次退款、Redis Lock vs DB Lock、Conditional Update、非同步退款、Callback 與 Reconciliation。'};
+const latest={title:'Agent 執行流程 SOP：Decision、Loop、Stop 與驗證',rel:'notes/ai/agent-flow-sop.md',slug:'agent-flow-sop',url:'note.html?slug=agent-flow-sop',excerpt:'一套可重複套用的 Agent 執行流程 SOP，整理 State、Evidence、Decision Policy、Action、Loop、Progress Detection、Verify、Stop、Human Escalation 與 Execution Budget，並附 Mermaid 流程圖。'};
 let entries=[],page=1;
 const cards=document.getElementById('cards'),count=document.getElementById('count'),summary=document.getElementById('summary'),search=document.getElementById('search'),pagination=document.getElementById('pagination');
 const norm=s=>(s||'').toLocaleLowerCase('zh-Hant');
