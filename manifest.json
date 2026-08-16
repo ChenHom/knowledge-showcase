@@ -1,5 +1,12 @@
 [
   {
+    "title": "RESTful 退款 API 設計：從 Resource Modeling 到 Idempotency、Concurrency 與 Reconciliation",
+    "rel": "notes/restful-refund-api-design.md",
+    "slug": "restful-refund-api-design",
+    "url": "note.html?slug=restful-refund-api-design",
+    "excerpt": "整理退款 API 設計面試題，涵蓋 Resource Modeling、Idempotency、Concurrency、Async Refund、第三方 Callback、Reconciliation 與一致性設計。"
+  },
+  {
     "title": "時間序列模擬：用時間軸推演狀態變化找出規格歧義",
     "rel": "notes/ai-specification-engineering/05-時間序列模擬：用時間軸推演狀態變化找出規格歧義.md",
     "slug": "ai-specification-timeline-simulation",
