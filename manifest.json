@@ -271,5 +271,12 @@
     "slug": "ai-first-testing-workflow",
     "url": "note.html?slug=ai-first-testing-workflow",
     "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
+  },
+  {
+    "title": "Refresh Token 問題處理與架構設計指南",
+    "rel": "notes/refresh-token-design-guide.md",
+    "slug": "refresh-token-design-guide",
+    "url": "note.html?slug=refresh-token-design-guide",
+    "excerpt": "整理 Refresh Token 的安全儲存、Rotation、併發控制、多分頁同步、SSR、Cookie、Logout Race 與 Session 生命週期設計。"
   }
 ]
