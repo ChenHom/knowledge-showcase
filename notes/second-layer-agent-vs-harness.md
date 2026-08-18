@@ -1,97 +1,244 @@
-# 第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工
+# 第二層 Agent 與 Harness 系統的差異：Runtime、任務治理與自主決策的分工
 
-#agent #harness #agentic-workflow #system-design #workflow #verification
+#agent #harness #agentic-workflow #system-design #workflow #verification #runtime #event-log #tool-execution
 
 ## 這是什麼
 
-這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。
+這份文件說明「第二層 Agent」與「Agent Harness」的差異與分工，並補上完整 Harness 應包含的 Runtime 層。
 
-簡單講：
+早期版本把 Harness 主要描述成「管理整個任務生命週期的外層執行框架」。這個描述對 `agent-system-foundation` 目前實作的 **Run Governance** 是成立的，但若拿來描述完整 Agent Harness，範圍太窄。
 
-```text
-Harness = 管理整個任務生命週期的外層執行框架
-第二層 Agent = 某個任務內部的 agent 自主決策模式
-```
-
-比喻：
+更完整的定義應該是：
 
 ```text
-Harness 是片場導演 / 製片流程
-第二層 Agent 是其中一個演員怎麼在規則內自由發揮
+Agent Harness
+= 支撐 Agent 執行、限制副作用、保存執行事實、治理任務生命週期的整套 runtime / control system
+
+第二層 Agent
+= 在既定能力與邊界內，自主決定下一步行動的 decision loop
 ```
 
-兩者不是競爭關係，而是上下層關係：
+因此 Harness 可以再拆成兩層：
 
 ```text
-Harness 可以包住第二層 Agent，讓 Agent 的每次工具呼叫、狀態轉移、驗證結果都成為可追蹤、可審計的 run artifact。
+Agent Harness
+├── Harness Runtime
+│   ├── Session / Event Log
+│   ├── Context Assembly
+│   ├── LLM Adapter
+│   ├── Agent Interface
+│   ├── Agent Loop
+│   ├── Tool Registry
+│   ├── Tool Execution Pipeline
+│   ├── Permission / Approval
+│   └── Sandbox / Guard
+│
+└── Run Governance
+    ├── Workflow
+    ├── Task State
+    ├── Verification
+    ├── Audit
+    ├── Repair
+    ├── Human Handoff
+    ├── Close-out
+    └── Artifact Governance
 ```
+
+第二層 Agent 則是 Harness Runtime 裡的一種執行策略：
+
+```text
+read state
+→ choose next action
+→ request tool
+→ evaluate result
+→ continue / ask / finish
+```
+
+兩者不是競爭關係，也不是簡單的「Harness 在外、Agent 在內」就能完整描述；更精準的理解是：
+
+> Harness 提供 Agent 可以安全、可恢復、可觀測地運作的執行環境與治理機制；Agent Decision Policy 負責在這個環境裡決定下一步。
+
+---
 
 ## 核心結論
 
-**Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。**
-
-更精準地說：
+原本的說法：
 
 ```text
 Harness = run-level control plane
 第二層 Agent = task-level decision loop
 ```
 
-Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。  
-第二層 Agent 則一定有「Agent 自己選下一步」這件事。
+需要修正成：
+
+```text
+Agent Harness = runtime + execution control + run governance
+Run Governance = run-level control plane
+第二層 Agent = task-level decision loop
+```
+
+所以：
+
+```text
+Harness Runtime 管「怎麼執行」
+Run Governance 管「怎麼確保可靠完成」
+Agent Decision Policy 管「下一步做什麼」
+```
+
+Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。第二層 Agent 則一定有「Agent 自己選下一步」這件事。
+
+---
 
 ## 一、核心差異表
 
-| 面向 | Harness 系統 | 第二層 Agent |
-|---|---|---|
-| 主要目的 | 讓任務可追蹤、可驗證、可恢復、可收尾 | 讓 Agent 在固定工具內自主決定步驟 |
-| 管理範圍 | 整個 run / task lifecycle | 單一業務任務或工作流程內部 |
-| 重點 | bootstrap、state、contracts、verification、close-out、audit | tool registry、agent loop、guardrails、state、approval |
-| 自主性 | 不一定要求 Agent 自主；可以管理人工流程、固定腳本、subagent | 明確要求「工具固定，但步驟由 Agent 決定」 |
-| 產物 | task-state、verification report、audit、handoff、memory target | tool calls、state transitions、final response、action trace |
-| 失敗處理 | repair、blocked handoff、re-run、close-out review | retry、ask user、approval、tool error handling |
-| 適用層級 | 外層治理 / 任務作業系統 | 內層 agent workflow pattern |
+| 面向 | Agent Harness | Run Governance | 第二層 Agent |
+|---|---|---|---|
+| 主要目的 | 提供 Agent 可執行、可限制、可恢復的 runtime | 讓任務可追蹤、可驗證、可收尾 | 讓 Agent 在固定能力內自主決定步驟 |
+| 管理範圍 | session、model、agent loop、tools、policy、sandbox、runtime state | 整個 run / task lifecycle | 單一業務任務或工作流程內部 |
+| 重點 | event log、context、LLM adapter、tool execution pipeline、capability seams | bootstrap、state、contracts、verification、close-out、audit、repair | choose action、tool use、local state、result evaluation |
+| 自主性 | 不要求一定自主 | 不要求一定自主 | 明確要求 Agent 自己決策 |
+| 產物 | session events、tool call/result、runtime trace | task-state、verification report、audit、handoff、memory target | action sequence、final response、decision trace |
+| 失敗處理 | cancellation、timeout、retry、deny、resume、sandbox failure | repair、blocked handoff、re-run、close-out review | ask user、choose alternative、stop / finish |
+| 適用層級 | Agent 執行基礎設施 | 任務治理層 | 任務內決策策略 |
 
-## 二、Harness 是什麼
+---
 
-Harness 是任務外層的治理框架。
+## 二、完整的 Harness 是什麼
 
-它關心的是：
+完整 Harness 不是只有任務治理。
 
-> 這個任務有沒有被正確開始、執行、驗證、修正、收尾、沉澱？
-
-典型 Harness 會管理：
+它至少要回答五類問題：
 
 ```text
-任務開始前：bootstrap / 判斷 workflow
-任務進行中：維護 task-state / contracts / orchestration
-任務完成前：verify-revise loop
-任務完成後：close-out / audit / memory target 判斷
-卡住時：handoff / repair / blocked state
+1. Model 看到了什麼？
+2. Agent 現在處於什麼執行狀態？
+3. Model 要求的 tool call 能不能真的執行？
+4. 執行後留下了什麼不可否認的事實？
+5. 整個任務是否被正確驗證、收尾與治理？
 ```
 
-Harness 不一定管「Agent 下一步要查訂單還是查政策」。
+因此 Harness 的完整責任可以分成：
 
-它管的是：
+### Harness Runtime
 
 ```text
-這個任務是否有狀態
-是否有成功標準
-是否有驗證報告
-是否可以恢復
-是否有可審計的紀錄
-是否有 close-out
+Session / Event Log
+Context Assembly
+LLM Adapter
+Agent Interface
+Agent Loop
+Tool Registry
+Tool Execution Pipeline
+Permission / Approval
+Sandbox / Guard
 ```
 
-## 三、第二層 Agent 是什麼
+它解決：
+
+> Agent 到底如何被執行。
+
+### Run Governance
+
+```text
+bootstrap
+workflow selection
+task-state
+contracts
+verification
+verify-revise loop
+close-out
+audit
+human handoff
+repair orchestration
+memory target recommendation
+```
+
+它解決：
+
+> 任務到底有沒有可靠完成。
+
+目前 `agent-system-foundation` 最成熟的其實是第二塊，也就是 **Run Governance Harness**。
+
+---
+
+## 三、Session Event Log：執行事實的 Source of Truth
+
+如果 Harness 同時維護：
+
+```text
+messages[]
+task-state
+action trace
+tool results
+verification report
+audit report
+```
+
+卻沒有定義哪一份才是真相，時間一久一定會 drift。
+
+比較穩定的做法是：
+
+```text
+Append-only Session Event Log
+        │
+        ├── derive model history
+        ├── project task-state
+        ├── build action trace
+        ├── build observability data
+        └── support resume / replay / audit
+```
+
+最小事件可以是：
+
+```text
+turn/start
+step/start
+user/message
+assistant/message
+tool/call
+tool/result
+step/end
+turn/end
+```
+
+核心原則：
+
+> Event Log 記錄 facts；其他 state / report 是 projection 或 derived artifact。
+
+因此：
+
+```text
+Event Log = 執行事實
+Task State = 任務狀態投影
+Verification Report = 從結果與證據導出的驗證產物
+Audit Report = 對 lifecycle / artifacts 的治理判定
+```
+
+這樣才能真正支援：
+
+```text
+resume
+replay
+fork
+crash recovery
+UI rendering
+telemetry
+audit
+```
+
+而不是靠聊天紀錄或多份 JSON 猜現在發生到哪裡。
+
+---
+
+## 四、第二層 Agent 是什麼
 
 第二層 Agent 關心的是某個任務內部怎麼跑。
 
 定義：
 
 ```text
-工具固定
-權限固定
+能力固定
+權限邊界固定
 任務邊界固定
 但步驟由 Agent 自己決定
 ```
@@ -99,7 +246,7 @@ Harness 不一定管「Agent 下一步要查訂單還是查政策」。
 例如客服改地址 Agent：
 
 ```text
-工具固定：
+可用工具：
 - get_order
 - search_policy
 - update_address
@@ -109,20 +256,193 @@ Agent 自己決定：
 - 先查訂單？
 - 先問使用者？
 - 要不要查政策？
-- 要不要送 approval？
+- 是否提出具有副作用的 tool request？
 ```
 
 它關心的是：
 
-> 在一組固定工具和規則內，Agent 如何自主決定下一步？
+> 在一組固定能力和規則內，Agent 如何自主決定下一步？
 
-## 四、Run-level Control Plane vs Task-level Decision Loop
+但要注意：
 
-### Harness：Run-level Control Plane
+```text
+Agent 決定「想做什麼」
+≠
+Agent 有權直接「真的做」
+```
 
-Harness 的層級比較高。
+實際副作用仍必須經過 Harness 的 execution control。
 
-它像任務控制塔：
+---
+
+## 五、Tool Execution Pipeline：Model 想做，不代表可以直接做
+
+簡單 Agent 常寫成：
+
+```text
+model tool call
+→ tool.execute(args)
+→ result
+```
+
+這會把 permission、approval、timeout、sandbox、filesystem guard 全塞進各工具自己處理，最後很難治理。
+
+Harness 應該統一成：
+
+```text
+tool/call
+    ↓
+pre-execute hooks
+    ↓
+permission / policy
+    ↓
+approval（需要時）
+    ↓
+guards
+    ↓
+execution wrapper
+  timeout / retry / metrics
+    ↓
+tool.execute()
+    ↓
+filesystem / side-effect guard
+    ↓
+post-execute hooks
+    ↓
+result normalization
+    ↓
+tool/result
+```
+
+因此邊界應該是：
+
+```text
+Agent
+  ↓ request
+Tool Runtime
+  ↓
+Policy
+  ↓
+Approval
+  ↓
+Guard / Sandbox
+  ↓
+Execute
+  ↓
+Observe / Log
+```
+
+任何具有副作用的能力都不應讓 Agent 直接繞過這條管線。
+
+這個設計的價值是把：
+
+```text
+能力本身
+```
+
+和：
+
+```text
+能力能不能在這一次被使用
+```
+
+拆開。
+
+---
+
+## 六、Agent Loop 與 Harness Runtime 的關係
+
+Agent Loop 不是整個 Harness；但 Agent Loop 可以是 Harness Runtime 的可替換元件。
+
+最小 loop：
+
+```text
+claim input
+→ assemble context + tool schemas
+→ call model
+→ append assistant output
+→ execute requested tools through pipeline
+→ append tool results
+→ determine continuation
+→ next step / turn end
+```
+
+Harness 不應假設一定是：
+
+```text
+ReAct
+某種 Planner
+某一家 LLM
+某個固定 agent implementation
+```
+
+比較好的結構是：
+
+```text
+              Agent Interface
+                    ▲
+        ┌───────────┼───────────┐
+        │           │           │
+ Default Loop   Workflow    External Agent
+        │                       │
+     Subagent                delegated runtime
+```
+
+其他元件依賴的是 Agent / Runner contract，而不是某個具體 loop implementation。
+
+---
+
+## 七、Capability Seam：能力與 Provider 解耦
+
+Tool 不應直接綁死底層執行世界。
+
+更可替換的結構是：
+
+```text
+Consumer / Tool
+      ↓
+Capability Interface
+      ↓
+Provider
+```
+
+例如：
+
+```text
+filesystem tool
+      ↓
+Filesystem Capability
+      ↓
+Local Provider / Remote Sandbox Provider
+```
+
+```text
+subagent tool
+      ↓
+Subagent Capability
+      ↓
+Local Agent / External Agent / Other Runtime
+```
+
+```text
+LLM call
+      ↓
+LLM Adapter
+      ↓
+Provider A / Provider B
+```
+
+這種 seam 的重點不是抽象化本身，而是：
+
+> 換 Provider 時，不需要重寫 Agent Loop、Tool Schema、Governance 與上層流程。
+
+---
+
+## 八、Run-level Control Plane vs Task-level Decision Loop
+
+### Run Governance：Run-level Control Plane
+
+Run Governance 的層級比較高。
 
 ```text
 start run
@@ -144,66 +464,77 @@ start run
 
 ### 第二層 Agent：Task-level Decision Loop
 
-第二層 Agent 的層級比較低。
-
-它像任務內部的決策引擎：
+第二層 Agent 是任務內部的決策引擎：
 
 ```text
 read state
 → choose next action
-→ validate action
-→ execute tool
-→ update state
-→ verify result
+→ request tool
+→ receive authoritative result
+→ update local decision state
 → continue / ask user / finish
 ```
 
 它的核心問題是：
 
 ```text
-下一步該使用哪個工具？
+下一步該做什麼？
 ```
 
-## 五、兩者如何搭配
+### Harness Runtime：Execution Runtime
 
-最合理的關係是：
+Harness Runtime 則負責：
 
 ```text
-Harness
-└── Task: 建立客服改地址 Agent
-    ├── bootstrap task-state
-    ├── 定義 tool contracts
-    ├── 執行第二層 Agent loop
-    ├── 收集 action trace
-    ├── 跑 component eval
-    ├── 跑 end-to-end eval
-    ├── 產生 verification report
-    └── close-out / audit
+如何把這次 decision 變成真正、受控、可追蹤的執行。
 ```
 
-也就是：
+三者不能混為同一件事。
+
+---
+
+## 九、兩者如何搭配
+
+完整關係應該是：
 
 ```text
-Harness 包住第二層 Agent
-第二層 Agent 是 Harness 裡的一種可執行工作單元
+Agent Harness
+├── Harness Runtime
+│   ├── Session Event Log
+│   ├── Model / Context
+│   ├── Agent Loop
+│   └── Tool Execution Pipeline
+│
+└── Run Governance
+    └── Task: 建立客服改地址 Agent
+        ├── bootstrap task-state
+        ├── 定義 tool contracts
+        ├── 執行第二層 Agent decision loop
+        ├── 收集 action trace
+        ├── 跑 component eval
+        ├── 跑 end-to-end eval
+        ├── 產生 verification report
+        └── close-out / audit
 ```
 
-Harness 可以把第二層 Agent 的內部事件收斂成外層 artifact：
+第二層 Agent 的內部事件可以投影成治理 artifact：
 
-| 第二層 Agent 內部事件 | Harness 可收斂成 |
+| Runtime / Agent 事件 | Governance 可收斂成 |
 |---|---|
-| tool call | action trace / tool contract result |
-| state transition | task-state update |
-| approval request | human handoff artifact |
+| tool/call + tool/result | action trace / tool contract result |
+| state transition | task-state projection |
+| approval request/result | human handoff / approval artifact |
 | verifier result | verification report |
 | repeated failure | blocked state / repair request |
 | final response | deliverable |
 
-## 六、具體例子：客服改地址 Agent
+---
+
+## 十、具體例子：客服改地址 Agent
 
 ### 任務：做客服改地址 Agent
 
-Harness 會管：
+Run Governance 會管：
 
 ```text
 - 這個任務叫什麼？
@@ -215,18 +546,29 @@ Harness 會管：
 - 完成後要不要寫入 know / memory / RAG？
 ```
 
-第二層 Agent 會管：
+第二層 Agent 會判斷：
 
 ```text
 - 使用者沒給 order_id，要問使用者
 - 有 order_id，要查 get_order
 - 未出貨，要查 search_policy
-- 政策允許，要 request_approval
-- approval 後才能 update_address
-- 完成後 draft / send email
+- 政策允許，提出 update_address request
+- 完成後提出 draft / send email request
 ```
 
-### Harness 流程
+Harness Runtime 則負責：
+
+```text
+- 記錄 user/message
+- 呼叫 model
+- 記錄 tool/call
+- 判斷 update_address 是否需要 approval
+- approval 不成立時不得執行
+- 執行工具並記錄 tool/result
+- 失敗時保留可恢復狀態
+```
+
+### Run Governance 流程
 
 ```text
 1. 建立 task-state：customer-address-agent
@@ -235,37 +577,35 @@ Harness 會管：
    - 缺 order_id 時會詢問
    - 高風險操作需要 approval
    - end-to-end case 通過
-3. 建立 tool contracts：
-   - get_order
-   - search_policy
-   - update_address
-   - send_email
+3. 建立 tool contracts
 4. 執行 Agent loop
-5. 收集 action trace
+5. 收集 / 投影 action trace
 6. 跑 eval
 7. 建 verification report
 8. close-out
 ```
 
-### 第二層 Agent 流程
+### 第二層 Agent 決策流程
 
 ```text
 1. 收到使用者：我要改 A127 地址到建國南路
-2. 呼叫 get_order(A127)
-3. 發現未出貨
-4. 呼叫 search_policy(address_change)
+2. request get_order(A127)
+3. 收到未出貨結果
+4. request search_policy(address_change)
 5. 判斷允許修改
-6. 送出 update_address approval
-7. approval 通過後呼叫 update_address
-8. 草擬通知 email
-9. 送出 send_email approval
-10. 寄出 email
+6. request update_address
+7. Harness 執行 approval / policy / guard
+8. 通過後真正執行 update_address
+9. request send_email
+10. Harness 再做副作用控制
 11. 回覆使用者完成
 ```
 
-## 七、什麼情況只需要 Harness
+---
 
-如果任務本身步驟固定，不需要 Agent 自主選擇下一步，只需要外層追蹤和驗證，那只需要 Harness。
+## 十一、什麼情況只需要 Run Governance
+
+如果任務本身步驟固定，不需要 Agent 自主選擇下一步，只需要外層追蹤和驗證，就不需要第二層 Agent。
 
 例子：
 
@@ -286,9 +626,11 @@ audit
 memory target
 ```
 
-但不需要 Agent 自己決定工具順序。
+底下仍可跑在 Harness Runtime 上，但不需要自主 Agent decision loop。
 
-## 八、什麼情況需要第二層 Agent
+---
+
+## 十二、什麼情況需要第二層 Agent
 
 如果任務內部有分支、例外、工具選擇，而且工具邊界明確，就適合第二層 Agent。
 
@@ -302,7 +644,7 @@ memory target
 - RAG + tool action 的業務助理
 ```
 
-這些任務需要 Agent 自己判斷：
+它需要判斷：
 
 ```text
 資訊夠不夠？
@@ -310,42 +652,40 @@ memory target
 要先查哪個資料源？
 要不要使用 RAG？
 要不要呼叫外部工具？
-是否需要 approval？
+是否提出需要 approval 的 action？
 ```
 
-## 九、什麼情況兩者都需要
+---
+
+## 十三、什麼情況 Runtime、Governance、第二層 Agent 都需要
 
 當任務同時具備：
 
 ```text
-1. 多步驟、需要驗證、需要可恢復
-2. 任務內部又有 Agent 自主決策
+1. 有真正工具或外部副作用
+2. 多步驟、需要驗證、需要可恢復
+3. 任務內部有 Agent 自主決策
 ```
 
-就應該兩者都用。
+三層都需要。
 
-例子：
+例如：
 
 ```text
-- 建立 production 客服 Agent
-- 做一套 RAG + tool-calling 的企業知識助理
+- production 客服 Agent
+- RAG + tool-calling 的企業知識助理
 - 自動化資料修復 Agent
 - 半自動交易研究 Agent
 - 多工具 DevOps Agent
 ```
 
-此時：
+---
 
-```text
-Harness 負責治理整個 run
-第二層 Agent 負責 run 裡的自主決策工作單元
-```
+## 十四、與 workspace agent-system-foundation 的對照
 
-## 十、與 workspace agent-system-foundation 的對照
+目前 workspace 裡的 `agent-system-foundation/` 最成熟的是 **Run Governance**。
 
-目前 workspace 裡的 `agent-system-foundation/` 比較接近 Harness。
-
-它已經具備的方向包括：
+已具備：
 
 ```text
 bootstrap
@@ -361,13 +701,13 @@ repair orchestration
 memory target recommendation
 ```
 
-所以它的定位不是「某個業務 Agent」，而是：
+所以它不是某個業務 Agent，而是：
 
 ```text
-多步任務的外層治理框架
+多步任務的治理框架
 ```
 
-它可以管理很多種任務：
+它可以管理：
 
 ```text
 固定腳本任務
@@ -378,13 +718,25 @@ subagent 任務
 第二層 Agent 任務
 ```
 
-其中第二層 Agent 只是它可承載的一種任務形態。
+接下來真正需要補齊的不是更多治理 artifact，而是 Harness Runtime 底層：
 
-## 十一、實作建議
+```text
+append-only session event model
+LLM adapter seam
+Agent interface / loop separation
+centralized tool execution pipeline
+capability / provider abstraction
+sandbox execution boundary
+runtime recovery invariants
+```
 
-### 如果要做第二層 Agent，不要把 Harness 和 Agent loop 混在一起
+---
 
-建議分層：
+## 十五、實作建議
+
+### 資料夾概念不要再切成「Harness vs Agent Runtime」
+
+原本：
 
 ```text
 /harness
@@ -401,12 +753,47 @@ subagent 任務
   verifier
 ```
 
-Harness 不應該直接塞滿業務工具細節。  
-Agent loop 也不應該自己處理整個任務生命週期治理。
+實體資料夾可以暫時保留，但概念應改成：
 
-### Harness 應該看到什麼
+```text
+/agent-harness
+  /runtime
+    session
+    context
+    llm-adapter
+    agent-interface
+    agent-loop
+    tool-registry
+    tool-runtime
+    permission
+    sandbox
 
-Harness 需要的是摘要化 artifact：
+  /governance
+    task-state
+    verification
+    audit
+    repair
+    handoff
+    close-out
+```
+
+`planner / decision policy` 則是 Runtime 中可替換的 Agent implementation，不應跟整個 Harness 對立。
+
+### Harness 應看到什麼
+
+Runtime 層應保存真實事件：
+
+```text
+user/message
+assistant/message
+tool/call
+tool/result
+approval result
+turn / step boundary
+runtime error / cancellation
+```
+
+Governance 層則使用摘要化 artifact：
 
 ```text
 action trace
@@ -417,9 +804,9 @@ approval record
 final deliverable
 ```
 
-### 第二層 Agent 應該看到什麼
+### 第二層 Agent 應看到什麼
 
-第二層 Agent 需要的是任務內部上下文：
+Agent 需要的是任務內部前後文：
 
 ```text
 current state
@@ -427,60 +814,90 @@ available tools
 tool descriptions
 business constraints
 user request
-recent tool results
-approval status
+recent authoritative tool results
+approval status（若與下一步決策相關）
 ```
 
 ### 邊界原則
 
 ```text
-Harness 管「任務是否可靠完成」
+Harness Runtime 管「執行如何發生」
+Run Governance 管「任務是否可靠完成」
 Agent 管「下一步該做什麼」
-Tool Executor 管「能不能真的做」
+Tool Runtime 管「這次要求能不能真的做」
 Verifier 管「做完是否正確」
 Human Approval 管「高風險副作用是否允許」
+Event Log 管「實際發生了什麼」
 ```
 
-## 十二、常見混淆
+---
+
+## 十六、常見混淆
 
 ### 混淆 1：有 Harness 就等於有 Agent
 
+不對。Harness 可以管理 deterministic workflow，不需要自主 Agent。
+
+### 混淆 2：有 Agent loop 就等於有完整 Harness
+
+也不對。只有 loop，但沒有 durable session、guarded tool execution、recovery、governance，就只是能跑，不代表可治理。
+
+### 混淆 3：Run Governance 就等於完整 Harness
+
+不完整。Run Governance 是 Harness 的重要一層，但還需要 Runtime 才能回答「執行事實從哪裡來、工具如何受控、如何 resume/replay」。
+
+### 混淆 4：第二層 Agent 可以取代 Harness
+
+不建議。Agent 解決的是任務內決策彈性，不負責整個 runtime 與 run governance。
+
+### 混淆 5：Harness 應該控制 Agent 每一步
+
+不一定。如果 Harness 把 decision sequence 全寫死，Agent 就退回 deterministic workflow。Harness 應控制邊界、執行規則與驗證；Agent 在邊界內自主決策。
+
+### 混淆 6：Tool call 就等於已執行
+
 不對。
 
-Harness 可以管理完全 deterministic 的流程，不需要 Agent 自主決策。
+```text
+tool/call = Agent / Model 的執行意圖
+tool/result = Harness Runtime 記錄的執行結果
+```
 
-### 混淆 2：有 Agent loop 就等於有 Harness
+中間必須經過 policy / approval / guard / execution。
 
-也不對。
+---
 
-Agent loop 可能能完成任務，但如果沒有 task-state、verification、audit、close-out，就很難治理。
+## 十七、總結
 
-### 混淆 3：第二層 Agent 可以取代 Harness
-
-不建議。
-
-第二層 Agent 解決的是任務內的決策彈性，不負責整個 run 的治理閉環。
-
-### 混淆 4：Harness 應該控制 Agent 每一步
-
-也不一定。
-
-如果 Harness 把每一步都寫死，Agent 就退回第一層 workflow。比較好的做法是：Harness 設邊界與驗證，Agent 在邊界內自主決策。
-
-## 十三、總結
-
-兩者分工如下：
+新版分工：
 
 ```text
-Harness：
-任務生命週期治理
-bootstrap → execution → verification → close-out → audit
+Agent Harness
+├── Harness Runtime
+│   └── session → context → model → agent loop → tool pipeline → event log
+│
+└── Run Governance
+    └── bootstrap → execution governance → verification → repair → close-out → audit
 
-第二層 Agent：
-任務內部自主決策
-state → choose action → validate → execute tool → update state → finish
+第二層 Agent
+└── state → choose action → request tool → evaluate result → continue / finish
 ```
 
 最重要的一句話：
 
-> Harness 是讓任務可靠落地的外層控制系統；第二層 Agent 是在固定工具與規則內做彈性決策的內層工作單元。
+> **Agent Harness 是控制 Agent 如何取得前後文、如何呼叫模型、如何執行工具、如何限制副作用、如何保存執行事實，以及如何讓任務可恢復、可驗證、可治理的執行系統；第二層 Agent 則是在這個系統內負責下一步決策的工作單元。**
+
+---
+
+## 參考架構
+
+- DeepSeek Harness Architecture：`deepseek-ai/deepseek-harness/docs/architecture.md`
+- DeepSeek Harness Tool Execution Pipeline：`deepseek-ai/deepseek-harness/docs/tool-execution-pipeline.md`
+
+本文件吸收的不是特定實作或 Cordis plugin 機制，而是三個可泛化原則：
+
+```text
+1. durable event log 作為執行事實來源
+2. tool execution 必須集中經過 policy / guard / sandbox pipeline
+3. agent loop、model、capability provider 應透過 interface / adapter seam 可替換
+```
