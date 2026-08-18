@@ -21,14 +21,16 @@
 const PAGE_SIZE=9;
 const latest={title:'Agent 執行流程 SOP：Decision、Loop、Stop 與驗證',rel:'notes/ai/agent-flow-sop.md',slug:'agent-flow-sop',url:'note.html?slug=agent-flow-sop',excerpt:'一套可重複套用的 Agent 執行流程 SOP，整理 State、Evidence、Decision Policy、Action、Loop、Progress Detection、Verify、Stop、Human Escalation 與 Execution Budget，並附 Mermaid 流程圖。'};
 let entries=[],page=1;
+const searchBodies=new Map();
 const cards=document.getElementById('cards'),count=document.getElementById('count'),summary=document.getElementById('summary'),search=document.getElementById('search'),pagination=document.getElementById('pagination');
 const norm=s=>(s||'').toLocaleLowerCase('zh-Hant');
-function filtered(){const q=norm(search.value.trim());return entries.filter(e=>!q||norm(`${e.title} ${e.excerpt||''} ${e.rel||''}`).includes(q));}
+function filtered(){const q=norm(search.value.trim());return entries.filter(e=>!q||norm(`${e.title} ${e.excerpt||''} ${e.rel||''} ${searchBodies.get(e.slug)||''}`).includes(q));}
 function render(){const list=filtered();const pages=Math.max(1,Math.ceil(list.length/PAGE_SIZE));if(page>pages)page=1;const start=(page-1)*PAGE_SIZE;const shown=list.slice(start,start+PAGE_SIZE);cards.innerHTML=shown.length?shown.map(e=>`<a class="card" href="${e.url}"><div><h3 class="card-title">${esc(e.title)}</h3><p class="card-excerpt">${esc(e.excerpt||'')}</p></div><div class="card-meta"><code>${esc(e.rel||'')}</code></div></a>`).join(''):'<div class="empty">找不到符合的筆記。</div>';count.textContent=search.value.trim()?`找到 ${list.length} 篇（第 ${page} / ${pages} 頁）`:`共 ${entries.length} 篇（第 ${page} / ${pages} 頁）`;pagination.innerHTML='';if(pages>1){pagination.append(btn('‹ 上一頁',page===1,()=>{page--;render()}));for(let i=1;i<=pages;i++){const b=btn(String(i),false,()=>{page=i;render()});if(i===page)b.classList.add('active');pagination.append(b)}pagination.append(btn('下一頁 ›',page===pages,()=>{page++;render()}));}}
 function btn(text,disabled,fn){const b=document.createElement('button');b.className='page-btn';b.textContent=text;b.disabled=disabled;b.onclick=fn;return b}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function loadSearchBodies(){await Promise.all(entries.map(async e=>{try{const r=await fetch('notes/'+e.slug+'.md');if(r.ok)searchBodies.set(e.slug,await r.text())}catch(_){}}));render()}
 search.addEventListener('input',()=>{page=1;render()});
-fetch('manifest.json?ts='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(data=>{entries=Array.isArray(data)?data:[];if(!entries.some(e=>e.slug===latest.slug))entries.unshift(latest);summary.textContent=`知識展示與分享庫。目前共 ${entries.length} 篇筆記。`;render()}).catch(err=>{entries=[latest];summary.textContent='manifest 載入失敗，顯示最新筆記。';count.textContent=`載入錯誤：${err.message}`;render()});
+fetch('manifest.json?ts='+Date.now()).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(data=>{entries=Array.isArray(data)?data:[];if(!entries.some(e=>e.slug===latest.slug))entries.unshift(latest);summary.textContent=`知識展示與分享庫。目前共 ${entries.length} 篇筆記。`;render();loadSearchBodies()}).catch(err=>{entries=[latest];summary.textContent='manifest 載入失敗，顯示最新筆記。';count.textContent=`載入錯誤：${err.message}`;render()});
 })();
 </script>
 </body></html>

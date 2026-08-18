@@ -1,10 +1,17 @@
 [
   {
+    "title": "Agent 執行流程 SOP：Decision、Loop、Stop 與驗證",
+    "rel": "notes/ai/agent-flow-sop.md",
+    "slug": "agent-flow-sop",
+    "url": "note.html?slug=agent-flow-sop",
+    "excerpt": "這是一套可重複套用的 Agent 執行流程標準作業程序（SOP）。目的不是讓 Agent「更自由」，而是把 Agent 的控制邏輯明確化：它如何觀察、保存狀態、做決策、執行、驗證、循環、停止，以及什麼時候必須升級人工。 這份 SOP 適用於 Code Review、測試分析、研究、除錯、文件分析、工作流代理等需要多步判斷與工具操作的 Agent。 成熟 Agent 的重點不是「…"
+  },
+  {
     "title": "RESTful 退款 API 設計：從 Resource Modeling 到 Idempotency、Concurrency 與 Reconciliation",
     "rel": "notes/restful-refund-api-design.md",
     "slug": "restful-refund-api-design",
     "url": "note.html?slug=restful-refund-api-design",
-    "excerpt": "整理退款 API 設計面試題，涵蓋 Resource Modeling、Idempotency、Concurrency、Async Refund、第三方 Callback、Reconciliation 與一致性設計。"
+    "excerpt": "這份文件以「設計一個退款 API」作為後端工程師面試題，整理從基礎 RESTful API 到正式金流系統會遇到的設計問題。 重點不是背 GET / POST / PUT / DELETE 或 HTTP Status Code，而是看面對部分退款、多次退款、timeout retry、併發退款、第三方非同步退款、callback 遺失與 API 重送時，能否維持清楚的 Reso…"
   },
   {
     "title": "時間序列模擬：用時間軸推演狀態變化找出規格歧義",
@@ -39,7 +46,7 @@
     "rel": "第二層 Agent 實作設計：固定工具下的受控自主工作流.md",
     "slug": "second-layer-agent-controlled-autonomy",
     "url": "note.html?slug=second-layer-agent-controlled-autonomy",
-    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」，而是 受控自主。…"
+    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」，而是 受控自主。"
   },
   {
     "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
@@ -49,18 +56,18 @@
     "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
   },
   {
-    "title": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口",
+    "title": "high-write-message-system-cassandra-tombstone",
     "rel": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md",
     "slug": "high-write-message-system-cassandra-tombstone",
     "url": "note.html?slug=high-write-message-system-cassandra-tombstone",
     "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](外部連結"
   },
   {
-    "title": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工",
+    "title": "第二層 Agent 與 Harness 系統的差異：Runtime、任務治理與自主決策的分工",
     "rel": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工.md",
     "slug": "second-layer-agent-vs-harness",
     "url": "note.html?slug=second-layer-agent-vs-harness",
-    "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。 第二層 Agent 則一定有「Agent 自…"
+    "excerpt": "這份文件說明「第二層 Agent」與「Agent Harness」的差異與分工，並補上完整 Harness 應包含的 Runtime 層。 早期版本把 Harness 主要描述成「管理整個任務生命週期的外層執行框架」。這個描述對 agent-system-foundation 目前實作的 Run Governance 是成立的，但若拿來描述完整 Agent Harness，範圍…"
   },
   {
     "title": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆",
@@ -74,7 +81,7 @@
     "rel": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式.md",
     "slug": "dependency-injection-pure-di-container-lifecycle",
     "url": "note.html?slug=dependency-injection-pure-di-container-lifecycle",
-    "excerpt": " 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依賴交給它。…"
+    "excerpt": " 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依賴交給它。"
   },
   {
     "title": "這篇文章在講什麼",
@@ -95,7 +102,7 @@
     "rel": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄.md",
     "slug": "tw-day-trading-mcp-cli-wrapper-openclaw",
     "url": "note.html?slug=tw-day-trading-mcp-cli-wrapper-openclaw",
-    "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。…"
+    "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。"
   },
   {
     "title": "OpenClaw Usage",
@@ -116,7 +123,7 @@
     "rel": "notes/ai-specification-engineering/02-AI-協作收斂：從大量資料表回到業務模型.md",
     "slug": "ai-specification-model-convergence",
     "url": "note.html?slug=ai-specification-model-convergence",
-    "excerpt": "AI 收到一段業務描述後，常先產生大量 entity 與資料表。語言模型傾向把每個名詞都實體化，再用「通用企業系統」慣例補齊歷程、設定、對照與稽核表。問題不在第一版發散，而在團隊是否有方法把它收斂。 資料表不是需求的起點。先找業務不變量、交易邊界與生命週期，再決定持久化模型。若直接對著 AI 產生的表逐張討論欄位，團隊會被假精確拖走。 對每個候選表提出四個問題：…"
+    "excerpt": "AI 收到一段業務描述後，常先產生大量 entity 與資料表。語言模型傾向把每個名詞都實體化，再用「通用企業系統」慣例補齊歷程、設定、對照與稽核表。問題不在第一版發散，而在團隊是否有方法把它收斂。 資料表不是需求的起點。先找業務不變量、交易邊界與生命週期，再決定持久化模型。若直接對著 AI 產生的表逐張討論欄位，團隊會被假精確拖走。 對每個候選表提出四個問題："
   },
   {
     "title": "完整操作範例：以訂單與付款流程建立規格",
@@ -130,7 +137,7 @@
     "rel": "notes/ai-specification-engineering/03-驗證與追蹤：在開發前發現規格錯誤.md",
     "slug": "ai-specification-validation-traceability",
     "url": "note.html?slug=ai-specification-validation-traceability",
-    "excerpt": "規格工程的價值不在文件數量，而在規格能否被攻擊、被檢查、被重播。驗證要在開發前找出矛盾、缺口、不可達狀態與錯誤優先順序。 每條重要規則至少需要三種證據：來源證據、Given／When／Then 或 Decision Table 的行為證據，以及 schema validation、狀態機測試、property test 或 model simulation 的執行證據。…"
+    "excerpt": "規格工程的價值不在文件數量，而在規格能否被攻擊、被檢查、被重播。驗證要在開發前找出矛盾、缺口、不可達狀態與錯誤優先順序。 每條重要規則至少需要三種證據：來源證據、Given／When／Then 或 Decision Table 的行為證據，以及 schema validation、狀態機測試、property test 或 model simulation 的執行證據。"
   },
   {
     "title": "規格即程式：用型別、狀態機與不變量定義需求",
@@ -158,14 +165,14 @@
     "rel": "TiDB RAG：從自架技能包到可重用知識基線.md",
     "slug": "tidb-rag-reusable-knowledge-baseline",
     "url": "note.html?slug=tidb-rag-reusable-knowledge-baseline",
-    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data…"
+    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data"
   },
   {
     "title": "OpenClaw 降本提效 checklist",
     "rel": "OpenClaw 降本提效 checklist.md",
     "slug": "openclaw-cost-performance-checklist",
     "url": "note.html?slug=openclaw-cost-performance-checklist",
-    "excerpt": "只送這次任務需要的片段 歷史對話先摘要，再送摘要 長 memory 先檢索，別整包塞進去 FAQ / 分類 / 格式化，先用便宜模型或本地模型 長文推理 / 高風險判斷，才升級強模型 能批次處理的就不要一筆一請求 高頻問題直接快取答案 標準流程輸出可快取中間結果 重複查詢先查 cache，再進模型 刪掉重複指令 把長說明改成短規則 用條列，不要堆散文 設每日 / 每月用量上限…"
+    "excerpt": "只送這次任務需要的片段 歷史對話先摘要，再送摘要 長 memory 先檢索，別整包塞進去 FAQ / 分類 / 格式化，先用便宜模型或本地模型 長文推理 / 高風險判斷，才升級強模型 能批次處理的就不要一筆一請求 高頻問題直接快取答案 標準流程輸出可快取中間結果 重複查詢先查 cache，再進模型 刪掉重複指令 把長說明改成短規則 用條列，不要堆散文 設每日 / 每月用量上限"
   },
   {
     "title": "RAG 大量文件的多層次儲存與檢索設計",
@@ -186,7 +193,7 @@
     "rel": "OpenClaw workflow 降本改造方案.md",
     "slug": "openclaw-workflow-cost-reduction",
     "url": "note.html?slug=openclaw-workflow-cost-reduction",
-    "excerpt": "不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷 先做粗分類，再做精推理 能批次做的不要逐筆做…"
+    "excerpt": "不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷 先做粗分類，再做精推理 能批次做的不要逐筆做"
   },
   {
     "title": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充",
@@ -207,17 +214,17 @@
     "rel": "Antigravity CLI 內容處理器：agy-content 的設計與封裝原則.md",
     "slug": "antigravity-cli-agy-content-wrapper",
     "url": "note.html?slug=antigravity-cli-agy-content-wrapper",
-    "excerpt": "整理日期：2026-06-27 這份筆記整理一次把 Antigravity CLI (agy) 包成內容處理工具的討論與實作重點。目標不是打造完整 agent，也不是把 OpenClaw 直接改成 Antigravity runtime，而是先做一個小而穩的 CLI wrapper，讓翻譯、總結、創意發想、潤稿這類低到中風險內容任務可以快速交給 agy 處理。…"
+    "excerpt": "整理日期：2026-06-27 這份筆記整理一次把 Antigravity CLI (agy) 包成內容處理工具的討論與實作重點。目標不是打造完整 agent，也不是把 OpenClaw 直接改成 Antigravity runtime，而是先做一個小而穩的 CLI wrapper，讓翻譯、總結、創意發想、潤稿這類低到中風險內容任務可以快速交給 agy 處理。"
   },
   {
-    "title": "Laravel 的事件概念及實作方式",
+    "title": "laravel-events-concepts-implementation",
     "rel": "Laravel 的事件概念及實作方式.md",
     "slug": "laravel-events-concepts-implementation",
     "url": "note.html?slug=laravel-events-concepts-implementation",
     "excerpt": "在 Laravel 中事件 (Event) 是一種發佈-訂閱模式(Publish-Subscribe)的實作方式 ，它可以使應用程式中的邏輯從執行中分離出來，讓整個程式碼更加清晰明瞭。 當一個特定的事件發生時，會發送出該事件並且觸發訂閱這個事件的所有處理函式。 透過 event() 函式或 Event facade 來發送事件。例如 event(new UserRegister…"
   },
   {
-    "title": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文",
+    "title": "gemma-4-explained",
     "rel": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文.md",
     "slug": "gemma-4-explained",
     "url": "note.html?slug=gemma-4-explained",
@@ -228,7 +235,7 @@
     "rel": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計.md",
     "slug": "avif-image-format-implementation",
     "url": "note.html?slug=avif-image-format-implementation",
-    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路：…"
+    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路："
   },
   {
     "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
@@ -263,20 +270,20 @@
     "rel": "AI/AI提示詞十則/AI 提示詞十則：情境、推理、誠實與風險檢查.md",
     "slug": "ai-prompt-patterns",
     "url": "note.html?slug=ai-prompt-patterns",
-    "excerpt": "這份筆記整理老闆提供的 10 張提示詞卡片，已從簡體中文轉成符合台灣正體中文語法的版本，並補成我之後可直接查用的「提示詞選擇表」。 重點不是背十句咒語，而是依當下任務選擇正確規則：要背景、要推理、要誠實、要批判、要收斂、要格式、要假設審計、要壓縮上下文，或要上線前預演失敗。 如果老闆給的是模糊任務，先用 情境簡報。 如果老闆要決策品質，加入 推理要求、誠實約束、假設審計。…"
+    "excerpt": "這份筆記整理老闆提供的 10 張提示詞卡片，已從簡體中文轉成符合台灣正體中文語法的版本，並補成我之後可直接查用的「提示詞選擇表」。 重點不是背十句咒語，而是依當下任務選擇正確規則：要背景、要推理、要誠實、要批判、要收斂、要格式、要假設審計、要壓縮上下文，或要上線前預演失敗。 如果老闆給的是模糊任務，先用 情境簡報。 如果老闆要決策品質，加入 推理要求、誠實約束、假設審計。"
   },
   {
     "title": "AI-First Testing：收斂、探索與可重複執行",
     "rel": "AI-First Testing：收斂、探索與可重複執行.md",
     "slug": "ai-first-testing-workflow",
     "url": "note.html?slug=ai-first-testing-workflow",
-    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
+    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：外部連結 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
   },
   {
     "title": "Refresh Token 問題處理與架構設計指南",
     "rel": "notes/refresh-token-design-guide.md",
     "slug": "refresh-token-design-guide",
     "url": "note.html?slug=refresh-token-design-guide",
-    "excerpt": "整理 Refresh Token 的安全儲存、Rotation、併發控制、多分頁同步、SSR、Cookie、Logout Race 與 Session 生命週期設計。"
+    "excerpt": "整理 Refresh Token 在 Web 系統中真正容易出錯的地方，重點放在 Session 狀態一致性、併發、Rotation、跨分頁、SSR、Cookie、Logout 與生命週期。本文不把 Refresh 視為單一 API 行為，而是視為 Authentication Session 的狀態轉換。 Refresh Token 不應成為 JavaScript 可直接讀取…"
   }
 ]
