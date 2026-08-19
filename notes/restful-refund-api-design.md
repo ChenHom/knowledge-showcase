@@ -222,6 +222,21 @@ Client 不知道退款是否成功建立，因此 retry。
 Idempotency-Key: abc123
 ```
 
+例如：
+
+```http
+POST /payments/payment_123/refunds
+Idempotency-Key: abc123
+```
+
+第一次 request：
+
+```json
+{
+  "amount": 200
+}
+```
+
 Server 至少保存：
 
 ```text
@@ -231,13 +246,56 @@ refund_id
 response/status
 ```
 
-相同 key + 相同 request 應回原 Refund；相同 key + 不同 request 應拒絕，例如 `409 Conflict`。
+Client timeout 後再次傳相同 request：
+
+```text
+same key
+same payload
+```
+
+Server 應回原本的：
+
+```text
+refund_123
+```
+
+而不是再建立：
+
+```text
+refund_124
+```
 
 ---
 
 ## 5. 同 Idempotency-Key，但重送內容不同呢？
 
-第一次 amount=200，第二次 amount=500，兩次都使用相同 `Idempotency-Key`，不能視為正常 retry。
+這是 timeout retry 很重要但很容易漏掉的情況。
+
+第一次：
+
+```json
+{
+  "amount": 200
+}
+```
+
+第二次：
+
+```json
+{
+  "amount": 500
+}
+```
+
+兩次都使用：
+
+```text
+Idempotency-Key = abc123
+```
+
+這不能視為正常 retry。
+
+應拒絕，例如：
 
 ```http
 409 Conflict
@@ -250,7 +308,7 @@ response/status
 }
 ```
 
-實作上可保存 canonicalized request 後的雜湊值：
+實作上可以保存 canonicalized request 後的雜湊值，而不是直接比較未處理的 JSON 字串：
 
 ```text
 idempotency_key
@@ -259,13 +317,52 @@ refund_id
 status
 ```
 
+核心規則：
+
+```text
+same key + same semantic request
+→ retry
+→ return original operation
+
+same key + different semantic request
+→ conflict
+```
+
 ---
 
 ## 6. 客服後台退款與商戶 API 要分開思考
 
-客服後台通常沒有天然的 `merchant_refund_no`，可使用 `operation_id / idempotency_key` 防止按鈕連點、瀏覽器 timeout、前端 retry、網路 retry。
+設計退款 API 時，要先確認 caller 是誰。
 
-商戶系統通常可提供自己的退款單號：
+### 6.1 客服後台操作
+
+客服在後台按退款，通常沒有天然的 `merchant_refund_no`。
+
+前端或 Server 可以建立：
+
+```text
+operation_id / idempotency_key
+```
+
+例如：
+
+```http
+POST /payments/P001/refunds
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+```
+
+它主要防止：
+
+```text
+按鈕連點
+瀏覽器 timeout
+前端 retry
+網路 retry
+```
+
+### 6.2 商戶系統呼叫
+
+商戶通常可以提供自己的退款單號：
 
 ```json
 {
@@ -274,11 +371,21 @@ status
 }
 ```
 
-DB 應至少對 `merchant_id + merchant_refund_no` 建立 unique constraint。
+DB 應至少對：
+
+```text
+merchant_id + merchant_refund_no
+```
+
+建立 unique constraint。
+
+這個單號本身就是 business idempotency 的一部分。
 
 ---
 
 ## 7. `Idempotency-Key` 與商戶退款單號不是完全相同的東西
+
+可以這樣區分：
 
 ```text
 Idempotency-Key
@@ -290,13 +397,62 @@ merchant_refund_no
 
 兩者可以同時存在。
 
+例如：
+
+```http
+POST /payments/P001/refunds
+Idempotency-Key: http-op-123
+```
+
+```json
+{
+  "merchant_refund_no": "R001",
+  "amount": 200
+}
+```
+
+HTTP retry 可以靠 `Idempotency-Key` 判斷；跨 request、跨時間的商戶業務身份仍由 `merchant_refund_no` 保證。
+
 ---
 
 ## 8. 同 merchant_refund_no，但內容不同怎麼辦？
 
-同 refund_no + 同 immutable request fields：視為 retry，回原 Refund。
+第一次：
 
-同 refund_no + 不同 immutable request fields：回 `409 Conflict`。
+```json
+{
+  "merchant_refund_no": "R001",
+  "amount": 200
+}
+```
+
+第二次：
+
+```json
+{
+  "merchant_refund_no": "R001",
+  "amount": 900
+}
+```
+
+不能只回「單號重複」後結束。
+
+應區分：
+
+```text
+同 refund_no + 同 immutable request fields
+→ 視為 retry
+→ 回原 Refund
+
+同 refund_no + 不同 immutable request fields
+→ conflict
+```
+
+例如：
+
+```http
+409 Conflict
+```
 
 ```json
 {
@@ -305,11 +461,40 @@ merchant_refund_no
 }
 ```
 
+這個檢查除了保護 server，也能及早抓到商戶端重複使用單號但金額不同的 bug。
+
 ---
 
 ## 9. Idempotency 資料可以只放 Redis 嗎？
 
-Redis 適合快速 lookup，但不能讓 Redis TTL 單獨決定「這是不是同一筆退款」。Redis 可以有 TTL，但 correctness 不應因 cache 過期而消失。
+Redis 很適合快速 lookup，但不能讓 Redis TTL 單獨決定：
+
+> 這是不是同一筆退款。
+
+例如：
+
+```text
+13:00
+客服退款 500
+Provider 已成功
+我方 Response timeout
+
+Redis TTL = 30 min
+
+13:40
+客服再次執行退款
+```
+
+如果規則是：
+
+```text
+Redis miss
+→ 當成新退款
+```
+
+就可能退款兩次。
+
+比較合理的定位：
 
 ```text
 Redis
@@ -323,11 +508,56 @@ DB
 → correctness source of truth
 ```
 
+Redis 可以有 TTL，但 correctness 不應因 cache 過期而消失。
+
+如果需要另外保存 HTTP idempotency record，可以設計：
+
+```text
+idempotency_requests
+--------------------
+scope
+key
+request_hash
+refund_id
+status
+created_at
+expires_at
+```
+
+這裡的 `expires_at` 是產品與風險政策，不應單純等同 Redis key TTL。
+
 ---
 
 ## 10. 兩個退款同時進來怎麼辦？
 
-假設 Payment=1000，Request A=700，Request B=700。真正需要保護的不是「request 不要同時進來」，而是 invariant：
+假設：
+
+```text
+Payment = 1000
+
+Request A = refund 700
+Request B = refund 700
+```
+
+兩個 request 同時讀到：
+
+```text
+refundable = 1000
+```
+
+如果各自判斷：
+
+```text
+700 <= 1000
+```
+
+最後可能建立：
+
+```text
+700 + 700 = 1400
+```
+
+真正需要保護的不是「request 不要同時進來」，而是 invariant：
 
 ```text
 succeeded_refund
@@ -335,23 +565,80 @@ succeeded_refund
 <= payment.amount
 ```
 
+這是整個 concurrency 題目的核心。
+
 ---
 
 ## 11. Redis Lock 為什麼不應是第一層 correctness guarantee？
 
-Redis Lock 可以降低同一 Payment 同時進 DB 的請求數量，也能減少 DB lock contention，但作為唯一保證會遇到 process crash、TTL 提前到期、Redis failover、network partition、replication delay、lock ownership、lease renewal、fencing token 等問題。
+Redis Lock 確實可以降低同一 Payment 同時進 DB 的請求數量，也能減少 DB lock contention。
 
-因此 Redis Lock 較適合定位成：
+但如果把它當唯一保證，會出現新的 failure mode。
+
+### 11.1 Process crash
+
+```text
+取得 Redis lock
+↓
+開始執行退款
+↓
+process crash
+```
+
+所以 Redis Lock 必須有 TTL。
+
+### 11.2 Lock TTL 提前到期
+
+假設：
+
+```text
+Lock TTL = 5 sec
+```
+
+但 A 執行 6 秒：
+
+```text
+A 仍在執行
+↓
+Redis lock expired
+↓
+B 取得同一把 lock
+↓
+A、B 同時執行
+```
+
+原本用來避免 concurrency 的 lock，又重新產生 concurrency。
+
+### 11.3 Distributed Lock 本身也有一致性問題
+
+還需要考慮：
+
+```text
+Redis failover
+network partition
+replication delay
+lock ownership
+lease renewal
+fencing token
+```
+
+所以 Redis Lock 並不是錯，而是它比較適合定位成：
 
 ```text
 performance / contention optimization
 ```
 
-而不是 final correctness guarantee。
+而不是：
+
+```text
+final correctness guarantee
+```
 
 ---
 
 ## 12. DB Lock 為什麼適合保護退款 invariant？
+
+例如：
 
 ```sql
 BEGIN;
@@ -362,15 +649,53 @@ WHERE id = :payment_id
 FOR UPDATE;
 ```
 
-它的優勢不是 DB 比 Redis 快，而是 Lock、資料讀取與 mutation 都在同一個 transaction system 裡。DB 才是退款資料的 source of truth，因此更容易把「判斷 + 寫入」放在同一個 atomic boundary。
+A 先取得 row lock：
+
+```text
+Payment = 1000
+Refund A = 700
+```
+
+A 建立 Refund、更新保留額度並 commit。
+
+B 接著才讀到：
+
+```text
+refundable = 300
+requested = 700
+```
+
+因此拒絕。
+
+它的優勢不是 DB 比 Redis 快，而是：
+
+> Lock、資料讀取與 mutation 都在同一個 transaction system 裡。
+
+DB 才是退款資料的 source of truth，因此更容易把「判斷 + 寫入」放在同一個 atomic boundary。
 
 ---
 
 ## 13. DB Lock 不會提高 DB 負載嗎？
 
-會。大量 `SELECT ... FOR UPDATE` 可能造成 lock contention、transaction wait、connection accumulation、deadlock、DB CPU / IO 壓力。
+會。
 
-責任應分清：
+大量 `SELECT ... FOR UPDATE` 可能造成：
+
+```text
+lock contention
+transaction wait
+connection accumulation
+deadlock
+DB CPU / IO 壓力
+```
+
+所以答案不是：
+
+```text
+DB Lock 永遠比 Redis Lock 好
+```
+
+而是要分清責任：
 
 ```text
 Redis Lock
@@ -383,11 +708,47 @@ DB constraint / conditional update
 = invariant guarantee
 ```
 
+一個常見架構是：
+
+```text
+Request
+  │
+  ▼
+Redis Lock（可選）
+  │
+  │ 降低同一 Payment 的併發
+  ▼
+DB Transaction
+  │
+  ▼
+Invariant Check
+  │
+  ▼
+Create Refund
+  │
+  ▼
+Commit
+```
+
+即使 Redis 發生問題，DB 最後仍不得允許超額退款。
+
 ---
 
 ## 14. 不一定要 `SELECT ... FOR UPDATE`：Conditional Atomic Update
 
-如果要保護的 invariant 很單純，可以直接：
+如果要保護的 invariant 很單純，可以不用先查再鎖。
+
+假設：
+
+```text
+amount          = 1000
+refunded_amount = 200
+reserved_amount = 300
+```
+
+現在要退款 400。
+
+可以直接：
 
 ```sql
 UPDATE payments
@@ -396,6 +757,8 @@ WHERE id = :payment_id
   AND amount - refunded_amount - reserved_amount >= :refund_amount;
 ```
 
+檢查：
+
 ```text
 affected_rows = 1
 → reserve 成功
@@ -403,6 +766,22 @@ affected_rows = 1
 affected_rows = 0
 → 可退款額度不足
 ```
+
+這比：
+
+```text
+SELECT
+↓
+應用程式判斷
+↓
+UPDATE
+```
+
+更能直接避免 read-modify-write race condition。
+
+如果 Refund 建立與 reserve 需要一起成功，仍應包在同一個 transaction 中。
+
+因此三種策略可以這樣看：
 
 | 作法 | 主要用途 | Correctness | DB contention |
 |---|---|---:|---:|
@@ -413,6 +792,10 @@ affected_rows = 0
 ---
 
 ## 15. 非同步退款怎麼設計？
+
+如果退款需要呼叫第三方 Provider，通常不是同步完成。
+
+流程可以是：
 
 ```text
 POST Refund
@@ -429,7 +812,19 @@ status = processing
 succeeded / failed
 ```
 
-建立 Refund 可以回 `201 Created`；若 API contract 強調工作已接受但尚未完成，也可以用 `202 Accepted`。
+建立 Refund 時可以回：
+
+```http
+201 Created
+```
+
+如果 API contract 強調「工作已接受但尚未完成」，也可以使用：
+
+```http
+202 Accepted
+```
+
+Response 不應在 `pending` 時假裝資金已經真的從 800 變 600：
 
 ```json
 {
@@ -440,9 +835,76 @@ succeeded / failed
 }
 ```
 
+State Machine 可以定義為：
+
+```text
+pending
+   │
+   ▼
+processing
+   │
+   ├────► succeeded
+   │
+   └────► failed
+```
+
 ---
 
 ## 16. Async Refund 為什麼需要 reserved amount？
+
+假設：
+
+```text
+Payment = 1000
+```
+
+第一筆：
+
+```text
+Refund A = 800
+status = processing
+```
+
+第二筆同時來：
+
+```text
+Refund B = 500
+```
+
+如果系統只計算 `succeeded` refund，這時可能看到：
+
+```text
+refunded = 0
+```
+
+因而接受 B。
+
+最後就可能變成：
+
+```text
+800 + 500 = 1300
+```
+
+因此非同步流程至少要區分：
+
+```text
+succeeded_refund
+reserved_refund
+refundable_amount
+```
+
+例如：
+
+```text
+Payment amount    = 1000
+Succeeded refund  = 200
+Reserved refund   = 500
+Failed refund     = 100
+
+Refundable amount = 300
+```
+
+核心公式：
 
 ```text
 refundable_amount
@@ -452,7 +914,7 @@ payment.amount
 - reserved_refund
 ```
 
-State Machine 應明確定義哪些狀態占用額度：
+哪些 state 會占 reserved amount，必須由 state machine 明確定義，例如：
 
 ```text
 pending     → reserve
@@ -465,7 +927,23 @@ failed      → release reserve
 
 ## 17. 第三方退款成功，但 Callback 丟失怎麼辦？
 
-不能只依賴 callback。正式系統通常需要：
+不能只依賴 callback。
+
+典型情況：
+
+```text
+Our System
+Refund = processing
+
+Provider
+Refund = succeeded
+
+Callback lost
+```
+
+如果沒有其他收斂機制，我方 Refund 會永遠停在 `processing`。
+
+正式系統通常需要：
 
 ```text
 callback
@@ -477,19 +955,107 @@ reconciliation
 manual query
 ```
 
+例如排程定期查詢長時間停在 `processing` 的 Refund：
+
+```text
+Our System: processing
+Provider:   succeeded
+
+↓ reconciliation
+
+Our System: succeeded
+```
+
+這是第三方金流整合的基本 production 能力。
+
 ---
 
 ## 18. Callback 晚到或重送怎麼辦？
 
-Callback handler 必須 idempotent。`succeeded → succeeded` 應是 no-op，不能再次執行 balance adjustment、ledger entry 或 refund completion event。
+假設 reconciliation 已經先更新：
+
+```text
+processing → succeeded
+```
+
+三小時後 Provider callback 又來一次：
+
+```text
+succeeded
+```
+
+Callback handler 必須 idempotent。
+
+不能因為 callback 又來一次，就再次執行：
+
+```text
+balance adjustment
+ledger entry
+refund completion event
+```
+
+狀態機至少要保證：
+
+```text
+succeeded → succeeded
+```
+
+是 no-op，而不是重新執行退款完成副作用。
 
 ---
 
 ## 19. 「API 重送」要先問是哪一段
 
-至少拆成：Merchant → 我方、我方 → Provider、Provider → 我方 Callback。不同 boundary 的 retry 處理方式不同。
+「API 重送怎麼辦？」本身資訊不足，至少要拆成三種。
 
-我方 → Provider timeout 最危險，因 Provider 可能其實已成功，因此要依 Provider 能力使用 provider idempotency key、provider request id 或 query-before-retry。
+### 19.1 Merchant → 我方
+
+```text
+Merchant
+→ Refund API
+→ timeout
+→ retry
+```
+
+使用：
+
+```text
+Idempotency-Key
+merchant_refund_no
+```
+
+### 19.2 我方 → Provider
+
+```text
+Our System
+→ Provider Refund API
+→ timeout
+```
+
+這個最危險。
+
+Provider 有可能其實已成功，只是 response 沒回來，所以不能看到 timeout 就直接再退款一次。
+
+必須依 Provider 能力使用：
+
+```text
+provider idempotency key
+provider request id
+query-before-retry
+```
+
+### 19.3 Provider → 我方 Callback
+
+```text
+Provider
+→ Callback
+→ 我方 timeout
+→ Provider callback retry
+```
+
+我方 callback endpoint 必須 idempotent。
+
+因此真正成熟的回答不是直接說「重送就查資料」，而是先切清楚 retry 發生在哪一個 boundary。
 
 ---
 
@@ -500,6 +1066,8 @@ Callback handler 必須 idempotent。`succeeded → succeeded` 應是 no-op，�
 ```http
 GET /refunds/refund_123
 ```
+
+Response：
 
 ```json
 {
@@ -512,9 +1080,42 @@ GET /refunds/refund_123
 }
 ```
 
+失敗時：
+
+```json
+{
+  "id": "refund_123",
+  "payment_id": "payment_123",
+  "amount": 200,
+  "status": "failed",
+  "failure_code": "PROVIDER_REJECTED",
+  "failure_message": "Refund rejected by provider"
+}
+```
+
+也可以使用巢狀 URI：
+
+```http
+GET /payments/P001/refunds/R001
+```
+
+但如果 Refund 本身已有全域唯一 identity，頂層 `/refunds/{id}` 通常更直接。
+
 ---
 
 ## 21. 超額退款該回什麼？
+
+例如：
+
+```text
+Payment amount     = 1000
+Refunded amount    = 800
+Reserved amount    = 0
+Refundable amount  = 200
+Requested amount   = 300
+```
+
+`422 Unprocessable Content` 是合理的 API policy：
 
 ```http
 422 Unprocessable Content
@@ -534,7 +1135,23 @@ GET /refunds/refund_123
 }
 ```
 
-不要只寫「餘額不足」，因為這裡不是 Wallet balance，而是 Payment 的 refundable amount 不足。
+不要只寫：
+
+```text
+餘額不足
+```
+
+因為這裡不是 Wallet balance，而是 Payment 的 refundable amount 不足。
+
+也不要回：
+
+```json
+{
+  "status": "pending"
+}
+```
+
+因為 Refund 根本沒有成功建立。
 
 ---
 
@@ -564,7 +1181,7 @@ flowchart TD
     P --> N
 ```
 
-真正不能被破壞的是：
+這張圖裡真正不能被破壞的是：
 
 ```text
 succeeded_refund
@@ -572,13 +1189,27 @@ succeeded_refund
 <= payment.amount
 ```
 
+所有 Lock、Transaction、Retry、Queue、Callback 都只是維護這個條件與 Refund State Machine 的手段。
+
 ---
 
 ## 23. 面試回答應該怎麼分層
 
-如果只回答「用 Redis Lock」，代表知道工具，但還沒講清楚問題。
+如果面試官問：
 
-更完整的回答應先定義 invariant，再決定 DB conditional atomic update、transaction + `SELECT ... FOR UPDATE`，最後視流量需求使用 Redis Lock 作為 contention reduction。
+> 兩筆退款同時進來怎麼辦？
+
+只回答：
+
+> 用 Redis Lock。
+
+代表知道工具，但還沒講清楚問題。
+
+更完整的回答：
+
+> 我會先定義要保護的 invariant：已成功退款加上處理中保留退款額度不能超過原 Payment amount。Redis Lock 可以降低同一 Payment 的併發請求，但不會把它當唯一一致性保證，因為 Refund 最終資料存在 DB，而且 Redis Lock 還有 TTL、process crash、failover 等問題。若只是退款額度 reserve，我會優先考慮 DB conditional atomic update；如果牽涉複雜多筆資料，再用 transaction 加 `SELECT ... FOR UPDATE`。Redis Lock 視流量情況作為前置 contention reduction。
+
+這類回答的差異在於：
 
 ```text
 工具導向：
@@ -588,9 +1219,13 @@ succeeded_refund
 「哪一個 invariant 不能被破壞？」
 ```
 
+後者才是系統設計的核心。
+
 ---
 
 ## 24. 這題真正測什麼
+
+表面上是在測 RESTful API，實際上至少有四層：
 
 | 層級 | 核心問題 |
 |---|---|
@@ -599,7 +1234,22 @@ succeeded_refund
 | Invariant | 如何永遠保證不超額退款？ |
 | API Contract | Retry、HTTP status、error response、query 如何定義？ |
 
-進入 production 後還會延伸 Idempotency、Concurrency、Atomicity、Async processing、Provider retry、Callback idempotency、Reconciliation、Audit trail。
+進入 production 後還會延伸：
+
+```text
+Idempotency
+Concurrency
+Atomicity
+Async processing
+Provider retry
+Callback idempotency
+Reconciliation
+Audit trail
+```
+
+因此「熟悉 RESTful API 設計與開發」不應只代表會做 CRUD。
+
+至少要能在這類題目持續追加限制後，仍維持一致的 Resource Modeling、HTTP Contract 與資料一致性。
 
 ---
 

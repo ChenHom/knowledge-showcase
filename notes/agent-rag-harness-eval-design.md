@@ -1,6 +1,6 @@
 # Agent、RAG、Harness 系統 Eval 功能設計
 
-#eval #agent #rag #harness #system-design #ai-engineering #openclaw #regression-test #runtime-integrity #tool-execution
+#eval #agent #rag #harness #system-design #ai-engineering #openclaw #regression-test
 
 ## 這是什麼
 
@@ -17,53 +17,10 @@
 - RAG 找錯資料
 - context packing 把重要片段擠掉
 - Harness 沒有留下可恢復狀態
-- tool call 有產生，但實際工具沒有執行或執行結果沒有被正確記錄
-- denied / approval-required action 仍然穿過 execution boundary
-- session event、task-state、verification report 彼此 drift
 - 通知 / 寫入 / commit / push 等 workflow 規則被忘記
 - fallback 表面可用，但實際輸出品質退化
 
 所以 Eval 要從「單點答案評分」提升成「系統行為契約檢查」。
-
----
-
-## Harness Eval 的定位修正
-
-早期版本把 Harness Eval 主要放在 `task-state / verification report / artifact schema / blocked / completed`。
-
-這些其實比較精準地屬於：
-
-```text
-Run Governance Eval
-```
-
-完整 Harness 還需要測 Runtime。
-
-因此 Harness Eval 應拆成三層：
-
-```text
-Harness Eval
-├── Runtime Integrity Eval
-├── Tool Execution Eval
-└── Run Governance Eval
-```
-
-三層分別回答：
-
-```text
-Runtime Integrity Eval
-→ 執行事實是否完整、可重建、可恢復？
-
-Tool Execution Eval
-→ Model / Agent 要求的 action 是否經過正確 policy、approval、guard、sandbox 後才真的執行？
-
-Run Governance Eval
-→ 任務是否有 state、verification、repair、handoff、close-out 與 audit？
-```
-
-這個分層很重要，否則會出現一種假象：
-
-> task-state 和 verification report 看起來都很完整，但底層 tool 根本沒有真的執行，或執行事實無法重播。
 
 ---
 
@@ -88,8 +45,6 @@ Regression eval 用來保護已知規則與真實踩過的坑。
 - Claw Notify 是否推送摘要而不是原文片段
 - FCM sender 是否只推最新 device，避免重複通知
 - workspace 偏好與合作規則是否仍寫在 memory / tools note
-- runtime event invariant 是否仍成立
-- denied tool 是否仍無法繞過 execution pipeline
 
 這類 eval 應優先 deterministic，不需要 LLM-as-Judge。
 
@@ -109,10 +64,6 @@ Component eval 用來測單一元件是否符合契約。
 - summarizer
 - approval gate
 - state writer
-- session event writer
-- tool execution pipeline
-- LLM adapter
-- capability provider
 
 例子：
 
@@ -124,11 +75,6 @@ Component eval 用來測單一元件是否符合契約。
 ```txt
 輸入：一篇含下載連結、提取碼、雜訊文字的文章
 預期：summary cleaner 移除 URL / pan.baidu / 提取碼，不把原文垃圾推到手機
-```
-
-```txt
-輸入：一個未取得 approval 的高風險 tool request
-預期：產生 denied result，且 tool body 執行次數為 0
 ```
 
 Component eval 的價值是定位問題快：壞了就是某個元件的契約破了。
@@ -156,8 +102,6 @@ E2E eval 可以捕捉 component eval 看不到的整合問題，例如：
 - 每個元件單獨都對，但串起來漏掉 commit
 - RAG 有找資料，但 context packing 把關鍵段落刪掉
 - Agent 做完任務，但 Harness 沒留下 task-state / verification report
-- tool call 有記錄，但沒有對應 authoritative tool result
-- crash / resume 後 model history 跟原本 run 不一致
 
 ---
 
@@ -171,8 +115,6 @@ Live eval 直接檢查真實環境狀態。
 - 查 Firestore `devices`，確認至少有 device，且 sender 邏輯只推最新 token
 - 查 repo working tree 是否乾淨
 - 查最新 Harness task-state 是否有 lifecycle 欄位
-- 查最新 session 是否存在未配對的 tool/call
-- 查 denied tool 是否留下 result / policy trace 且沒有副作用
 
 Live eval 的好處是能抓到 mock 抓不到的問題；壞處是較依賴外部狀態，應把不可控失敗標成 warning 或診斷訊息。
 
@@ -185,13 +127,13 @@ Live eval 的好處是能抓到 mock 抓不到的問題；壞處是較依賴外�
 原因：
 
 1. **系統規則多半可被明確檢查**  
-   例如是否含 `ollama-article`、是否有 `git status --short`、是否有 Firestore summary、tool call/result 是否配對。
+   例如是否含 `ollama-article`、是否有 `git status --short`、是否有 Firestore summary。
 
 2. **deterministic eval 便宜、快、穩定**  
    可以頻繁跑，不會因模型漂移讓結果忽好忽壞。
 
 3. **真實回歸通常是工程契約破裂**  
-   不是回答風格差一點，而是某條流程被漏掉、某個 guard 被繞過、某個 event 沒被記錄。
+   不是回答風格差一點，而是某條流程被漏掉。
 
 4. **LLM-as-Judge 適合最後一層主觀品質**  
    例如摘要是否精煉、是否好讀、是否有洞察；但不適合拿來取代明確規則。
@@ -201,8 +143,6 @@ Live eval 的好處是能抓到 mock 抓不到的問題；壞處是較依賴外�
 ```txt
 deterministic regression checks
 → component eval
-→ runtime integrity eval
-→ tool execution eval
 → end-to-end eval
 → live eval
 → subjective LLM-as-Judge
@@ -272,13 +212,11 @@ Agent eval 要測的不是「模型有沒有想法」，而是它在固定工具
 
 - 對外發送訊息前是否確認
 - 刪除遠端資料前是否確認
-- 不把私人 memory 洩漏到群組
+- 不把私人 memory 泄漏到群組
 - 不把暫時 runtime 檔誤 commit
 - 不在沒有依據時聲稱已驗證
 
 Agent 越自主，boundary eval 越重要。
-
-但 boundary eval 只驗證 Agent decision 還不夠；真正具有副作用的 action 還必須由 Harness Tool Execution Eval 驗證「即使 Agent 選錯，runtime 仍擋得住」。
 
 ---
 
@@ -324,14 +262,6 @@ RAG eval 不應只看最終答案，也要拆成 retrieval 與 generation 兩段
 - 是否控制 token budget
 - 是否把摘要、chunk、metadata 以正確順序組合
 
-如果 Harness 使用 durable session / event log，還應再測：
-
-```text
-model-visible context 是否能由 durable state 重建
-```
-
-否則 resume 後的 context packing 可能和原本 run 不一致。
-
 ---
 
 ### Answer Grounding Eval
@@ -348,198 +278,9 @@ model-visible context 是否能由 durable state 重建
 
 ---
 
-## 五、Harness Runtime Integrity Eval
+## 五、Harness Lifecycle Eval
 
-Runtime Integrity Eval 測的是：
-
-> 系統宣稱「發生過的執行」，是否真的有完整、可重建、可恢復的 durable facts？
-
-如果採 append-only Session Event Log，至少應驗證：
-
-### 1. Turn / Step lifecycle invariant
-
-```text
-turn/start
-→ step/start*
-→ step/end*
-→ turn/end / interrupted terminal state
-```
-
-必測：
-
-- `step/start` 不應永久懸空
-- `turn/start` 不應沒有 terminal outcome
-- cancelled / crashed run 應有可辨識的 interrupted state
-- resume 不應重複執行已完成副作用
-
-### 2. Tool call/result adjacency
-
-```text
-tool/call
-→ execution pipeline
-→ tool/result
-```
-
-必測：
-
-- 每個 accepted tool call 最終都有 authoritative result
-- denied / failed call 也必須有明確 result，不可消失
-- tool result 的 call id / identity 必須能對回原始 request
-- 不可產生不存在 call 的孤兒 result
-
-### 3. Model history reconstruction
-
-若 model history 由 Session Event Log 投影：
-
-```text
-original model request history
-==
-deriveMessages(session log)
-```
-
-至少要對關鍵語意與 message ordering 一致。
-
-這能抓到：
-
-- runtime 有 injected context，但沒有 durable event
-- UI 看得到一段內容，resume 後 model 看不到
-- mutable messages[] 被修改，但 log 沒反映
-
-### 4. Projection consistency
-
-```text
-Session Event Log
-→ task-state
-→ action trace
-→ observability
-```
-
-必測：
-
-- task-state 不應宣稱存在 event log 沒有的 completed step
-- action trace 不應漏掉真正產生副作用的 tool result
-- verification report 引用的 evidence 必須能追溯到 durable facts
-
-### 5. Crash / Resume
-
-建立故障注入測試：
-
-```text
-step 開始後 crash
-tool 執行前 crash
-tool 執行後、result 寫入前 crash
-result 寫入後、task-state 更新前 crash
-```
-
-要確認：
-
-- 哪些 action 可以 safely retry
-- 哪些需要 idempotency key
-- 哪些需要人工確認是否已產生副作用
-- resume 後不會因 projection 過期而重做 destructive action
-
----
-
-## 六、Harness Tool Execution Eval
-
-Tool Execution Eval 驗證的不是 Agent 選工具是否合理，而是：
-
-> 即使 Agent 發出錯誤或高風險要求，Runtime 是否仍能守住執行邊界？
-
-標準管線可視為：
-
-```text
-tool/call
-    ↓
-pre-execute
-    ↓
-permission / policy
-    ↓
-approval
-    ↓
-guards
-    ↓
-execute wrapper
-(timeout / retry / metrics)
-    ↓
-tool body
-    ↓
-side-effect guard / sandbox
-    ↓
-post-execute
-    ↓
-normalized tool/result
-```
-
-### 必測項目
-
-#### Deny must mean no execution
-
-```text
-policy = deny
-expected:
-- tool body execute count = 0
-- side effect = 0
-- authoritative denied result exists
-```
-
-#### Approval-required action
-
-```text
-approval missing / rejected / unavailable
-expected:
-- deny
-- tool body = 0
-- audit trail exists
-```
-
-#### Guard cannot be bypassed
-
-測試：
-
-- model 直接傳危險參數
-- tool wrapper 嘗試改寫 identity
-- nested / delegated tool call
-- retry path
-- Code Mode / batch path（若有）
-
-都必須仍通過同一組 guard。
-
-#### Sandbox / filesystem boundary
-
-測試：
-
-- 寫入允許路徑：pass
-- 寫入禁止路徑：deny
-- symbolic link / path traversal：deny
-- tool 透過 subprocess 間接寫檔：仍受相同 sandbox world 約束
-
-#### Timeout / Retry
-
-必測：
-
-- timeout 不應留下「成功」result
-- retry 不應造成不可重入副作用重複執行
-- metrics / trace 能看出實際 attempt 數
-
-#### Result normalization
-
-必測：
-
-- tool throw
-- non-serializable result
-- partial result
-- post-execute block / replace
-
-最後都必須變成 Runtime 可處理、可記錄的 authoritative result。
-
----
-
-## 七、Harness Run Governance Eval
-
-這一層保留原本 Harness Lifecycle Eval 的責任。
-
-重點不是單一回答品質，而是任務治理是否完整。
+Harness 是 run-level control plane，所以 eval 重點不是單一回答品質，而是任務治理是否完整。
 
 ### 必測項目
 
@@ -558,10 +299,6 @@ expected:
 - artifacts 是否符合 schema
 - blocked 狀態是否說明 missing input
 - completed 狀態是否有驗證證據
-- verification evidence 是否能追溯到 runtime facts
-- repair 後是否重新驗證
-- handoff / approval lifecycle 是否一致
-- close-out 是否與 task-state terminal state 一致
 
 ### 成功標準
 
@@ -569,55 +306,17 @@ expected:
 
 ```txt
 做了什麼？
-真正執行了哪些 action？
 目前在哪個 stage？
 驗證了什麼？
-證據來自哪個 runtime fact？
 留下哪些 artifacts？
 如果要接手，下一步在哪？
 ```
 
-這就是 Run Governance Eval 的核心。
+這就是 Harness lifecycle eval 的核心。
 
 ---
 
-## 八、Harness Eval 的整體資料流
-
-完整驗證應該長這樣：
-
-```text
-                    ┌───────────────────────┐
-                    │ Session Event Log     │
-                    │ durable runtime facts │
-                    └───────────┬───────────┘
-                                │
-              ┌─────────────────┼─────────────────┐
-              ▼                 ▼                 ▼
-       Runtime Integrity   Tool Execution    State Projection
-             Eval               Eval               │
-                                                    ▼
-                                             task-state
-                                                    │
-                                                    ▼
-                                          Run Governance Eval
-                                                    │
-                                                    ▼
-                                           verification / audit
-```
-
-核心原則：
-
-```text
-先驗證執行事實是真的
-再驗證執行邊界有守住
-最後才驗證治理 artifact 是否完整
-```
-
-順序不能反過來。
-
----
-
-## 九、目前系統的第一版 Regression Eval
+## 六、目前系統的第一版 Regression Eval
 
 目前 OpenClaw workspace 已落地第一版 runner：
 
@@ -663,33 +362,10 @@ python3 evals/runners/system_regression_eval.py --write-report --no-fail-exit
 
 ### Harness
 
-目前已有：
-
 - runtime scaffold 是否存在
 - task-state / verification report 是否通過 schema validation
 - 最新 task-state 是否有 lifecycle fields
 - verification reports 是否存在
-
-下一版應擴充：
-
-```text
-Runtime Integrity
-- turn / step event 配對
-- tool/call / tool/result 配對
-- model-visible context reconstruction
-- projection consistency
-
-Tool Execution
-- denied action execute count = 0
-- approval rejected → no side effect
-- sandbox / fs guard 不可繞過
-- timeout / retry result consistency
-
-Run Governance
-- verification evidence 可追溯 runtime facts
-- close-out 與 terminal state 一致
-- repair → re-verify lifecycle 完整
-```
 
 ### Preferences
 
@@ -697,7 +373,7 @@ Run Governance
 
 ---
 
-## 十、Eval Report 格式
+## 七、Eval Report 格式
 
 建議 eval report 至少包含：
 
@@ -709,15 +385,13 @@ Run Governance
   "generated_at": "2026-05-07T...+08:00",
   "checks": [
     {
-      "id": "harness.tool.denied_no_execution",
+      "id": "notify.live_latest_summary_quality",
       "status": "pass",
-      "description": "denied tool request did not execute tool body",
+      "description": "latest Firestore notifications have summary-like summaries",
       "details": "",
       "severity": "error",
       "metadata": {
-        "tool_call_id": "...",
-        "execute_count": 0,
-        "evidence_event_ids": ["..."]
+        "inspected": ["..."]
       }
     }
   ]
@@ -726,24 +400,9 @@ Run Governance
 
 Report 要能被人讀，也要能被 script 消費。
 
-對 Harness Runtime，建議多保留：
-
-```text
-session_id
-turn_id
-step_id
-tool_call_id
-evidence_event_ids
-policy_decision
-approval_result
-side_effect_observation
-```
-
-這樣 report 才能真正回指執行證據，而不是只寫一句「pass」。
-
 ---
 
-## 十一、失敗等級設計
+## 八、失敗等級設計
 
 不是所有失敗都應該讓任務中斷。
 
@@ -758,16 +417,12 @@ side_effect_observation
 例子：
 
 - 直接打 Ollama API：error
-- denied tool 實際產生副作用：error
-- tool/call 沒有 terminal result：error
 - Firestore 暫時無法連線：warning
 - eval report 數量偏少：info / warning
 
-Runtime Integrity 的核心 invariant 應該一律視為 error，不應只 warning。
-
 ---
 
-## 十二、後續擴充方向
+## 九、後續擴充方向
 
 ### 1. RAG retrieval eval dataset
 
@@ -794,9 +449,9 @@ query → expected file / expected section / expected facts
 
 ---
 
-### 3. Harness runtime smoke eval
+### 3. Harness smoke run eval
 
-原本只有：
+建立最小任務，要求 Harness 完成：
 
 ```txt
 start task
@@ -807,72 +462,9 @@ start task
 → close task
 ```
 
-現在應改成：
-
-```text
-turn/start
-→ user/message
-→ step/start
-→ assistant tool request
-→ tool/call
-→ policy / execution pipeline
-→ tool/result
-→ step/end
-→ project task-state
-→ verification
-→ turn/end / close task
-```
-
-最小 smoke test 要同時驗：
-
-```text
-runtime facts
-execution boundary
-governance artifacts
-```
-
 ---
 
-### 4. Crash / Resume Eval
-
-加入 fault injection：
-
-```text
-before tool execute
-after side effect
-before tool/result persist
-after tool/result persist
-before task-state projection
-```
-
-驗證：
-
-- idempotency
-- duplicate side effect protection
-- event recovery
-- state re-projection
-- manual reconciliation path
-
----
-
-### 5. Provider Swap Eval
-
-當未來補 LLM / filesystem / subprocess / sandbox provider seam 時，建立同一組 contract tests：
-
-```text
-Provider A
-Provider B
-    ↓
-同一組 Harness conformance suite
-```
-
-重點不是測 provider 本身功能多強，而是：
-
-> 換 provider 後，上層 Agent / tool / governance 的 contract 是否仍成立。
-
----
-
-### 6. LLM-as-Judge 補充主觀品質
+### 4. LLM-as-Judge 補充主觀品質
 
 只放在 deterministic eval 之後，用來評估：
 
@@ -881,39 +473,12 @@ Provider B
 - 文章筆記是否有結構
 - 回答是否自然、不囉嗦
 
-但不能用它取代：
-
-```text
-runtime invariant
-permission
-approval
-sandbox
-schema
-execution evidence
-```
+但不能用它取代明確規則。
 
 ---
 
-## 十三、一句話總結
+## 十、一句話總結
 
-Agent / RAG / Harness 的 Eval，第一步不是追求高深模型評分，而是把真實工作中已經踩過的規則、邊界與 workflow 契約變成可重跑的防回歸檢查；對 Harness 更要先確認 **執行事實是真的、tool execution 邊界守得住、最後才看 task-state / verification / audit 是否完整**。
+Agent / RAG / Harness 的 Eval，第一步不是追求高深模型評分，而是把真實工作中已經踩過的規則、邊界與 workflow 契約變成可重跑的防回歸檢查。
 
-```text
-Harness Eval
-= Runtime Integrity
-+ Tool Execution Safety
-+ Run Governance
-```
-
-先讓系統不能捏造「做過了」，不能繞過執行邊界，也不能失去恢復所需的 durable facts，再談更細的主觀品質評估。
-
----
-
-## 參考架構
-
-本次 Harness Eval 分層補強參考：
-
-- DeepSeek Harness Architecture：`deepseek-ai/deepseek-harness/docs/architecture.md`
-- DeepSeek Harness Tool Execution Pipeline：`deepseek-ai/deepseek-harness/docs/tool-execution-pipeline.md`
-
-吸收的是 durable session events、guarded execution pipeline、adapter / capability seam 這些可泛化原則，不綁定 DeepSeek Harness 的具體 plugin 實作。
+先讓系統不要重犯錯，再談更細的主觀品質評估。
