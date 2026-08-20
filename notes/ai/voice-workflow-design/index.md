@@ -1,15 +1,4 @@
----
-title: AI 時代的 PM 新技能：語音化工作流程設計實戰
-created: 2026-05-09
-source: 260508_AI 時代的 PM 新技能：語音化工作流程設計實戰.zip
-tags:
-  - AI
-  - 語音工作流
-  - PM
-  - ZeroType
-  - Prompt Engineering
-  - Ollama
----
+# AI 時代的 PM 新技能：語音化工作流程設計實戰
 
 # AI 時代的 PM 新技能：語音化工作流程設計實戰
 

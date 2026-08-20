@@ -4,35 +4,35 @@
 這份筆記把老闆提供的內容，依照**段落功能**與**提示詞類型**重新拆開存放，方便之後閱讀、引用與對照。
 
 ## 檔案索引
-- `01_背景與閱讀視角.md`
+- `01-background-and-reading-lens.md`
   - 老闆對 Claude / OpenAI 系統提示詞的閱讀動機
   - 對提示詞結構安排的觀察
   - 對「如何引導 AI 問好問題」這段的重點感受
-- `02_角色定位與保密邊界.md`
+- `02-role-and-confidentiality-boundary.md`
   - Claude Design 的角色、媒介、禁止洩漏事項、能力描述邊界
-- `03_工作流程_提問_閱讀輸入.md`
+- `03-workflow-questions-and-inputs.md`
   - 工作流程
   - 如何閱讀文件 / 提供資源
   - 如何提問、什麼時候該問、怎麼問好問題
-- `04_輸出建立與前端實作規範.md`
+- `04-output-and-frontend-conventions.md`
   - HTML 輸出規範
   - React/Babel、動畫、幻燈片、speaker notes、Tweaks
   - 技術實作上的硬性限制
-- `05_設計方法論與驗證流程.md`
+- `05-design-methodology-and-validation.md`
   - 設計探索流程
   - 高保真設計的上下文要求
   - 變體、tweak、驗證、done / verifier 的使用原則
-- `06_內容原則_GitHub_跨專案與其他規則.md`
+- `06-content-principles-and-cross-project-rules.md`
   - GitHub 匯入
   - 跨專案讀取
   - 內容指南
   - 固定尺寸內容 / starter components / 版權邊界
-- `07_媒體補充_ClaudeDesign_vs_HuashuDesign.md`
+- `07-claude-design-vs-huashu-design.md`
   - 電腦王阿達文章整理
   - Claude Design 的外部產品脈絡
   - Huashu Design 如何把 Claude Design 的核心工作流 skill 化
   - 對原 prompt 的再解讀：prompt 不只是文字，而是 workflow / protocol / product contract
-- `08_自用通用_System_Prompt_模板.md`
+- `08-general-system-prompt-template.md`
   - 從 Claude Design / Huashu Design 抽出的通用骨架
   - 不綁平台、不綁工具、不限單一 AI 的 system prompt 模板
   - 包含完整版、精簡版、模組化版本與使用方式

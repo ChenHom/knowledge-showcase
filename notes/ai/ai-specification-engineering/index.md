@@ -20,13 +20,13 @@
 
 依方法脈絡（而非檔名編號）閱讀：
 
-1. [規格即程式](./01-規格即程式：用型別、狀態機與不變量定義需求.md)——用型別、狀態機與不變量把需求形式化。
-2. [範例驅動收斂](./06-範例驅動收斂：先寫使用範例，再回頭補規格.md)——先寫使用範例，讓介面的難用之處在寫實作前浮現。
-3. [AI 協作收斂](./02-AI-協作收斂：從大量資料表回到業務模型.md)——把 AI 發散的大量資料表收斂回業務模型。
-4. [時間序列模擬](./05-時間序列模擬：用時間軸推演狀態變化找出規格歧義.md)——在時間軸上逐格推演，逼出並行與視窗的規格歧義。
-5. [驗證與追蹤](./03-驗證與追蹤：在開發前發現規格錯誤.md)——用 Decision Table、property test、反例與追蹤矩陣攻擊規格。
-6. [完整操作範例（訂單／付款）](./04-完整操作範例：以訂單與付款流程建立規格.md)——偏狀態機的完整走查。
-7. [配額系統完整範例（Ledger）](./07-配額系統完整範例：Decide、Consume、Refund、Reset-與-Ledger.md)——偏 Ledger 的完整 Laravel 分層實作。
+1. [規格即程式](note.html?slug=ai/ai-specification-engineering/01-spec-as-code)——用型別、狀態機與不變量把需求形式化。
+2. [範例驅動收斂](note.html?slug=ai/ai-specification-engineering/06-example-driven-convergence)——先寫使用範例，讓介面的難用之處在寫實作前浮現。
+3. [AI 協作收斂](note.html?slug=ai/ai-specification-engineering/02-model-convergence)——把 AI 發散的大量資料表收斂回業務模型。
+4. [時間序列模擬](note.html?slug=ai/ai-specification-engineering/05-timeline-simulation)——在時間軸上逐格推演，逼出並行與視窗的規格歧義。
+5. [驗證與追蹤](note.html?slug=ai/ai-specification-engineering/03-validation-traceability)——用 Decision Table、property test、反例與追蹤矩陣攻擊規格。
+6. [完整操作範例（訂單／付款）](note.html?slug=ai/ai-specification-engineering/04-order-payment-example)——偏狀態機的完整走查。
+7. [配額系統完整範例（Ledger）](note.html?slug=ai/ai-specification-engineering/07-quota-ledger-example)——偏 Ledger 的完整 Laravel 分層實作。
 
 ## 全流程
 

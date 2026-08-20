@@ -229,8 +229,8 @@ AI 通常會很順地產出一張狀態表，這正是危險所在——**流暢
 
 ## 延伸閱讀
 
-- [規格即程式](./01-規格即程式：用型別、狀態機與不變量定義需求.md)——時間軸推演的每一格，本質上是在檢查狀態機轉移與不變量。
-- [驗證與追蹤](./03-驗證與追蹤：在開發前發現規格錯誤.md)——黃金時間軸最終併入追蹤矩陣與 property-based testing。
-- [配額系統完整範例](./07-配額系統完整範例：Decide、Consume、Refund、Reset-與-Ledger.md)——本文的 Quota 領域在該篇有完整的 Laravel 分層實作。
+- [規格即程式](note.html?slug=ai/ai-specification-engineering/01-spec-as-code)——時間軸推演的每一格，本質上是在檢查狀態機轉移與不變量。
+- [驗證與追蹤](note.html?slug=ai/ai-specification-engineering/03-validation-traceability)——黃金時間軸最終併入追蹤矩陣與 property-based testing。
+- [配額系統完整範例](note.html?slug=ai/ai-specification-engineering/07-quota-ledger-example)——本文的 Quota 領域在該篇有完整的 Laravel 分層實作。
 
 更新日期：2026-07-22

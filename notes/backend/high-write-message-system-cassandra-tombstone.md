@@ -1,3 +1,5 @@
+# 高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口
+
 ## 文章主題
 
 這篇是 Discord 在 **2017-01-13** 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 **MongoDB** 遷移到 **Cassandra**，以支撐已經超過 **每日 1.2 億則訊息** 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](https://discord.com/blog/how-discord-stores-billions-of-messages "How Discord Stores Billions of Messages"))

@@ -321,9 +321,9 @@ it('退還後額度回到池中且不可重複退', function () {
 
 ## 延伸閱讀
 
-- [規格即程式](./01-規格即程式：用型別、狀態機與不變量定義需求.md)——本篇的不變量與狀態機是該篇構件的實例。
-- [AI 協作收斂](./02-AI-協作收斂：從大量資料表回到業務模型.md)——「Ledger 為核心、remaining 為衍生」是該篇 Fact/Derived 原則的直接應用。
-- [時間序列模擬](./05-時間序列模擬：用時間軸推演狀態變化找出規格歧義.md)——本篇的並行不變量,在該篇有逐格的時間軸推演。
-- [完整操作範例](./04-完整操作範例：以訂單與付款流程建立規格.md)——訂單/付款範例與本篇配額範例互為對照,一個偏狀態機、一個偏 Ledger。
+- [規格即程式](note.html?slug=ai/ai-specification-engineering/01-spec-as-code)——本篇的不變量與狀態機是該篇構件的實例。
+- [AI 協作收斂](note.html?slug=ai/ai-specification-engineering/02-model-convergence)——「Ledger 為核心、remaining 為衍生」是該篇 Fact/Derived 原則的直接應用。
+- [時間序列模擬](note.html?slug=ai/ai-specification-engineering/05-timeline-simulation)——本篇的並行不變量,在該篇有逐格的時間軸推演。
+- [完整操作範例](note.html?slug=ai/ai-specification-engineering/04-order-payment-example)——訂單/付款範例與本篇配額範例互為對照,一個偏狀態機、一個偏 Ledger。
 
 更新日期：2026-07-22

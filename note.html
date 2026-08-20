@@ -338,7 +338,7 @@ const body = document.getElementById('content');
 const meta = document.getElementById('docPath');
 
 // Static site, but keep the slug to a known-safe shape before building a path.
-if (!/^[A-Za-z0-9._-]+$/.test(slug)) {
+if (!/^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/.test(slug) || slug.includes('..')) {
   body.innerHTML = '<p class="load-error">找不到這篇筆記（slug 不合法）。</p>';
   return;
 }

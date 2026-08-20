@@ -94,7 +94,7 @@ AI 需要地圖，才能導航。
 
 當老闆只丟一句方向、需求還不完整時，我應主動補成情境簡報格式再開始分析。
 
-![提示詞 1：情境簡報](images/prompt-01.jpg)
+![提示詞 1：情境簡報](notes/ai/ai-prompt-patterns/images/prompt-01.jpg)
 
 ## 2. 推理要求
 
@@ -125,7 +125,7 @@ AI 需要地圖，才能導航。
 
 用於策略、技術設計、投資研究、風險判斷。注意：不要求暴露內部隱藏推理，而是要求可檢驗的分析摘要、假設與不確定性。
 
-![提示詞 2：推理要求](images/prompt-02.jpg)
+![提示詞 2：推理要求](notes/ai/ai-prompt-patterns/images/prompt-02.jpg)
 
 ## 3. 誠實約束
 
@@ -156,7 +156,7 @@ AI 系統通常會傾向配合與幫忙。
 
 當老闆問「這樣可不可行」、「這方案有沒有問題」、「幫我看一下」時，應主動啟用這條，不要只附和。
 
-![提示詞 3：誠實約束](images/prompt-03.jpg)
+![提示詞 3：誠實約束](notes/ai/ai-prompt-patterns/images/prompt-03.jpg)
 
 ## 4. 角色設定
 
@@ -188,7 +188,7 @@ AI 系統通常會傾向配合與幫忙。
 
 不要只說「以專家角度」。要指定：資深 PM、SRE、資安審查者、量化交易研究員、Laravel 架構師、AI workflow designer 等。
 
-![提示詞 4：角色設定](images/prompt-04.jpg)
+![提示詞 4：角色設定](notes/ai/ai-prompt-patterns/images/prompt-04.jpg)
 
 ## 5. 魔鬼代言人
 
@@ -224,7 +224,7 @@ AI 被訓練得很溫順。
 
 用於產品想法、交易策略、技術架構、創業計畫、重大決策前的反方檢查。
 
-![提示詞 5：魔鬼代言人](images/prompt-05.jpg)
+![提示詞 5：魔鬼代言人](notes/ai/ai-prompt-patterns/images/prompt-05.jpg)
 
 ## 6. 範圍鎖定
 
@@ -254,7 +254,7 @@ AI 會停止用看似可信的虛構內容填補空白。
 
 用於法律、財務、技術除錯、文件摘要、來源有限的分析。若資料不足，要說不足。
 
-![提示詞 6：範圍鎖定](images/prompt-06.jpg)
+![提示詞 6：範圍鎖定](notes/ai/ai-prompt-patterns/images/prompt-06.jpg)
 
 ## 7. 格式命令
 
@@ -290,7 +290,7 @@ AI 系統預設常會寫得比較全面。
 
 老闆用 Telegram 時常需要短答案；此時應優先用格式命令，避免長篇大論。
 
-![提示詞 7：格式命令](images/prompt-07.jpg)
+![提示詞 7：格式命令](notes/ai/ai-prompt-patterns/images/prompt-07.jpg)
 
 ## 8. 假設審計
 
@@ -320,7 +320,7 @@ AI 系統預設常會寫得比較全面。
 
 在產出方案、交易計畫、架構設計、研究結論後，我應主動補一段「假設審計」。
 
-![提示詞 8：假設審計](images/prompt-08.jpg)
+![提示詞 8：假設審計](notes/ai/ai-prompt-patterns/images/prompt-08.jpg)
 
 ## 9. 壓縮循環
 
@@ -353,7 +353,7 @@ AI 系統預設常會寫得比較全面。
 
 多輪任務、長 debug、長研究、連續改檔時，每隔一段時間主動壓縮，避免上下文債務。
 
-![提示詞 9：壓縮循環](images/prompt-09.jpg)
+![提示詞 9：壓縮循環](notes/ai/ai-prompt-patterns/images/prompt-09.jpg)
 
 ## 10. 前期驗屍
 
@@ -386,7 +386,7 @@ AI 系統預設常會寫得比較全面。
 
 用於上線前、發布前、部署前、策略執行前、重大承諾前。這比普通 review 更能抓盲點。
 
-![提示詞 10：前期驗屍](images/prompt-10.jpg)
+![提示詞 10：前期驗屍](notes/ai/ai-prompt-patterns/images/prompt-10.jpg)
 
 ## 我應該主動套用的選擇規則
 

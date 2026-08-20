@@ -1,520 +1,534 @@
 [
   {
-    "title": "你不是不會寫 Prompt，是不會定義任務：AI 任務規格重點摘要",
-    "rel": "notes/ai/task-specification-for-ai-agents.md",
-    "slug": "task-specification-for-ai-agents",
-    "url": "note.html?slug=task-specification-for-ai-agents",
-    "excerpt": "這篇整理 YouTube 影片〈你不是不會寫 Prompt，是不會定義任務〉的核心觀念，並把內容改寫成可實際套用的 AI／Agent 任務規格筆記。 影片的重點不是提供一套「神奇提示詞」，而是提醒我們：AI 產出不好，常常不是 Prompt 寫得不夠漂亮，而是任務本身還沒有被定義清楚。 當模型與 Agent 已經能自行讀取資料、規劃步驟、操作工具及反覆修正時，人更重要的工作是說…"
-  },
-  {
-    "title": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口",
-    "rel": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口.md",
-    "slug": "high-write-message-system-cassandra-tombstone",
-    "url": "note.html?slug=high-write-message-system-cassandra-tombstone",
-    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](外部連結"
-  },
-  {
-    "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
-    "rel": "策略驗證方法論：從看起來會賺到證明真的賺的五道關卡.md",
-    "slug": "strategy-validation-five-gates",
-    "url": "note.html?slug=strategy-validation-five-gates",
-    "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
-  },
-  {
-    "title": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工",
-    "rel": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工.md",
-    "slug": "second-layer-agent-vs-harness",
-    "url": "note.html?slug=second-layer-agent-vs-harness",
-    "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。 第二層 Agent 則一定有「Agent 自…"
-  },
-  {
-    "title": "第二層 Agent 實作設計：固定工具下的受控自主工作流",
-    "rel": "第二層 Agent 實作設計：固定工具下的受控自主工作流.md",
-    "slug": "second-layer-agent-controlled-autonomy",
-    "url": "note.html?slug=second-layer-agent-controlled-autonomy",
-    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」，而是 受控自主。…"
-  },
-  {
-    "title": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運",
-    "rel": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運.md",
-    "slug": "browser-automation-anti-bot-and-login-ops",
-    "url": "note.html?slug=browser-automation-anti-bot-and-login-ops",
-    "excerpt": "用瀏覽器自動化去操作一個需要登入的網站時，真正讓你卡關的常常不是商業邏輯，而是兩件「環境現實」：對方的反 Bot 機制會認出你不是真人，以及你的登入狀態會過期、而重新登入往往需要人介入。這裡用一個實際案例（自動化操作自己授權的帳號）把這兩道現實與應對心法簡單記一下，刻意不深入操作細節。 無頭瀏覽器（headless）帶著一堆「我是機器人」的指紋：User-Agent 出現 He…"
-  },
-  {
-    "title": "服務資料對外暴露設計：淨化白名單、systemd Sandbox 陷阱與存取控制取捨",
-    "rel": "服務資料對外暴露設計：淨化白名單、systemd Sandbox 陷阱與存取控制取捨.md",
-    "slug": "exposing-internal-service-data-safely",
-    "url": "note.html?slug=exposing-internal-service-data-safely",
-    "excerpt": "把「內部服務的私有狀態資料，安全地開放給外部裝置讀取」這件事做過一輪之後，整理出來的可重用設計模式與踩坑紀錄。以 ai-quota（本機額度快照服務）新增「對外公開額度端點」為具體案例，但結論本身跟這個專案無關，任何要把內部 daemon/CLI 產生的資料開放給外部讀取的情境都適用。 實作位置：/home/hom/services/ai-quota（src/store.ts、…"
-  },
-  {
-    "title": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆",
-    "rel": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆.md",
-    "slug": "large-scale-data-processing-performance",
-    "url": "note.html?slug=large-scale-data-processing-performance",
-    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<外部連結"
+    "title": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄",
+    "rel": "notes/finance/tw-day-trading-mcp-cli-wrapper-openclaw.md",
+    "slug": "finance/tw-day-trading-mcp-cli-wrapper-openclaw",
+    "url": "note.html?slug=finance/tw-day-trading-mcp-cli-wrapper-openclaw",
+    "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。…"
   },
   {
     "title": "這篇文章在講什麼",
-    "rel": "台股自動化研究平台：MVP 閉環與資料防禦實踐指南.md",
-    "slug": "taiwan-stock-automation-research-platform",
-    "url": "note.html?slug=taiwan-stock-automation-research-platform",
+    "rel": "notes/finance/taiwan-stock-automation-research-platform.md",
+    "slug": "finance/taiwan-stock-automation-research-platform",
+    "url": "note.html?slug=finance/taiwan-stock-automation-research-platform",
     "excerpt": "這篇文章是「台灣股票自動化研究平台」從原型跨越到 MVP (Minimum Viable Product) 的實戰總結。我們不僅成功串接了從「全市場初篩」到「策略優化建議」的完整數據閉環，更針對台灣 Open Data 的特殊性建立了強大的防禦性資料鏈。這是一份關於如何建構具備「自我進化能力」的量化研究系統的技術指南。 1. 分層資料獲取策略 (Tiered Sourcing)…"
   },
   {
+    "title": "MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測",
+    "rel": "notes/finance/trading/mtf-macd-concepts-and-taiwan-backtest.md",
+    "slug": "finance/trading/mtf-macd-concepts-and-taiwan-backtest",
+    "url": "note.html?slug=finance/trading/mtf-macd-concepts-and-taiwan-backtest",
+    "excerpt": "技術分析常用的「多時間框架（MTF）」與「金叉 / MACD 金叉 / MACD 趨勢向上」概念速查， 加上一個容易踩的「還原股價」坑，與台股一支候選策略（多週期共振 mtf_resonance）的實測結果。  驗證方法論（怎麼證明一支策略真的會賺、別自欺）不在此篇，見  「策略驗證方法論：從看起來會賺到證明真的賺的五道關卡」。本篇只講概念與實測。 不是一個指標，是「同一指標套…"
+  },
+  {
+    "title": "交易策略與當沖",
+    "rel": "notes/finance/trading/index.md",
+    "slug": "finance/trading/index",
+    "url": "note.html?slug=finance/trading/index",
+    "excerpt": "交易策略的驗證方法、技術指標實測與當沖執行檢查表。 策略要先能通過驗證關卡，再談進場規則；指標本身不是策略。 [strategy-validation-five-gates.md](./strategy-validation-five-gates.md) — 從「看起來會賺」到「證明真的賺」的五道關卡 [mtf-macd-concepts-and-taiwan-backtest…"
+  },
+  {
+    "title": "策略驗證方法論：從「看起來會賺」到「證明真的賺」的五道關卡",
+    "rel": "notes/finance/trading/strategy-validation-five-gates.md",
+    "slug": "finance/trading/strategy-validation-five-gates",
+    "url": "note.html?slug=finance/trading/strategy-validation-five-gates",
+    "excerpt": "整理一套交易策略驗證流程中容易踩坑、且互相牽連的五道關卡。源自一次真實的策略回測踩雷經驗：一個「事後看起來表現亮眼」的策略，逐關驗證後被打回原形。這五道關卡通用於任何「用歷史資料驗證某個決策規則是否有效」的場景，不限於交易策略。 「回測結果好看」跟「策略真的有 edge」中間有五道關卡，每漏一關都可能產生假陽性。 順序很重要：資料先不能看到未來（關卡 1），對照組要設計對（關卡…"
+  },
+  {
+    "title": "瀏覽器自動化的兩道現實：反 Bot 指紋與個人帳號登入維運",
+    "rel": "notes/infrastructure/browser-automation-anti-bot-and-login-ops.md",
+    "slug": "infrastructure/browser-automation-anti-bot-and-login-ops",
+    "url": "note.html?slug=infrastructure/browser-automation-anti-bot-and-login-ops",
+    "excerpt": "用瀏覽器自動化去操作一個需要登入的網站時，真正讓你卡關的常常不是商業邏輯，而是兩件「環境現實」：對方的反 Bot 機制會認出你不是真人，以及你的登入狀態會過期、而重新登入往往需要人介入。這裡用一個實際案例（自動化操作自己授權的帳號）把這兩道現實與應對心法簡單記一下，刻意不深入操作細節。 無頭瀏覽器（headless）帶著一堆「我是機器人」的指紋：User-Agent 出現 He…"
+  },
+  {
+    "title": "HTTP Keep-Alive 與 TCP Keep-Alive",
+    "rel": "notes/infrastructure/http-vs-tcp-keep-alive.md",
+    "slug": "infrastructure/http-vs-tcp-keep-alive",
+    "url": "note.html?slug=infrastructure/http-vs-tcp-keep-alive",
+    "excerpt": "差異：像跟朋友頻繁聊天但不掛電話，一直保持電話連線。 優點： 1. 速度更快：不用每次都重新撥號，網頁載入更快。 2. 省力：節省電腦的力氣，不用每次重新開始「聊天」。 缺點： 1. 占用電話線：一直保持電話連線，伺服器會變得很忙。 2. 要小心：保持連接可能有安全問題，像有人在聽你的電話。 差異：像跟朋友長時間安靜後偶爾發訊息確認對方還在，不掛掉連線。 優點：…"
+  },
+  {
+    "title": "Shell 操作筆記",
+    "rel": "notes/infrastructure/shell/index.md",
+    "slug": "infrastructure/shell/index",
+    "url": "note.html?slug=infrastructure/shell/index",
+    "excerpt": "Bash / Zsh / macOS 命令列的零散操作解法，各篇獨立，可直接查用。 這類問題的解法通常綁定 shell 與作業系統版本，套用前先確認環境。 [bash-remove-last-character.md](./bash-remove-last-character.md) — 去除變數最後一位資料 [replace-string-in-large-file.md](…"
+  },
+  {
+    "title": "AIQuota Widget 開發決策紀錄：動態字體折行、App Group 警告與模擬器憑證信任",
+    "rel": "notes/mobile/aiquota-widget-decisions-dynamic-type-app-group-cert.md",
+    "slug": "mobile/aiquota-widget-decisions-dynamic-type-app-group-cert",
+    "url": "note.html?slug=mobile/aiquota-widget-decisions-dynamic-type-app-group-cert",
+    "excerpt": "開發 AIQuota（iPhone App + Home Screen Widget，顯示 Codex、Claude、AGY 額度）時遇到的三個問題的排查與決策紀錄：Widget 文字動態字體折行、App Group 偏好設定的警告訊息判讀、以及模擬器信任自簽憑證的操作方式。整理成可回查的知識，避免下次遇到類似狀況重新排查一次。 WidgetKit 內固定寬度欄位裡的文字，不要…"
+  },
+  {
+    "title": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API",
+    "rel": "notes/mobile/ios26-liquid-glass-widget-background-swiftui-api.md",
+    "slug": "mobile/ios26-liquid-glass-widget-background-swiftui-api",
+    "url": "note.html?slug=mobile/ios26-liquid-glass-widget-background-swiftui-api",
+    "excerpt": "iOS 26 導入 Liquid Glass 設計語言後，「Home Screen Widget 要怎麼做出跟原生 Widget 一樣的玻璃背景」這個問題的調查筆記。結論跟直覺不同：Widget 的玻璃背景不是 App 端寫程式碼指定出來的，而是系統在特定使用者設定下自動套用的。順帶整理 App 內一般畫面（非 Widget）可用的 Liquid Glass SwiftUI A…"
+  },
+  {
+    "title": "高效樂透比對系統：使用 Redis 的注單匹配與數據管理",
+    "rel": "notes/backend/lottery-ticket-matching.md",
+    "slug": "backend/lottery-ticket-matching",
+    "url": "note.html?slug=backend/lottery-ticket-matching",
+    "excerpt": "建立一個有效率的樂透系統，使用 Redis 進行數百萬注樂透注單與中獎號碼的比對。解決方案應滿足以下需求： 1. 生成隨機樂透注單： 按以下規則生成樂透注單： 每注包含 6 個不重複的號碼。 號碼範圍為 1 到 49。 將每注轉換為位元掩碼（bitmask）表示，其中每個位元對應一個號碼（例如，位元 0 表示號碼 1，位元 1 表示號碼 2，以此類推）。 將注單存入 Redis…"
+  },
+  {
+    "title": "大量資料處理效能優化：從 1100 萬筆事件 Replay 到每秒 45000 筆",
+    "rel": "notes/backend/large-scale-data-processing-performance.md",
+    "slug": "backend/large-scale-data-processing-performance",
+    "url": "note.html?slug=backend/large-scale-data-processing-performance",
+    "excerpt": "這份筆記整理自 Brent Roose 的文章〈Processing 11 million rows〉：作者在搬遷部落格 analytics 系統時，需要重新 replay 超過 1,100 萬筆事件，並逐步把處理速度從約 30 events/sec 優化到約 45,000 events/sec。 原文：<外部連結"
+  },
+  {
     "title": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式",
-    "rel": "依賴注入原理、實作與設計模式：Pure DI、Container、生命週期與設計模式.md",
-    "slug": "dependency-injection-pure-di-container-lifecycle",
-    "url": "note.html?slug=dependency-injection-pure-di-container-lifecycle",
+    "rel": "notes/backend/dependency-injection-pure-di-container-lifecycle.md",
+    "slug": "backend/dependency-injection-pure-di-container-lifecycle",
+    "url": "note.html?slug=backend/dependency-injection-pure-di-container-lifecycle",
     "excerpt": " 草稿整理：依據目前關於 Dependency Injection（DI）、Pure DI、DI Container、Service Locator、生命週期管理、Composition Root 與設計模式的討論整理。 依賴注入的本質，是把「使用物件」跟「建立物件」分離。 物件本身不應該自己決定要建立哪個具體依賴，而是宣告自己需要什麼，由外部在組裝階段把依賴交給它。…"
   },
   {
-    "title": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄",
-    "rel": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄.md",
-    "slug": "tw-day-trading-mcp-cli-wrapper-openclaw",
-    "url": "note.html?slug=tw-day-trading-mcp-cli-wrapper-openclaw",
-    "excerpt": "這篇是 tw-day-trading 專案第一階 MCP 化的沉澱紀錄。重點不是重寫交易系統，而是把既有 CLI 包成一個受控 MCP 入口，讓 AI 可以查詢、對帳、整理報告與手動回填成交，同時避免任意 shell、危險重置、長任務或自動下單能力外露。 1. MCP 是入口層，不是交易邏輯層：實際交易邏輯仍由專案既有 CLI 處理，MCP 只負責把工具呼叫轉成安全 argv。…"
+    "title": "高寫入量訊息系統，如何用 Cassandra 做可擴充儲存，以及它會怎麼用 tombstone 反咬你一口",
+    "rel": "notes/backend/high-write-message-system-cassandra-tombstone.md",
+    "slug": "backend/high-write-message-system-cassandra-tombstone",
+    "url": "note.html?slug=backend/high-write-message-system-cassandra-tombstone",
+    "excerpt": "這篇是 Discord 在 2017-01-13 發的工程文，講的是他們當時如何把聊天訊息儲存架構，從 MongoDB 遷移到 Cassandra，以支撐已經超過 每日 1.2 億則訊息 的規模。這篇重點不是「聊天產品怎麼做」，而是「大量訊息寫入與隨機讀取，要怎麼設計資料庫與資料模型」。([Discord](外部連結"
+  },
+  {
+    "title": "Laravel 的事件概念及實作方式",
+    "rel": "notes/backend/laravel-events-concepts-implementation.md",
+    "slug": "backend/laravel-events-concepts-implementation",
+    "url": "note.html?slug=backend/laravel-events-concepts-implementation",
+    "excerpt": "在 Laravel 中事件 (Event) 是一種發佈-訂閱模式(Publish-Subscribe)的實作方式 ，它可以使應用程式中的邏輯從執行中分離出來，讓整個程式碼更加清晰明瞭。 當一個特定的事件發生時，會發送出該事件並且觸發訂閱這個事件的所有處理函式。 透過 event() 函式或 Event facade 來發送事件。例如 event(new UserRegister…"
+  },
+  {
+    "title": "RESTful 退款 API 設計：從 Resource Modeling 到 Idempotency、Concurrency 與 Reconciliation",
+    "rel": "notes/backend/restful-refund-api-design.md",
+    "slug": "backend/restful-refund-api-design",
+    "url": "note.html?slug=backend/restful-refund-api-design",
+    "excerpt": "這份文件以「設計一個退款 API」作為後端工程師面試題，整理從基礎 RESTful API 到正式金流系統會遇到的設計問題。 重點不是背 GET / POST / PUT / DELETE 或 HTTP Status Code，而是看面對部分退款、多次退款、timeout retry、併發退款、第三方非同步退款、callback 遺失與 API 重送時，能否維持清楚的 Reso…"
+  },
+  {
+    "title": "Refresh Token 問題處理與架構設計指南",
+    "rel": "notes/backend/refresh-token-design-guide.md",
+    "slug": "backend/refresh-token-design-guide",
+    "url": "note.html?slug=backend/refresh-token-design-guide",
+    "excerpt": "整理 Refresh Token 在 Web 系統中真正容易出錯的地方，重點放在 Session 狀態一致性、併發、Rotation、跨分頁、SSR、Cookie、Logout 與生命週期。本文不把 Refresh 視為單一 API 行為，而是視為 Authentication Session 的狀態轉換。 Refresh Token 不應成為 JavaScript 可直接讀取…"
+  },
+  {
+    "title": "Laravel 專案 403：Apache 使用者與目錄穿越權限",
+    "rel": "notes/backend/apache-daemon-directory-permission.md",
+    "slug": "backend/apache-daemon-directory-permission",
+    "url": "note.html?slug=backend/apache-daemon-directory-permission",
+    "excerpt": "權限錯誤的問題總結如下： 訪問 Laravel 專案時，伺服器返回 403 Forbidden 錯誤，Apache 錯誤日誌顯示： 此錯誤是由於 Apache 使用者 daemon 無法存取專案所在目錄 /Users/hom/code 及其上層目錄，缺少目錄的「搜尋權限」（執行權限 x）。 1. 確認 Apache 使用者： 使用 ps aux | grep httpd 確認 …"
+  },
+  {
+    "title": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構",
+    "rel": "notes/backend/claw-notify-rsshub-firebase-pwa.md",
+    "slug": "backend/claw-notify-rsshub-firebase-pwa",
+    "url": "note.html?slug=backend/claw-notify-rsshub-firebase-pwa",
+    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：外部連結"
+  },
+  {
+    "title": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計",
+    "rel": "notes/backend/avif-image-format-implementation.md",
+    "slug": "backend/avif-image-format-implementation",
+    "url": "note.html?slug=backend/avif-image-format-implementation",
+    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路：…"
+  },
+  {
+    "title": "AI 時代的 PM 新技能：語音化工作流程設計實戰",
+    "rel": "notes/ai/voice-workflow-design/index.md",
+    "slug": "ai/voice-workflow-design/index",
+    "url": "note.html?slug=ai/voice-workflow-design/index",
+    "excerpt": "title: AI 時代的 PM 新技能：語音化工作流程設計實戰 created: 2026-05-09 source: 260508_AI 時代的 PM 新技能：語音化工作流程設計實戰.zip AI 語音工作流 PM ZeroType Prompt Engineering Ollama 這份教材的核心不是「用語音打字」，而是把語音設計成一個低摩擦的 AI 工作入口：想到就說，…"
+  },
+  {
+    "title": "第二層 Agent 與 Harness 系統的差異：任務治理與自主決策的分工",
+    "rel": "notes/ai/second-layer-agent-vs-harness.md",
+    "slug": "ai/second-layer-agent-vs-harness",
+    "url": "note.html?slug=ai/second-layer-agent-vs-harness",
+    "excerpt": "這份文件說明「第二層 Agent」與「Harness 系統」的差異與分工。 簡單講： 比喻： 兩者不是競爭關係，而是上下層關係： Harness 解決「任務治理」；第二層 Agent 解決「工具內自主行動」。 更精準地說： Harness 不一定需要 LLM 自主決策；它可以管理固定流程、人工流程、腳本任務、subagent 任務。 第二層 Agent 則一定有「Agent 自…"
+  },
+  {
+    "title": "RAG 大量文件的多層次儲存與檢索設計",
+    "rel": "notes/ai/rag-large-document-layered-storage-retrieval.md",
+    "slug": "ai/rag-large-document-layered-storage-retrieval",
+    "url": "note.html?slug=ai/rag-large-document-layered-storage-retrieval",
+    "excerpt": "這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。 核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援： 大量文件持續寫入 文件更新與增量索引 快速檢索 精準召回 可引用來源 權限過濾 回答品質穩定 的 RAG 架構。 大量文件 RAG 不應只做單層 chunk emb…"
+  },
+  {
+    "title": "第二層 Agent 實作設計：固定工具下的受控自主工作流",
+    "rel": "notes/ai/second-layer-agent-controlled-autonomy.md",
+    "slug": "ai/second-layer-agent-controlled-autonomy",
+    "url": "note.html?slug=ai/second-layer-agent-controlled-autonomy",
+    "excerpt": "這份文件說明如何實作「第二層 Agent 系統」。 所謂第二層 Agent，指的是： 也就是 production 場景中最常見、也相對安全的 agentic workflow 形態。 它介於兩者之間： 第二層的核心價值是：  人類控制工具邊界與安全規則，Agent 負責在邊界內規劃步驟、呼叫工具、處理例外。 第二層 Agent 不應該是「完全放飛的 AI」，而是 受控自主。…"
+  },
+  {
+    "title": "TiDB RAG：從自架技能包到可重用知識基線",
+    "rel": "notes/ai/tidb-rag-reusable-knowledge-baseline.md",
+    "slug": "ai/tidb-rag-reusable-knowledge-baseline",
+    "url": "note.html?slug=ai/tidb-rag-reusable-knowledge-baseline",
+    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data…"
+  },
+  {
+    "title": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充",
+    "rel": "notes/ai/html-as-ai-knowledge-artifact.md",
+    "slug": "ai/html-as-ai-knowledge-artifact",
+    "url": "note.html?slug=ai/html-as-ai-knowledge-artifact",
+    "excerpt": "這份筆記整理 Thariq（Claude Code / Anthropic）文章〈Using Claude Code: The Unreasonable Effectiveness of HTML〉對 HTML artifact 的觀點，並轉成 knowledge-mirror / knowledge-showcase 的實作規則。 來源： Thariq X Article：<…"
+  },
+  {
+    "title": "Antigravity CLI 內容處理器：agy-content 的設計與封裝原則",
+    "rel": "notes/ai/antigravity-cli-agy-content-wrapper.md",
+    "slug": "ai/antigravity-cli-agy-content-wrapper",
+    "url": "note.html?slug=ai/antigravity-cli-agy-content-wrapper",
+    "excerpt": "整理日期：2026-06-27 這份筆記整理一次把 Antigravity CLI (agy) 包成內容處理工具的討論與實作重點。目標不是打造完整 agent，也不是把 OpenClaw 直接改成 Antigravity runtime，而是先做一個小而穩的 CLI wrapper，讓翻譯、總結、創意發想、潤稿這類低到中風險內容任務可以快速交給 agy 處理。…"
+  },
+  {
+    "title": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文",
+    "rel": "notes/ai/gemma-4-explained.md",
+    "slug": "ai/gemma-4-explained",
+    "url": "note.html?slug=ai/gemma-4-explained",
+    "excerpt": "這篇文章在講什麼 這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。 新手先記住這 6 件事 1. Gemma 4 有四個型號：E…"
+  },
+  {
+    "title": "AI 協作收斂：從大量資料表回到業務模型",
+    "rel": "notes/ai/ai-specification-engineering/02-model-convergence.md",
+    "slug": "ai/ai-specification-engineering/02-model-convergence",
+    "url": "note.html?slug=ai/ai-specification-engineering/02-model-convergence",
+    "excerpt": "AI 收到一段業務描述後，常先產生大量 entity 與資料表。語言模型傾向把每個名詞都實體化，再用「通用企業系統」慣例補齊歷程、設定、對照與稽核表。問題不在第一版發散，而在團隊是否有方法把它收斂。 資料表不是需求的起點。先找業務不變量、交易邊界與生命週期，再決定持久化模型。若直接對著 AI 產生的表逐張討論欄位，團隊會被假精確拖走。 對每個候選表提出四個問題：…"
+  },
+  {
+    "title": "時間序列模擬：用時間軸推演狀態變化找出規格歧義",
+    "rel": "notes/ai/ai-specification-engineering/05-timeline-simulation.md",
+    "slug": "ai/ai-specification-engineering/05-timeline-simulation",
+    "url": "note.html?slug=ai/ai-specification-engineering/05-timeline-simulation",
+    "excerpt": "時間序列模擬是把規格放到一條真實時間軸上逐格推演，觀察每個命令抵達時系統狀態如何改變、哪些欄位被寫入、剩餘值如何計算。它不是測試，也不是壓力測試，而是在寫任何一行實作之前，用一連串帶時間戳的事件逼問規格：「這一刻，系統到底該相信什麼？」 多數規格在靜態閱讀時看起來都完整。缺陷幾乎都藏在時間裡——兩個命令幾乎同時抵達、外部回呼比預期晚了三秒、一個視窗剛好在請求處理到一半時到期。這…"
+  },
+  {
+    "title": "配額系統完整範例：Decide、Consume、Refund、Reset 與 Ledger",
+    "rel": "notes/ai/ai-specification-engineering/07-quota-ledger-example.md",
+    "slug": "ai/ai-specification-engineering/07-quota-ledger-example",
+    "url": "note.html?slug=ai/ai-specification-engineering/07-quota-ledger-example",
+    "excerpt": "這是一份完整的配額（Quota）系統規格範例，把前面幾篇的方法——契約設計、資料模型收斂、時間序列模擬、可執行驗證——實際走一遍，並落成一套 Laravel 分層實作。它刻意選配額這個領域，因為它同時具備並行、時間視窗、可逆操作與稽核需求，是規格工程各種難題的匯集點。 配額看似簡單（「每小時 100 次」），但一旦加上「失敗要退還」「跨視窗要重置」「所有變動要能對帳」，它就變成…"
+  },
+  {
+    "title": "範例驅動收斂：先寫使用範例，再回頭補規格",
+    "rel": "notes/ai/ai-specification-engineering/06-example-driven-convergence.md",
+    "slug": "ai/ai-specification-engineering/06-example-driven-convergence",
+    "url": "note.html?slug=ai/ai-specification-engineering/06-example-driven-convergence",
+    "excerpt": "範例驅動收斂是一種刻意顛倒順序的規格方法：不先寫規格文件、也不先設計資料庫，而是先寫出「呼叫端會怎麼用這個東西」的具體範例，再從範例反推規格。範例是最誠實的規格——它無法含糊，因為每個參數、每個回傳、每個錯誤都必須寫出具體的值。 多數團隊的順序相反：先寫一份充滿「系統應該」「使用者可以」的需求文件，再直接跳去建資料表。這條路徑跳過了最關鍵的一步——沒有人先確認這個 API 用起…"
+  },
+  {
+    "title": "驗證與追蹤：在開發前發現規格錯誤",
+    "rel": "notes/ai/ai-specification-engineering/03-validation-traceability.md",
+    "slug": "ai/ai-specification-engineering/03-validation-traceability",
+    "url": "note.html?slug=ai/ai-specification-engineering/03-validation-traceability",
+    "excerpt": "規格工程的價值不在文件數量，而在規格能否被攻擊、被檢查、被重播。驗證要在開發前找出矛盾、缺口、不可達狀態與錯誤優先順序。 每條重要規則至少需要三種證據：來源證據、Given／When／Then 或 Decision Table 的行為證據，以及 schema validation、狀態機測試、property test 或 model simulation 的執行證據。…"
+  },
+  {
+    "title": "規格即程式：用型別、狀態機與不變量定義需求",
+    "rel": "notes/ai/ai-specification-engineering/01-spec-as-code.md",
+    "slug": "ai/ai-specification-engineering/01-spec-as-code",
+    "url": "note.html?slug=ai/ai-specification-engineering/01-spec-as-code",
+    "excerpt": "「用程式語言定義規格」不是提早寫正式系統，也不是把需求文件換成 class。它是用型別、狀態轉移、前置條件與不變量，把自然語言中含糊的規則改寫成機器可以檢查的模型。 自然語言適合說明目的，結構化規格適合約束行為。兩者不能互相取代。一份有效的規格模型至少回答：系統有哪些穩定概念、合法狀態、命令、事件、不變量，以及失敗時如何處理。 把「字串或數字」升級成有業務語意的值，並把合法範圍…"
+  },
+  {
+    "title": "AI 規格工程：從模糊需求到可執行、可驗證的系統規格",
+    "rel": "notes/ai/ai-specification-engineering/index.md",
+    "slug": "ai/ai-specification-engineering/index",
+    "url": "note.html?slug=ai/ai-specification-engineering/index",
+    "excerpt": "這是一套把 AI 放進規格設計流程的方法。目標不是讓 AI 代替架構師寫文件，而是把需求拆成結構化、可追蹤、可驗證的規格資產，讓矛盾、遺漏與過度設計在寫程式前暴露。 系列來源是安德魯〈AI 時代，架構師如何改變工作方式〉中「用程式語言定義規格」的實作脈絡，並整理成可重複操作的工程流程。 規格文件不是描述性文章，而是設計決策的可執行模型。 AI 適合大量提出候選模型、反例與衝突；…"
+  },
+  {
+    "title": "完整操作範例：以訂單與付款流程建立規格",
+    "rel": "notes/ai/ai-specification-engineering/04-order-payment-example.md",
+    "slug": "ai/ai-specification-engineering/04-order-payment-example",
+    "url": "note.html?slug=ai/ai-specification-engineering/04-order-payment-example",
+    "excerpt": "這份範例示範如何把一句模糊需求，透過 AI 發散、人工追問、模型收斂與可執行驗證，轉成可交付的規格資產。 原始需求：商戶可以建立訂單。顧客付款成功後訂單改為已付款，失敗可以重試，系統要保留紀錄。 先列出名詞、動作、規則與未知項目。未知包含：一張訂單可有幾次付款嘗試、是否允許部分付款、付款成功後能否取消、重試是否沿用識別碼，以及「紀錄」用於稽核、對帳或客服查詢。此時建立 open…"
+  },
+  {
+    "title": "設計方法論與驗證流程",
+    "rel": "notes/ai/claude-design-system/05-design-methodology-and-validation.md",
+    "slug": "ai/claude-design-system/05-design-methodology-and-validation",
+    "url": "note.html?slug=ai/claude-design-system/05-design-methodology-and-validation",
+    "excerpt": "一次設計探索的輸出是單一 HTML 文件。 純視覺探索：用畫布並排展示選項。 互動 / 流程 / 多選項：做成高保真可點擊原型，並把差異暴露為 tweak。 1. 提問 2. 找到現有 UI 元件庫並收集上下文；拷貝相關元件並閱讀範例；找不到就問使用者 3. 在 HTML 開頭先寫一段「假設 + 上下文 + 設計理由」，像 junior designer 向 manager 匯…"
+  },
+  {
+    "title": "內容原則、GitHub、跨專案與其他規則",
+    "rel": "notes/ai/claude-design-system/06-content-principles-and-cross-project-rules.md",
+    "slug": "ai/claude-design-system/06-content-principles-and-cross-project-rules",
+    "url": "note.html?slug=ai/claude-design-system/06-content-principles-and-cross-project-rules",
+    "excerpt": "不要為了填滿空間而塞佔位文字、湊數版塊或資訊性材料 每一個元素都要配得上它的位置 空，不一定要補內容；可能應該用版面與構圖解決 避免「資料餿水」：沒用的數字、圖示或統計 少即是多 如果覺得加額外版塊、頁面、文案或內容會更好： 先問使用者 不要擅自補內容 在探索完設計資產後，先說明自己採用的系統： 對投影片，先定章節頭、標題、圖片等版型 一張投影片最多用 1–2 種背景色…"
+  },
+  {
+    "title": "工作流程、提問與閱讀輸入",
+    "rel": "notes/ai/claude-design-system/03-workflow-questions-and-inputs.md",
+    "slug": "ai/claude-design-system/03-workflow-questions-and-inputs",
+    "url": "note.html?slug=ai/claude-design-system/03-workflow-questions-and-inputs",
+    "excerpt": "1. 理解用戶需求。 2. 對新任務或含糊任務提出澄清問題。 3. 弄清楚輸出形式、保真度、選項數量、約束條件，以及設計系統 / UI 元件庫 / 品牌。 4. 探索提供的資源，閱讀設計系統完整定義與相關連結檔案。 5. 做計劃，和／或列出待辦清單。 6. 建立資料夾結構並拷貝資源到該目錄下。 7. 收尾時呼叫 done 呈現檔案，檢查是否乾淨載入；若有錯先修，再 done；乾…"
+  },
+  {
+    "title": "自用通用 System Prompt 模板（跨系統 / 跨 AI 可用）",
+    "rel": "notes/ai/claude-design-system/08-general-system-prompt-template.md",
+    "slug": "ai/claude-design-system/08-general-system-prompt-template",
+    "url": "note.html?slug=ai/claude-design-system/08-general-system-prompt-template",
+    "excerpt": "這份不是複製 Claude Design，而是把我真正想學的東西抽成一版不綁特定平台、不綁特定工具、不限單一 AI 系統都可用的 system prompt 骨架。 核心目標： 讓 AI 先對齊目標與上下文，再開始產出 讓 AI 知道什麼時候該問、什麼時候不該問 讓 AI 用可驗證、可交付、可維護的方式工作 避免 AI slop、空泛內容、沒有上下文的瞎設計 / 瞎輸出…"
+  },
+  {
+    "title": "輸出建立與前端實作規範",
+    "rel": "notes/ai/claude-design-system/04-output-and-frontend-conventions.md",
+    "slug": "ai/claude-design-system/04-output-and-frontend-conventions",
+    "url": "note.html?slug=ai/claude-design-system/04-output-and-frontend-conventions",
+    "excerpt": "HTML 檔案名稱要具描述性，例如 Landing Page.html 做重大改版前，先複製舊版再編輯，例如 My Design v2.html 面向使用者的交付物要標記為資產 支撐性文件（CSS、研究筆記）不要標記為資產 從設計系統 / UI 元件庫拷貝需要的資源 不要直接引用外部資源 不要整批拷貝大型資料夾（20 個檔案） 只針對性拷貝真正會用到的檔案 永遠避免超大檔案（1…"
+  },
+  {
+    "title": "Claude Design 系統提示詞（中文整理）",
+    "rel": "notes/ai/claude-design-system/index.md",
+    "slug": "ai/claude-design-system/index",
+    "url": "note.html?slug=ai/claude-design-system/index",
+    "excerpt": "這份筆記把老闆提供的內容，依照段落功能與提示詞類型重新拆開存放，方便之後閱讀、引用與對照。 01-background-and-reading-lens.md 老闆對 Claude / OpenAI 系統提示詞的閱讀動機 對提示詞結構安排的觀察 對「如何引導 AI 問好問題」這段的重點感受 02-role-and-confidentiality-boundary.md…"
+  },
+  {
+    "title": "背景與閱讀視角",
+    "rel": "notes/ai/claude-design-system/01-background-and-reading-lens.md",
+    "slug": "ai/claude-design-system/01-background-and-reading-lens",
+    "url": "note.html?slug=ai/claude-design-system/01-background-and-reading-lens",
+    "excerpt": "Claude 和 OpenAI 只要有系統提示詞流出，我一定會仔細閱讀，觀摩順便學習一線大廠是如何使用文字來駕馭 AI 模型，來服務全球數十億使用者。 也可以順便觀察專業的提示詞，他的順序會怎麼安排，像是： 禁止類通常放在最前面 SPO 類型的安排常在中段 格式參考與技能推薦通常放在尾段 我覺得整個提示詞給我最好的洞察是，Anthropic 很小心地在設計如何引導 AI 給使用…"
+  },
+  {
+    "title": "角色定位與保密邊界",
+    "rel": "notes/ai/claude-design-system/02-role-and-confidentiality-boundary.md",
+    "slug": "ai/claude-design-system/02-role-and-confidentiality-boundary",
+    "url": "note.html?slug=ai/claude-design-system/02-role-and-confidentiality-boundary",
+    "excerpt": "你是專家設計師，以「經理」的身份與使用者合作。 你代表使用者，使用 HTML 產出設計交付物。 你在一個基於檔案系統的專案中工作。 你要用 HTML 創造經過深思熟慮、精心打磨且工程化良好的作品。 HTML 是工具，不是唯一創作身份。 你要依任務化身為該領域專家：動畫師、UX 設計師、幻燈片設計師、原型設計師等。 除非真的在做網頁，否則不要落入 Web 設計的套路與慣例。…"
+  },
+  {
+    "title": "媒體補充：Claude Design vs Huashu Design",
+    "rel": "notes/ai/claude-design-system/07-claude-design-vs-huashu-design.md",
+    "slug": "ai/claude-design-system/07-claude-design-vs-huashu-design",
+    "url": "note.html?slug=ai/claude-design-system/07-claude-design-vs-huashu-design",
+    "excerpt": "標題：Claude Design 剛推出就被逆向開源！Huashu Design：一句 Prompt 就能生出原型、簡報與 MP4 動畫 網站：電腦王阿達 日期：2026-04-21 連結：koc.com.tw/archives/639936 這篇文章不是在補 Claude Design prompt 的逐段內容，而是在補外部產品脈絡：…"
+  },
+  {
+    "title": "OpenClaw 成本控制",
+    "rel": "notes/ai/openclaw/index.md",
+    "slug": "ai/openclaw/index",
+    "url": "note.html?slug=ai/openclaw/index",
+    "excerpt": "OpenClaw 使用量觀測與降本改造的操作紀錄，從量測現況、找出成本來源，到改造 workflow 與日常檢查。 先量測再改造。沒有 usage 數據就談降本，只會砍掉真正有用的部分。 [cost-control-usage.md](./cost-control-usage.md) — OpenClaw Usage：量測現況與成本來源 [cost-control-workfl…"
+  },
+  {
+    "title": "AI 提示詞十則：情境、推理、誠實與風險檢查",
+    "rel": "notes/ai/ai-prompt-patterns/index.md",
+    "slug": "ai/ai-prompt-patterns/index",
+    "url": "note.html?slug=ai/ai-prompt-patterns/index",
+    "excerpt": "這份筆記整理老闆提供的 10 張提示詞卡片，已從簡體中文轉成符合台灣正體中文語法的版本，並補成我之後可直接查用的「提示詞選擇表」。 重點不是背十句咒語，而是依當下任務選擇正確規則：要背景、要推理、要誠實、要批判、要收斂、要格式、要假設審計、要壓縮上下文，或要上線前預演失敗。 如果老闆給的是模糊任務，先用 情境簡報。 如果老闆要決策品質，加入 推理要求、誠實約束、假設審計。…"
+  },
+  {
+    "title": "AI-First Testing：收斂、探索與可重複執行",
+    "rel": "notes/ai/ai-first-testing-workflow.md",
+    "slug": "ai/ai-first-testing-workflow",
+    "url": "note.html?slug=ai/ai-first-testing-workflow",
+    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
+  },
+  {
+    "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
+    "rel": "notes/ai/agent-system-foundation-beta-harness.md",
+    "slug": "ai/agent-system-foundation-beta-harness",
+    "url": "note.html?slug=ai/agent-system-foundation-beta-harness",
+    "excerpt": "agent-system-foundation 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。 它的核心重點不是 prompt 本身，而是把以下幾件事制度化： workflow state verification run orchestration human handoff observability artifact g…"
+  },
+  {
+    "title": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷",
+    "rel": "notes/ai/agy-content-one-shot-prompt-workflow.md",
+    "slug": "ai/agy-content-one-shot-prompt-workflow",
+    "url": "note.html?slug=ai/agy-content-one-shot-prompt-workflow",
+    "excerpt": "整理日期：2026-06-28 這篇不是單純記錄 agy-content 新增了哪些 command，而是整理一條比較可複用的判斷脈絡：什麼時候一個內容工具還停留在 one-shot prompt 階段，什麼時候已經值得升級成 content workflow，以及為什麼這次 agy-content 會自然長出 base + overlay、checklist、self-rev…"
+  },
+  {
+    "title": "Agent、RAG、Harness 系統 Eval 功能設計",
+    "rel": "notes/ai/agent-rag-harness-eval-design.md",
+    "slug": "ai/agent-rag-harness-eval-design",
+    "url": "note.html?slug=ai/agent-rag-harness-eval-design",
+    "excerpt": "這份筆記整理一套用來評估 Agent / RAG / Harness 系統的 Eval 設計。重點不是做漂亮 demo，而是把系統裡容易退化、容易被改壞、但又很難靠肉眼長期盯住的規則，變成可重複執行的檢查。 核心原則：  Eval 不是只拿來評分模型回答好不好，而是整個 AI 系統的防回歸機制。 對 Agentic system 來說，真正會壞的地方通常不是單一 prompt，…"
+  },
+  {
+    "title": "台股研究輸出物的生命週期",
+    "rel": "notes/finance/tw-stock-research/deliverable-lifecycle.md",
+    "slug": "finance/tw-stock-research/deliverable-lifecycle",
+    "url": "note.html?slug=finance/tw-stock-research/deliverable-lifecycle",
+    "excerpt": "研究工作如果沒有輸出物生命週期，常常會變成： 每次都重寫 舊研究無法接續 新資料來時不知道該更新哪個文件 所以需要把輸出物串起來。 目前最重要的幾種輸出物是： one-pager earnings update decision brief monitoring note / 追蹤更新 這是初次研究底稿。 用途： 快速建立公司全貌 寫下 thesis / anti-thesis…"
+  },
+  {
+    "title": "台股估值框架筆記",
+    "rel": "notes/finance/tw-stock-research/tw-stock-valuation-framing.md",
+    "slug": "finance/tw-stock-research/tw-stock-valuation-framing",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-valuation-framing",
+    "excerpt": "估值不是算出一個「正確目標價」就結束。 在研究流程裡，更有用的是先回答： 市場現在是用什麼邏輯在看這家公司 這個邏輯有沒有可能改變 如果基本面變好 / 變差，估值帶可能怎麼移動 也就是說，估值 framing 的重點是：  先理解市場怎麼定價，再判斷這個定價是否可能改變。 適合： 獲利相對穩定 市場習慣看 EPS 的公司 常見問題： 景氣循環股在高獲利時看起來最便宜，反而容易誤…"
+  },
+  {
+    "title": "Anthropic financial-services-plugins 分析：如何轉譯到台股研究場景",
+    "rel": "notes/finance/tw-stock-research/anthropic-financial-plugins-analysis.md",
+    "slug": "finance/tw-stock-research/anthropic-financial-plugins-analysis",
+    "url": "note.html?slug=finance/tw-stock-research/anthropic-financial-plugins-analysis",
+    "excerpt": "這份筆記不是要直接照搬 Anthropic 的 financial-services-plugins repo，也不是先急著建 skill。 目標是先釐清： 1. 這個 repo 真正解決什麼問題 2. 哪些結構與方法論值得借鏡 3. 哪些內容不適合原樣照搬 4. 若放到台股研究場景，應該如何轉譯 5. 哪些金融知識與 workflow 最值得先整理 參考來源：…"
+  },
+  {
+    "title": "台股研究核心筆記",
+    "rel": "notes/finance/tw-stock-research/tw-stock-research-core-notes.md",
+    "slug": "finance/tw-stock-research/tw-stock-research-core-notes",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-research-core-notes",
+    "excerpt": "台股研究最常見的問題不是沒有資料，而是： 資料很多，但沒有整理成可判斷的骨架 研究內容容易只剩新聞抄寫或單邊敘事 報告寫完之後，難以持續追蹤 thesis 有沒有變化 所以台股研究的核心，不只是蒐集資訊，而是把資訊整理成固定的判斷框架。 不是只寫產品名稱，而要拆： 收入來源 主要客戶或應用場景 毛利結構 競爭優勢是成本、技術、通路，還是客戶關係 如果連公司怎麼賺錢都說不清楚，後…"
+  },
+  {
+    "title": "台股財報後更新框架",
+    "rel": "notes/finance/tw-stock-research/tw-stock-earnings-update-framework.md",
+    "slug": "finance/tw-stock-research/tw-stock-earnings-update-framework",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-earnings-update-framework",
+    "excerpt": "財報後更新不是把營收、EPS、毛利率抄一遍。 真正有價值的財報後更新，應該回答： 這一季到底哪裡變了 哪個變化最重要 這個變化是一次性還是趨勢性 市場接下來最該追什麼 財報後更新應聚焦在三件事： 1. 變化識別：跟前期 / 市場預期比，到底哪裡不同 2. 意義判斷：這個差異對後續基本面意味著什麼 3. 後續追蹤：哪些指標決定這是噪音還是轉折 要看： QoQ / YoY 變化…"
+  },
+  {
+    "title": "Review：目前台股研究筆記相對於 Anthropic financial-services-plugins 的偏誤與修正方向",
+    "rel": "notes/finance/tw-stock-research/review-against-anthropic-financial-services-plugins.md",
+    "slug": "finance/tw-stock-research/review-against-anthropic-financial-services-plugins",
+    "url": "note.html?slug=finance/tw-stock-research/review-against-anthropic-financial-services-plugins",
+    "excerpt": "這份 review 的目的不是否定目前已整理出的台股研究筆記，而是重新對照 Anthropic financial-services-plugins repo，確認目前輸出是否有： 抓到原 repo 真正強的地方 把不該放大的部分放太大 漏掉原 repo 最關鍵的方法論 目前這批文件： tw-stock-research-core-notes.md tw-stock-thesi…"
+  },
+  {
+    "title": "台股決策前 Briefing 格式",
+    "rel": "notes/finance/tw-stock-research/tw-stock-decision-brief.md",
+    "slug": "finance/tw-stock-research/tw-stock-decision-brief",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-decision-brief",
+    "excerpt": "研究做到最後，常常需要從大量資料收斂成： 現在到底看不看 為什麼 最可能錯在哪 接下來最該追什麼 這就是 decision brief 的價值。 它不是完整研究報告， 而是：  給決策前最後一眼看的濃縮版。 目前觀點是什麼 是偏正向、觀望、還是風險偏高 為什麼值得看 / 不值得看 最可能錯在哪 接下來哪件事最可能讓市場改變看法 最值得擔心的是什麼 市場現在怎麼看這檔…"
+  },
+  {
+    "title": "台股公司 One-Pager 結構",
+    "rel": "notes/finance/tw-stock-research/tw-stock-one-pager-structure.md",
+    "slug": "finance/tw-stock-research/tw-stock-one-pager-structure",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-one-pager-structure",
+    "excerpt": "One-pager 是最適合長期追蹤一家公司、又不會讓研究太重的格式。 好的 one-pager 要做到： 一頁內看懂公司核心 能快速提醒自己 thesis 在哪 能保留 anti-thesis / risk / catalyst 之後方便持續更新 它不是完整研究報告，而是：  一份可持續維護的研究底稿。 產品 / 服務 收入來源 主要市場 產業角色 靠什麼賺錢…"
+  },
+  {
+    "title": "金融工作流如何被 plugin 化、connector 化、deliverable 化",
+    "rel": "notes/finance/tw-stock-research/financial-workflow-pluginization-notes.md",
+    "slug": "finance/tw-stock-research/financial-workflow-pluginization-notes",
+    "url": "note.html?slug=finance/tw-stock-research/financial-workflow-pluginization-notes",
+    "excerpt": "這份筆記不是在講某一種金融分析技巧，而是在整理一個更底層的系統問題：  一套金融專業工作，如何被拆成可重複使用、可維護、可擴充的 workflow system。 從 Anthropic financial-services-plugins repo 來看，真正值得學的，不只是金融內容，而是這三件事： 1. plugin 化：把不同角色 / 工作流封裝成獨立能力包…"
+  },
+  {
+    "title": "台股法說會重點整理框架",
+    "rel": "notes/finance/tw-stock-research/tw-stock-earnings-call-framework.md",
+    "slug": "finance/tw-stock-research/tw-stock-earnings-call-framework",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-earnings-call-framework",
+    "excerpt": "法說會不是逐字稿整理比賽。 真正有價值的法說整理，應該回答： 管理層這次到底新增了什麼訊號 哪些內容與上次相比有變化 哪些說法會影響 thesis、risk、catalyst 哪些只是常見的管理層話術 重點不是管理層說「需求不錯」，而是： 能見度看到幾個月 / 幾季 是全面改善，還是只有特定客戶 / 產品 客戶下單行為是正常化，還是提早拉貨 要看： 哪些產品組合在改善…"
+  },
+  {
+    "title": "台股月營收追蹤框架",
+    "rel": "notes/finance/tw-stock-research/tw-stock-monthly-revenue-framework.md",
+    "slug": "finance/tw-stock-research/tw-stock-monthly-revenue-framework",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-monthly-revenue-framework",
+    "excerpt": "月營收是台股非常有特色的高頻訊號，但也最容易被過度解讀。 好的月營收追蹤，不是看到數字跳動就下結論，而是要回答： 變化是否具有趨勢意義 是基期問題、季節性，還是基本面轉折 哪些變化會影響既有 thesis 用來看： 與去年同期相比，公司是否真的在改善或惡化 用來看： 短期節奏變化 但最容易被季節性與出貨時點誤導 用來看： 到目前為止的全年趨勢有沒有偏離原本預期…"
+  },
+  {
+    "title": "台股研究的資料分層與驗證方式",
+    "rel": "notes/finance/tw-stock-research/research-data-layering.md",
+    "slug": "finance/tw-stock-research/research-data-layering",
+    "url": "note.html?slug=finance/tw-stock-research/research-data-layering",
+    "excerpt": "研究品質很大一部分不是來自「會不會寫」， 而是來自： 用了什麼資料 資料的時效性如何 有沒有交叉驗證 哪些是管理層說法，哪些是客觀數字 所以台股研究需要先把資料分層。 包括： 公開資訊觀測站 年報 / 季報 財報附註 月營收公告 重大訊息 法說簡報 最正式 最適合做基礎事實層 時效性高但解釋性有限 公司實際揭露了什麼 營收 / 財報 / capex / 股利 / 法說內容是什麼…"
+  },
+  {
+    "title": "台股供應鏈 / 產業鏈研究筆記",
+    "rel": "notes/finance/tw-stock-research/tw-stock-supply-chain-research.md",
+    "slug": "finance/tw-stock-research/tw-stock-supply-chain-research",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-supply-chain-research",
+    "excerpt": "只看單一公司，很容易誤判。 因為很多台股公司的變化，實際上來自： 上游原料 中游零組件 下游客戶拉貨 同業競爭 終端需求 所以供應鏈 / 產業鏈研究的價值在於：  用上下游與同業的訊號交叉驗證單一公司的敘事。 要先回答： 這家公司是上游、中游、下游，還是設備 / 材料 / 組裝角色 影響它的最直接對象是誰 有些環節會領先反映景氣， 有些環節只會在後面才看到訂單與營收變化。…"
+  },
+  {
+    "title": "台股研究：Thesis / Anti-thesis / Catalyst / Risk",
+    "rel": "notes/finance/tw-stock-research/tw-stock-thesis-antithesis-catalyst-risk.md",
+    "slug": "finance/tw-stock-research/tw-stock-thesis-antithesis-catalyst-risk",
+    "url": "note.html?slug=finance/tw-stock-research/tw-stock-thesis-antithesis-catalyst-risk",
+    "excerpt": "很多投資研究會寫很多資訊，但沒有抓到真正影響判斷的骨架。 最值得固定化的四塊是： Thesis Anti-thesis Catalyst Risk 因為這四塊能回答： 為什麼值得關注 為什麼這個想法可能錯 什麼事件會讓市場重估 哪些因素會破壞這個判斷 Thesis 不是一句口號，也不是單純說「受惠 AI」。 好的 thesis 應該包含： 1. 核心觀點：這家公司值得關注的主要…"
+  },
+  {
+    "title": "台股研究知識地圖",
+    "rel": "notes/finance/tw-stock-research/index.md",
+    "slug": "finance/tw-stock-research/index",
+    "url": "note.html?slug=finance/tw-stock-research/index",
+    "excerpt": "這個資料夾目前分成三類內容： tw-stock-research-core-notes.md tw-stock-one-pager-structure.md tw-stock-valuation-framing.md tw-stock-thesis-antithesis-catalyst-risk.md 適合： 第一次研究一家公司 建立 one-pager 定義 thesis …"
+  },
+  {
+    "title": "股票當沖檢查表",
+    "rel": "notes/finance/trading/day-trading-checklist.md",
+    "slug": "finance/trading/day-trading-checklist",
+    "url": "note.html?slug=finance/trading/day-trading-checklist",
+    "excerpt": "1. 確認大盤趨勢 [ ] 確認大盤趨勢（如台灣加權指數）的整體趨勢 [ ] 確認市場盤勢多頭與盤整趨勢 2. 選擇合適的技術指標 [ ] 相對強弱指標（RSI） [ ] 移動平均線（MA） [ ] MACD（指數平滑異同移動平均線） [ ] 布林帶（Bollinger Bands） 3. 分析技術指標 相對強弱指標（RSI） 正向條件： [ ] RSI值落於30數值附近（超賣…"
   },
   {
     "title": "Zsh：進入專案自動載入 `.venv`",
     "rel": "notes/infrastructure/shell/zsh-auto-venv.md",
-    "slug": "zsh-auto-venv",
-    "url": "note.html?slug=zsh-auto-venv",
+    "slug": "infrastructure/shell/zsh-auto-venv",
+    "url": "note.html?slug=infrastructure/shell/zsh-auto-venv",
     "excerpt": "這裡放的是純 zsh hook 版，不依賴 direnv。 當你 cd 進某個專案資料夾時，如果該目錄或其上層有： 就自動啟用該 Python 虛擬環境；離開那個專案樹時則自動 deactivate。 把腳本放到你慣用的位置，然後在 ~/.zshrc 只保留一行 source： 腳本本體可直接用這份： cli/zsh/auto-venv.zsh 會往目前目錄一路往上找 .ven…"
   },
   {
     "title": "取代大檔內的文字",
     "rel": "notes/infrastructure/shell/replace-string-in-large-file.md",
-    "slug": "replace-string-in-large-file",
-    "url": "note.html?slug=replace-string-in-large-file",
+    "slug": "infrastructure/shell/replace-string-in-large-file",
+    "url": "note.html?slug=infrastructure/shell/replace-string-in-large-file",
     "excerpt": "最近在處理 Mysql 的備份檔時，發現上面的時區是 +0。這樣還原的時候時區錯誤，造成資料的時間欄位都錯誤，所以必須將檔案內的 +00:00 更改為 +08:00 但檔案太大了，至少都有 G 的等級，一般的編輯器都不好處理，容易當掉。 所以便拿出來了 sed 使用 gunzip 是因為備份檔都是 gz 壓縮檔，先將其解壓後再傳給 sed 查詢並取代想要的文字，之後再輸出或是存…"
   },
   {
     "title": "在 macOS 中使用 timeout 指令：解決無限迴圈問題",
     "rel": "notes/infrastructure/shell/macos-timeout-command.md",
-    "slug": "macos-timeout-command",
-    "url": "note.html?slug=macos-timeout-command",
+    "slug": "infrastructure/shell/macos-timeout-command",
+    "url": "note.html?slug=infrastructure/shell/macos-timeout-command",
     "excerpt": "這篇文章主要討論如何在 Bash 腳本中使用 timeout 指令來防止無限迴圈的問題。作者在工作中遇到一個腳本，它會持續檢查 Web 伺服器是否啟動，但當伺服器在啟動過程中崩潰時，until 迴圈就會無限執行。timeout 指令可以設定時間限制，讓超時的指令被終止，但它無法直接與 until 搭配使用，因為 until 是一個 Shell 關鍵字，而不是可以被 SIGTER…"
   },
   {
     "title": "bash 中如何去除變數最後一位的資料",
     "rel": "notes/infrastructure/shell/bash-remove-last-character.md",
-    "slug": "bash-remove-last-character",
-    "url": "note.html?slug=bash-remove-last-character",
+    "slug": "infrastructure/shell/bash-remove-last-character",
+    "url": "note.html?slug=infrastructure/shell/bash-remove-last-character",
     "excerpt": "1. 使用 ${var%pattern} 或 ${var%%pattern}： bash  定義變數 string=\"abcdefg\"  去除最後一位（對應到 \"g\"） echo \"${string%?}\"   輸出 \"abcdef\"  去除最後一個匹配到的 \"e\" echo \"${string%e}\"   輸出 \"abcd\"  使用%%會去除最後一個匹配到的pattern，而…"
   },
   {
-    "title": "HTTP Keep-Alive 與 TCP Keepalive",
-    "rel": "notes/infrastructure/networking/http-vs-tcp-keep-alive.md",
-    "slug": "http-vs-tcp-keep-alive",
-    "url": "note.html?slug=http-vs-tcp-keep-alive",
-    "excerpt": "差異：像跟朋友頻繁聊天但不掛電話，一直保持電話連線。 優點： 1. 速度更快：不用每次都重新撥號，網頁載入更快。 2. 省力：節省電腦的力氣，不用每次重新開始「聊天」。 缺點： 1. 占用電話線：一直保持電話連線，伺服器會變得很忙。 2. 要小心：保持連接可能有安全問題，像有人在聽你的電話。 差異：像跟朋友長時間安靜後偶爾發訊息確認對方還在，不掛掉連線。 優點：…"
+    "title": "你不是不會寫 Prompt，是不會定義任務：AI 任務規格重點摘要",
+    "rel": "notes/ai/task-specification-for-ai-agents.md",
+    "slug": "ai/task-specification-for-ai-agents",
+    "url": "note.html?slug=ai/task-specification-for-ai-agents",
+    "excerpt": "這篇整理 YouTube 影片〈你不是不會寫 Prompt，是不會定義任務〉的核心觀念，並把內容改寫成可實際套用的 AI／Agent 任務規格筆記。 影片的重點不是提供一套「神奇提示詞」，而是提醒我們：AI 產出不好，常常不是 Prompt 寫得不夠漂亮，而是任務本身還沒有被定義清楚。 當模型與 Agent 已經能自行讀取資料、規劃步驟、操作工具及反覆修正時，人更重要的工作是說…"
   },
   {
-    "title": "台股估值框架筆記",
-    "rel": "notes/finance/tw-stock-research/tw-stock-valuation-framing.md",
-    "slug": "tw-stock-valuation-framing",
-    "url": "note.html?slug=tw-stock-valuation-framing",
-    "excerpt": "估值不是算出一個「正確目標價」就結束。 在研究流程裡，更有用的是先回答： 市場現在是用什麼邏輯在看這家公司 這個邏輯有沒有可能改變 如果基本面變好 / 變差，估值帶可能怎麼移動 也就是說，估值 framing 的重點是：  先理解市場怎麼定價，再判斷這個定價是否可能改變。 適合： 獲利相對穩定 市場習慣看 EPS 的公司 常見問題： 景氣循環股在高獲利時看起來最便宜，反而容易誤…"
-  },
-  {
-    "title": "台股研究：Thesis / Anti-thesis / Catalyst / Risk",
-    "rel": "notes/finance/tw-stock-research/tw-stock-thesis-antithesis-catalyst-risk.md",
-    "slug": "tw-stock-thesis-antithesis-catalyst-risk",
-    "url": "note.html?slug=tw-stock-thesis-antithesis-catalyst-risk",
-    "excerpt": "很多投資研究會寫很多資訊，但沒有抓到真正影響判斷的骨架。 最值得固定化的四塊是： Thesis Anti-thesis Catalyst Risk 因為這四塊能回答： 為什麼值得關注 為什麼這個想法可能錯 什麼事件會讓市場重估 哪些因素會破壞這個判斷 Thesis 不是一句口號，也不是單純說「受惠 AI」。 好的 thesis 應該包含： 1. 核心觀點：這家公司值得關注的主要…"
-  },
-  {
-    "title": "台股供應鏈 / 產業鏈研究筆記",
-    "rel": "notes/finance/tw-stock-research/tw-stock-supply-chain-research.md",
-    "slug": "tw-stock-supply-chain-research",
-    "url": "note.html?slug=tw-stock-supply-chain-research",
-    "excerpt": "只看單一公司，很容易誤判。 因為很多台股公司的變化，實際上來自： 上游原料 中游零組件 下游客戶拉貨 同業競爭 終端需求 所以供應鏈 / 產業鏈研究的價值在於：  用上下游與同業的訊號交叉驗證單一公司的敘事。 要先回答： 這家公司是上游、中游、下游，還是設備 / 材料 / 組裝角色 影響它的最直接對象是誰 有些環節會領先反映景氣， 有些環節只會在後面才看到訂單與營收變化。…"
-  },
-  {
-    "title": "台股研究核心筆記",
-    "rel": "notes/finance/tw-stock-research/tw-stock-research-core-notes.md",
-    "slug": "tw-stock-research-core-notes",
-    "url": "note.html?slug=tw-stock-research-core-notes",
-    "excerpt": "台股研究最常見的問題不是沒有資料，而是： 資料很多，但沒有整理成可判斷的骨架 研究內容容易只剩新聞抄寫或單邊敘事 報告寫完之後，難以持續追蹤 thesis 有沒有變化 所以台股研究的核心，不只是蒐集資訊，而是把資訊整理成固定的判斷框架。 不是只寫產品名稱，而要拆： 收入來源 主要客戶或應用場景 毛利結構 競爭優勢是成本、技術、通路，還是客戶關係 如果連公司怎麼賺錢都說不清楚，後…"
-  },
-  {
-    "title": "台股公司 One-Pager 結構",
-    "rel": "notes/finance/tw-stock-research/tw-stock-one-pager-structure.md",
-    "slug": "tw-stock-one-pager-structure",
-    "url": "note.html?slug=tw-stock-one-pager-structure",
-    "excerpt": "One-pager 是最適合長期追蹤一家公司、又不會讓研究太重的格式。 好的 one-pager 要做到： 一頁內看懂公司核心 能快速提醒自己 thesis 在哪 能保留 anti-thesis / risk / catalyst 之後方便持續更新 它不是完整研究報告，而是：  一份可持續維護的研究底稿。 產品 / 服務 收入來源 主要市場 產業角色 靠什麼賺錢…"
-  },
-  {
-    "title": "台股月營收追蹤框架",
-    "rel": "notes/finance/tw-stock-research/tw-stock-monthly-revenue-framework.md",
-    "slug": "tw-stock-monthly-revenue-framework",
-    "url": "note.html?slug=tw-stock-monthly-revenue-framework",
-    "excerpt": "月營收是台股非常有特色的高頻訊號，但也最容易被過度解讀。 好的月營收追蹤，不是看到數字跳動就下結論，而是要回答： 變化是否具有趨勢意義 是基期問題、季節性，還是基本面轉折 哪些變化會影響既有 thesis 用來看： 與去年同期相比，公司是否真的在改善或惡化 用來看： 短期節奏變化 但最容易被季節性與出貨時點誤導 用來看： 到目前為止的全年趨勢有沒有偏離原本預期…"
-  },
-  {
-    "title": "台股財報後更新框架",
-    "rel": "notes/finance/tw-stock-research/tw-stock-earnings-update-framework.md",
-    "slug": "tw-stock-earnings-update-framework",
-    "url": "note.html?slug=tw-stock-earnings-update-framework",
-    "excerpt": "財報後更新不是把營收、EPS、毛利率抄一遍。 真正有價值的財報後更新，應該回答： 這一季到底哪裡變了 哪個變化最重要 這個變化是一次性還是趨勢性 市場接下來最該追什麼 財報後更新應聚焦在三件事： 1. 變化識別：跟前期 / 市場預期比，到底哪裡不同 2. 意義判斷：這個差異對後續基本面意味著什麼 3. 後續追蹤：哪些指標決定這是噪音還是轉折 要看： QoQ / YoY 變化…"
-  },
-  {
-    "title": "台股法說會重點整理框架",
-    "rel": "notes/finance/tw-stock-research/tw-stock-earnings-call-framework.md",
-    "slug": "tw-stock-earnings-call-framework",
-    "url": "note.html?slug=tw-stock-earnings-call-framework",
-    "excerpt": "法說會不是逐字稿整理比賽。 真正有價值的法說整理，應該回答： 管理層這次到底新增了什麼訊號 哪些內容與上次相比有變化 哪些說法會影響 thesis、risk、catalyst 哪些只是常見的管理層話術 重點不是管理層說「需求不錯」，而是： 能見度看到幾個月 / 幾季 是全面改善，還是只有特定客戶 / 產品 客戶下單行為是正常化，還是提早拉貨 要看： 哪些產品組合在改善…"
-  },
-  {
-    "title": "台股決策前 Briefing 格式",
-    "rel": "notes/finance/tw-stock-research/tw-stock-decision-brief.md",
-    "slug": "tw-stock-decision-brief",
-    "url": "note.html?slug=tw-stock-decision-brief",
-    "excerpt": "研究做到最後，常常需要從大量資料收斂成： 現在到底看不看 為什麼 最可能錯在哪 接下來最該追什麼 這就是 decision brief 的價值。 它不是完整研究報告， 而是：  給決策前最後一眼看的濃縮版。 目前觀點是什麼 是偏正向、觀望、還是風險偏高 為什麼值得看 / 不值得看 最可能錯在哪 接下來哪件事最可能讓市場改變看法 最值得擔心的是什麼 市場現在怎麼看這檔…"
-  },
-  {
-    "title": "Review：目前台股研究筆記相對於 Anthropic financial-services-plugins 的偏誤與修正方向",
-    "rel": "notes/finance/tw-stock-research/review-against-anthropic-financial-services-plugins.md",
-    "slug": "review-against-anthropic-financial-services-plugins",
-    "url": "note.html?slug=review-against-anthropic-financial-services-plugins",
-    "excerpt": "這份 review 的目的不是否定目前已整理出的台股研究筆記，而是重新對照 Anthropic financial-services-plugins repo，確認目前輸出是否有： 抓到原 repo 真正強的地方 把不該放大的部分放太大 漏掉原 repo 最關鍵的方法論 目前這批文件： tw-stock-research-core-notes.md tw-stock-thesi…"
-  },
-  {
-    "title": "台股研究的資料分層與驗證方式",
-    "rel": "notes/finance/tw-stock-research/research-data-layering.md",
-    "slug": "research-data-layering",
-    "url": "note.html?slug=research-data-layering",
-    "excerpt": "研究品質很大一部分不是來自「會不會寫」， 而是來自： 用了什麼資料 資料的時效性如何 有沒有交叉驗證 哪些是管理層說法，哪些是客觀數字 所以台股研究需要先把資料分層。 包括： 公開資訊觀測站 年報 / 季報 財報附註 月營收公告 重大訊息 法說簡報 最正式 最適合做基礎事實層 時效性高但解釋性有限 公司實際揭露了什麼 營收 / 財報 / capex / 股利 / 法說內容是什麼…"
-  },
-  {
-    "title": "台股研究知識地圖",
-    "rel": "notes/finance/tw-stock-research/index.md",
-    "slug": "index",
-    "url": "note.html?slug=index",
-    "excerpt": "這個資料夾目前分成三類內容： tw-stock-research-core-notes.md tw-stock-one-pager-structure.md tw-stock-valuation-framing.md tw-stock-thesis-antithesis-catalyst-risk.md 適合： 第一次研究一家公司 建立 one-pager 定義 thesis …"
-  },
-  {
-    "title": "金融工作流如何被 plugin 化、connector 化、deliverable 化",
-    "rel": "notes/finance/tw-stock-research/financial-workflow-pluginization-notes.md",
-    "slug": "financial-workflow-pluginization-notes",
-    "url": "note.html?slug=financial-workflow-pluginization-notes",
-    "excerpt": "這份筆記不是在講某一種金融分析技巧，而是在整理一個更底層的系統問題：  一套金融專業工作，如何被拆成可重複使用、可維護、可擴充的 workflow system。 從 Anthropic financial-services-plugins repo 來看，真正值得學的，不只是金融內容，而是這三件事： 1. plugin 化：把不同角色 / 工作流封裝成獨立能力包…"
-  },
-  {
-    "title": "台股研究輸出物的生命週期",
-    "rel": "notes/finance/tw-stock-research/deliverable-lifecycle.md",
-    "slug": "deliverable-lifecycle",
-    "url": "note.html?slug=deliverable-lifecycle",
-    "excerpt": "研究工作如果沒有輸出物生命週期，常常會變成： 每次都重寫 舊研究無法接續 新資料來時不知道該更新哪個文件 所以需要把輸出物串起來。 目前最重要的幾種輸出物是： one-pager earnings update decision brief monitoring note / 追蹤更新 這是初次研究底稿。 用途： 快速建立公司全貌 寫下 thesis / anti-thesis…"
-  },
-  {
-    "title": "Anthropic financial-services-plugins 分析：如何轉譯到台股研究場景",
-    "rel": "notes/finance/tw-stock-research/anthropic-financial-plugins-analysis.md",
-    "slug": "anthropic-financial-plugins-analysis",
-    "url": "note.html?slug=anthropic-financial-plugins-analysis",
-    "excerpt": "這份筆記不是要直接照搬 Anthropic 的 financial-services-plugins repo，也不是先急著建 skill。 目標是先釐清： 1. 這個 repo 真正解決什麼問題 2. 哪些結構與方法論值得借鏡 3. 哪些內容不適合原樣照搬 4. 若放到台股研究場景，應該如何轉譯 5. 哪些金融知識與 workflow 最值得先整理 參考來源：…"
-  },
-  {
-    "title": "股票當沖檢查表",
-    "rel": "notes/finance/trading/day-trading-checklist.md",
-    "slug": "day-trading-checklist",
-    "url": "note.html?slug=day-trading-checklist",
-    "excerpt": "1. 確認大盤趨勢 [ ] 確認大盤趨勢（如台灣加權指數）的整體趨勢 [ ] 確認市場盤勢多頭與盤整趨勢 2. 選擇合適的技術指標 [ ] 相對強弱指標（RSI） [ ] 移動平均線（MA） [ ] MACD（指數平滑異同移動平均線） [ ] 布林帶（Bollinger Bands） 3. 分析技術指標 相對強弱指標（RSI） 正向條件： [ ] RSI值落於30數值附近（超賣…"
-  },
-  {
-    "title": "高效樂透比對系統：使用 Redis 的注單匹配與數據管理",
-    "rel": "notes/backend/redis/lottery-ticket-matching.md",
-    "slug": "lottery-ticket-matching",
-    "url": "note.html?slug=lottery-ticket-matching",
-    "excerpt": "建立一個有效率的樂透系統，使用 Redis 進行數百萬注樂透注單與中獎號碼的比對。解決方案應滿足以下需求： 1. 生成隨機樂透注單： 按以下規則生成樂透注單： 每注包含 6 個不重複的號碼。 號碼範圍為 1 到 49。 將每注轉換為位元掩碼（bitmask）表示，其中每個位元對應一個號碼（例如，位元 0 表示號碼 1，位元 1 表示號碼 2，以此類推）。 將注單存入 Redis…"
-  },
-  {
-    "title": "Laravel 專案 403：Apache 使用者與目錄穿越權限",
-    "rel": "notes/backend/laravel/apache-daemon-directory-permission.md",
-    "slug": "apache-daemon-directory-permission",
-    "url": "note.html?slug=apache-daemon-directory-permission",
-    "excerpt": "權限錯誤的問題總結如下： 訪問 Laravel 專案時，伺服器返回 403 Forbidden 錯誤，Apache 錯誤日誌顯示： 此錯誤是由於 Apache 使用者 daemon 無法存取專案所在目錄 /Users/hom/code 及其上層目錄，缺少目錄的「搜尋權限」（執行權限 x）。 1. 確認 Apache 使用者： 使用 ps aux | grep httpd 確認 …"
-  },
-  {
-    "title": "Refresh Token 問題處理與架構設計指南",
-    "rel": "notes/backend/authentication/refresh-token-design-guide.md",
-    "slug": "refresh-token-design-guide",
-    "url": "note.html?slug=refresh-token-design-guide",
-    "excerpt": "整理 Refresh Token 在 Web 系統中真正容易出錯的地方，重點放在 Session 狀態一致性、併發、Rotation、跨分頁、SSR、Cookie、Logout 與生命週期。本文不把 Refresh 視為單一 API 行為，而是視為 Authentication Session 的狀態轉換。 Refresh Token 不應成為 JavaScript 可直接讀取…"
-  },
-  {
-    "title": "RESTful 退款 API 設計：從 Resource Modeling 到 Idempotency、Concurrency 與 Reconciliation",
-    "rel": "notes/backend/api/restful-refund-api-design.md",
-    "slug": "restful-refund-api-design",
-    "url": "note.html?slug=restful-refund-api-design",
-    "excerpt": "這份文件以「設計一個退款 API」作為後端工程師面試題，整理從基礎 RESTful API 到正式金流系統會遇到的設計問題。 重點不是背 GET / POST / PUT / DELETE 或 HTTP Status Code，而是看面對部分退款、多次退款、timeout retry、併發退款、第三方非同步退款、callback 遺失與 API 重送時，能否維持清楚的 Reso…"
+    "title": "Agent 執行流程 SOP：Decision、Loop、Stop 與驗證",
+    "rel": "notes/ai/agent-flow-sop.md",
+    "slug": "ai/agent-flow-sop",
+    "url": "note.html?slug=ai/agent-flow-sop",
+    "excerpt": "這是一套可重複套用的 Agent 執行流程標準作業程序（SOP）。目的不是讓 Agent「更自由」，而是把 Agent 的控制邏輯明確化：它如何觀察、保存狀態、做決策、執行、驗證、循環、停止，以及什麼時候必須升級人工。 這份 SOP 適用於 Code Review、測試分析、研究、除錯、文件分析、工作流代理等需要多步判斷與工具操作的 Agent。 成熟 Agent 的重點不是「…"
   },
   {
     "title": "OpenClaw workflow 降本改造方案",
     "rel": "notes/ai/openclaw/cost-control-workflow.md",
-    "slug": "cost-control-workflow",
-    "url": "note.html?slug=cost-control-workflow",
+    "slug": "ai/openclaw/cost-control-workflow",
+    "url": "note.html?slug=ai/openclaw/cost-control-workflow",
     "excerpt": "不是只換便宜模型，而是把整條 workflow 改得更省 token，並且能驗證效果真的有。 只送任務相關片段 長對話先摘要 memory 先檢索，不整包送 FAQ / 格式化 / 短摘要 - cheap/local 長推理 / 高風險 - strong model 重複問題先查 cache 標準流程結果可快取 先做檢索，再做判斷 先做粗分類，再做精推理 能批次做的不要逐筆做…"
   },
   {
     "title": "OpenClaw Usage",
     "rel": "notes/ai/openclaw/cost-control-usage.md",
-    "slug": "cost-control-usage",
-    "url": "note.html?slug=cost-control-usage",
+    "slug": "ai/openclaw/cost-control-usage",
+    "url": "note.html?slug=ai/openclaw/cost-control-usage",
     "excerpt": "OpenClaw 要做降本增效，通常會這樣落地： 1. 先分流任務 FAQ / 格式化 / 短摘要 - 便宜模型或本地模型 長文推理 / 高風險判斷 - 強模型 2. 先縮上下文 先檢索相關片段 先摘要歷史對話 不把整包 memory 塞給模型 3. 把高頻回覆快取起來 重複問題先查 cache 標準流程先存中間結果 4. 把 prompt 壓短 system prompt 只…"
   },
   {
     "title": "OpenClaw 降本提效 checklist",
     "rel": "notes/ai/openclaw/cost-control-checklist.md",
-    "slug": "cost-control-checklist",
-    "url": "note.html?slug=cost-control-checklist",
+    "slug": "ai/openclaw/cost-control-checklist",
+    "url": "note.html?slug=ai/openclaw/cost-control-checklist",
     "excerpt": "只送這次任務需要的片段 歷史對話先摘要，再送摘要 長 memory 先檢索，別整包塞進去 FAQ / 分類 / 格式化，先用便宜模型或本地模型 長文推理 / 高風險判斷，才升級強模型 能批次處理的就不要一筆一請求 高頻問題直接快取答案 標準流程輸出可快取中間結果 重複查詢先查 cache，再進模型 刪掉重複指令 把長說明改成短規則 用條列，不要堆散文 設每日 / 每月用量上限…"
-  },
-  {
-    "title": "Claude Design 系統提示詞（中文整理）",
-    "rel": "notes/ai/claude-design-system/overview.md",
-    "slug": "overview",
-    "url": "note.html?slug=overview",
-    "excerpt": "這份筆記把老闆提供的內容，依照段落功能與提示詞類型重新拆開存放，方便之後閱讀、引用與對照。 01_背景與閱讀視角.md 老闆對 Claude / OpenAI 系統提示詞的閱讀動機 對提示詞結構安排的觀察 對「如何引導 AI 問好問題」這段的重點感受 02_角色定位與保密邊界.md Claude Design 的角色、媒介、禁止洩漏事項、能力描述邊界 03_工作流程_提問_閱讀…"
-  },
-  {
-    "title": "自用通用 System Prompt 模板（跨系統 / 跨 AI 可用）",
-    "rel": "notes/ai/claude-design-system/08-自用通用-System-Prompt-模板.md",
-    "slug": "08-system-prompt",
-    "url": "note.html?slug=08-system-prompt",
-    "excerpt": "這份不是複製 Claude Design，而是把我真正想學的東西抽成一版不綁特定平台、不綁特定工具、不限單一 AI 系統都可用的 system prompt 骨架。 核心目標： 讓 AI 先對齊目標與上下文，再開始產出 讓 AI 知道什麼時候該問、什麼時候不該問 讓 AI 用可驗證、可交付、可維護的方式工作 避免 AI slop、空泛內容、沒有上下文的瞎設計 / 瞎輸出…"
-  },
-  {
-    "title": "媒體補充：Claude Design vs Huashu Design",
-    "rel": "notes/ai/claude-design-system/07-媒體補充-ClaudeDesign-vs-HuashuDesign.md",
-    "slug": "07-claudedesign-vs-huashudesign",
-    "url": "note.html?slug=07-claudedesign-vs-huashudesign",
-    "excerpt": "標題：Claude Design 剛推出就被逆向開源！Huashu Design：一句 Prompt 就能生出原型、簡報與 MP4 動畫 網站：電腦王阿達 日期：2026-04-21 連結：koc.com.tw/archives/639936 這篇文章不是在補 Claude Design prompt 的逐段內容，而是在補外部產品脈絡：…"
-  },
-  {
-    "title": "內容原則、GitHub、跨專案與其他規則",
-    "rel": "notes/ai/claude-design-system/06-內容原則-GitHub-跨專案與其他規則.md",
-    "slug": "06-github",
-    "url": "note.html?slug=06-github",
-    "excerpt": "不要為了填滿空間而塞佔位文字、湊數版塊或資訊性材料 每一個元素都要配得上它的位置 空，不一定要補內容；可能應該用版面與構圖解決 避免「資料餿水」：沒用的數字、圖示或統計 少即是多 如果覺得加額外版塊、頁面、文案或內容會更好： 先問使用者 不要擅自補內容 在探索完設計資產後，先說明自己採用的系統： 對投影片，先定章節頭、標題、圖片等版型 一張投影片最多用 1–2 種背景色…"
-  },
-  {
-    "title": "設計方法論與驗證流程",
-    "rel": "notes/ai/claude-design-system/05-設計方法論與驗證流程.md",
-    "slug": "05",
-    "url": "note.html?slug=05",
-    "excerpt": "一次設計探索的輸出是單一 HTML 文件。 純視覺探索：用畫布並排展示選項。 互動 / 流程 / 多選項：做成高保真可點擊原型，並把差異暴露為 tweak。 1. 提問 2. 找到現有 UI 元件庫並收集上下文；拷貝相關元件並閱讀範例；找不到就問使用者 3. 在 HTML 開頭先寫一段「假設 + 上下文 + 設計理由」，像 junior designer 向 manager 匯…"
-  },
-  {
-    "title": "輸出建立與前端實作規範",
-    "rel": "notes/ai/claude-design-system/04-輸出建立與前端實作規範.md",
-    "slug": "04",
-    "url": "note.html?slug=04",
-    "excerpt": "HTML 檔案名稱要具描述性，例如 Landing Page.html 做重大改版前，先複製舊版再編輯，例如 My Design v2.html 面向使用者的交付物要標記為資產 支撐性文件（CSS、研究筆記）不要標記為資產 從設計系統 / UI 元件庫拷貝需要的資源 不要直接引用外部資源 不要整批拷貝大型資料夾（20 個檔案） 只針對性拷貝真正會用到的檔案 永遠避免超大檔案（1…"
-  },
-  {
-    "title": "工作流程、提問與閱讀輸入",
-    "rel": "notes/ai/claude-design-system/03-工作流程-提問-閱讀輸入.md",
-    "slug": "03",
-    "url": "note.html?slug=03",
-    "excerpt": "1. 理解用戶需求。 2. 對新任務或含糊任務提出澄清問題。 3. 弄清楚輸出形式、保真度、選項數量、約束條件，以及設計系統 / UI 元件庫 / 品牌。 4. 探索提供的資源，閱讀設計系統完整定義與相關連結檔案。 5. 做計劃，和／或列出待辦清單。 6. 建立資料夾結構並拷貝資源到該目錄下。 7. 收尾時呼叫 done 呈現檔案，檢查是否乾淨載入；若有錯先修，再 done；乾…"
-  },
-  {
-    "title": "角色定位與保密邊界",
-    "rel": "notes/ai/claude-design-system/02-角色定位與保密邊界.md",
-    "slug": "02",
-    "url": "note.html?slug=02",
-    "excerpt": "你是專家設計師，以「經理」的身份與使用者合作。 你代表使用者，使用 HTML 產出設計交付物。 你在一個基於檔案系統的專案中工作。 你要用 HTML 創造經過深思熟慮、精心打磨且工程化良好的作品。 HTML 是工具，不是唯一創作身份。 你要依任務化身為該領域專家：動畫師、UX 設計師、幻燈片設計師、原型設計師等。 除非真的在做網頁，否則不要落入 Web 設計的套路與慣例。…"
-  },
-  {
-    "title": "背景與閱讀視角",
-    "rel": "notes/ai/claude-design-system/01-背景與閱讀視角.md",
-    "slug": "01",
-    "url": "note.html?slug=01",
-    "excerpt": "Claude 和 OpenAI 只要有系統提示詞流出，我一定會仔細閱讀，觀摩順便學習一線大廠是如何使用文字來駕馭 AI 模型，來服務全球數十億使用者。 也可以順便觀察專業的提示詞，他的順序會怎麼安排，像是： 禁止類通常放在最前面 SPO 類型的安排常在中段 格式參考與技能推薦通常放在尾段 我覺得整個提示詞給我最好的洞察是，Anthropic 很小心地在設計如何引導 AI 給使用…"
-  },
-  {
-    "title": "Agent 執行流程 SOP：Decision、Loop、Stop 與驗證",
-    "rel": "notes/ai/agent-flow-sop.md",
-    "slug": "agent-flow-sop",
-    "url": "note.html?slug=agent-flow-sop",
-    "excerpt": "這是一套可重複套用的 Agent 執行流程標準作業程序（SOP）。目的不是讓 Agent「更自由」，而是把 Agent 的控制邏輯明確化：它如何觀察、保存狀態、做決策、執行、驗證、循環、停止，以及什麼時候必須升級人工。 這份 SOP 適用於 Code Review、測試分析、研究、除錯、文件分析、工作流代理等需要多步判斷與工具操作的 Agent。 成熟 Agent 的重點不是「…"
-  },
-  {
-    "title": "AI 規格工程：從模糊需求到可執行、可驗證的系統規格",
-    "rel": "notes/ai-specification-engineering/README.md",
-    "slug": "ai-specification-engineering-overview",
-    "url": "note.html?slug=ai-specification-engineering-overview",
-    "excerpt": "這是一套把 AI 放進規格設計流程的方法。目標不是讓 AI 代替架構師寫文件，而是把需求拆成結構化、可追蹤、可驗證的規格資產，讓矛盾、遺漏與過度設計在寫程式前暴露。 系列來源是安德魯〈AI 時代，架構師如何改變工作方式〉中「用程式語言定義規格」的實作脈絡，並整理成可重複操作的工程流程。 規格文件不是描述性文章，而是設計決策的可執行模型。 AI 適合大量提出候選模型、反例與衝突；…"
-  },
-  {
-    "title": "配額系統完整範例：Decide、Consume、Refund、Reset 與 Ledger",
-    "rel": "notes/ai-specification-engineering/07-配額系統完整範例：Decide、Consume、Refund、Reset-與-Ledger.md",
-    "slug": "ai-specification-quota-ledger-example",
-    "url": "note.html?slug=ai-specification-quota-ledger-example",
-    "excerpt": "這是一份完整的配額（Quota）系統規格範例，把前面幾篇的方法——契約設計、資料模型收斂、時間序列模擬、可執行驗證——實際走一遍，並落成一套 Laravel 分層實作。它刻意選配額這個領域，因為它同時具備並行、時間視窗、可逆操作與稽核需求，是規格工程各種難題的匯集點。 配額看似簡單（「每小時 100 次」），但一旦加上「失敗要退還」「跨視窗要重置」「所有變動要能對帳」，它就變成…"
-  },
-  {
-    "title": "範例驅動收斂：先寫使用範例，再回頭補規格",
-    "rel": "notes/ai-specification-engineering/06-範例驅動收斂：先寫使用範例，再回頭補規格.md",
-    "slug": "ai-specification-example-driven-convergence",
-    "url": "note.html?slug=ai-specification-example-driven-convergence",
-    "excerpt": "範例驅動收斂是一種刻意顛倒順序的規格方法：不先寫規格文件、也不先設計資料庫，而是先寫出「呼叫端會怎麼用這個東西」的具體範例，再從範例反推規格。範例是最誠實的規格——它無法含糊，因為每個參數、每個回傳、每個錯誤都必須寫出具體的值。 多數團隊的順序相反：先寫一份充滿「系統應該」「使用者可以」的需求文件，再直接跳去建資料表。這條路徑跳過了最關鍵的一步——沒有人先確認這個 API 用起…"
-  },
-  {
-    "title": "時間序列模擬：用時間軸推演狀態變化找出規格歧義",
-    "rel": "notes/ai-specification-engineering/05-時間序列模擬：用時間軸推演狀態變化找出規格歧義.md",
-    "slug": "ai-specification-timeline-simulation",
-    "url": "note.html?slug=ai-specification-timeline-simulation",
-    "excerpt": "時間序列模擬是把規格放到一條真實時間軸上逐格推演，觀察每個命令抵達時系統狀態如何改變、哪些欄位被寫入、剩餘值如何計算。它不是測試，也不是壓力測試，而是在寫任何一行實作之前，用一連串帶時間戳的事件逼問規格：「這一刻，系統到底該相信什麼？」 多數規格在靜態閱讀時看起來都完整。缺陷幾乎都藏在時間裡——兩個命令幾乎同時抵達、外部回呼比預期晚了三秒、一個視窗剛好在請求處理到一半時到期。這…"
-  },
-  {
-    "title": "完整操作範例：以訂單與付款流程建立規格",
-    "rel": "notes/ai-specification-engineering/04-完整操作範例：以訂單與付款流程建立規格.md",
-    "slug": "ai-specification-order-payment-example",
-    "url": "note.html?slug=ai-specification-order-payment-example",
-    "excerpt": "這份範例示範如何把一句模糊需求，透過 AI 發散、人工追問、模型收斂與可執行驗證，轉成可交付的規格資產。 原始需求：商戶可以建立訂單。顧客付款成功後訂單改為已付款，失敗可以重試，系統要保留紀錄。 先列出名詞、動作、規則與未知項目。未知包含：一張訂單可有幾次付款嘗試、是否允許部分付款、付款成功後能否取消、重試是否沿用識別碼，以及「紀錄」用於稽核、對帳或客服查詢。此時建立 open…"
-  },
-  {
-    "title": "驗證與追蹤：在開發前發現規格錯誤",
-    "rel": "notes/ai-specification-engineering/03-驗證與追蹤：在開發前發現規格錯誤.md",
-    "slug": "ai-specification-validation-traceability",
-    "url": "note.html?slug=ai-specification-validation-traceability",
-    "excerpt": "規格工程的價值不在文件數量，而在規格能否被攻擊、被檢查、被重播。驗證要在開發前找出矛盾、缺口、不可達狀態與錯誤優先順序。 每條重要規則至少需要三種證據：來源證據、Given／When／Then 或 Decision Table 的行為證據，以及 schema validation、狀態機測試、property test 或 model simulation 的執行證據。…"
-  },
-  {
-    "title": "AI 協作收斂：從大量資料表回到業務模型",
-    "rel": "notes/ai-specification-engineering/02-AI-協作收斂：從大量資料表回到業務模型.md",
-    "slug": "ai-specification-model-convergence",
-    "url": "note.html?slug=ai-specification-model-convergence",
-    "excerpt": "AI 收到一段業務描述後，常先產生大量 entity 與資料表。語言模型傾向把每個名詞都實體化，再用「通用企業系統」慣例補齊歷程、設定、對照與稽核表。問題不在第一版發散，而在團隊是否有方法把它收斂。 資料表不是需求的起點。先找業務不變量、交易邊界與生命週期，再決定持久化模型。若直接對著 AI 產生的表逐張討論欄位，團隊會被假精確拖走。 對每個候選表提出四個問題：…"
-  },
-  {
-    "title": "規格即程式：用型別、狀態機與不變量定義需求",
-    "rel": "notes/ai-specification-engineering/01-規格即程式：用型別、狀態機與不變量定義需求.md",
-    "slug": "ai-specification-as-code",
-    "url": "note.html?slug=ai-specification-as-code",
-    "excerpt": "「用程式語言定義規格」不是提早寫正式系統，也不是把需求文件換成 class。它是用型別、狀態轉移、前置條件與不變量，把自然語言中含糊的規則改寫成機器可以檢查的模型。 自然語言適合說明目的，結構化規格適合約束行為。兩者不能互相取代。一份有效的規格模型至少回答：系統有哪些穩定概念、合法狀態、命令、事件、不變量，以及失敗時如何處理。 把「字串或數字」升級成有業務語意的值，並把合法範圍…"
-  },
-  {
-    "title": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API",
-    "rel": "iOS 26 Liquid Glass 筆記：Widget 玻璃背景系統機制與 SwiftUI API.md",
-    "slug": "ios26-liquid-glass-widget-background-swiftui-api",
-    "url": "note.html?slug=ios26-liquid-glass-widget-background-swiftui-api",
-    "excerpt": "iOS 26 導入 Liquid Glass 設計語言後，「Home Screen Widget 要怎麼做出跟原生 Widget 一樣的玻璃背景」這個問題的調查筆記。結論跟直覺不同：Widget 的玻璃背景不是 App 端寫程式碼指定出來的，而是系統在特定使用者設定下自動套用的。順帶整理 App 內一般畫面（非 Widget）可用的 Liquid Glass SwiftUI A…"
-  },
-  {
-    "title": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷",
-    "rel": "agy-content：從 one-shot prompt 工具到可驗證內容 workflow 的演進判斷.md",
-    "slug": "agy-content-one-shot-prompt-workflow",
-    "url": "note.html?slug=agy-content-one-shot-prompt-workflow",
-    "excerpt": "整理日期：2026-06-28 這篇不是單純記錄 agy-content 新增了哪些 command，而是整理一條比較可複用的判斷脈絡：什麼時候一個內容工具還停留在 one-shot prompt 階段，什麼時候已經值得升級成 content workflow，以及為什麼這次 agy-content 會自然長出 base + overlay、checklist、self-rev…"
-  },
-  {
-    "title": "TiDB RAG：從自架技能包到可重用知識基線",
-    "rel": "TiDB RAG：從自架技能包到可重用知識基線.md",
-    "slug": "tidb-rag-reusable-knowledge-baseline",
-    "url": "note.html?slug=tidb-rag-reusable-knowledge-baseline",
-    "excerpt": "這份知識的主題，不是單指 TiDB，也不是單指向量資料庫，而是整理一條較務實的自架 RAG 思路：  TiDB / TiKV / PD 很適合扮演 metadata 與資料層，但不應被誤當成完整 retrieval engine。 如果目標是做一套可實際運作的 RAG stack，比較穩的方向通常是： TiDB：metadata / relational data…"
-  },
-  {
-    "title": "RAG 大量文件的多層次儲存與檢索設計",
-    "rel": "RAG 大量文件的多層次儲存與檢索設計.md",
-    "slug": "rag-large-document-layered-storage-retrieval",
-    "url": "note.html?slug=rag-large-document-layered-storage-retrieval",
-    "excerpt": "這份文件說明當 RAG 系統面對大量文件時，如何設計多層次儲存、有效率寫入、有效率讀取，以及如何把檢索結果組成可靠回答。 核心目標不是「把所有文件切 chunk 丟進 vector DB」而已，而是建立一套能支援： 大量文件持續寫入 文件更新與增量索引 快速檢索 精準召回 可引用來源 權限過濾 回答品質穩定 的 RAG 架構。 大量文件 RAG 不應只做單層 chunk emb…"
-  },
-  {
-    "title": "MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測",
-    "rel": "MTF 多時間框架與 MACD 金叉：概念、還原股價與台股實測.md",
-    "slug": "mtf-macd-concepts-and-taiwan-backtest",
-    "url": "note.html?slug=mtf-macd-concepts-and-taiwan-backtest",
-    "excerpt": "技術分析常用的「多時間框架（MTF）」與「金叉 / MACD 金叉 / MACD 趨勢向上」概念速查， 加上一個容易踩的「還原股價」坑，與台股一支候選策略（多週期共振 mtf_resonance）的實測結果。  驗證方法論（怎麼證明一支策略真的會賺、別自欺）不在此篇，見  「策略驗證方法論：從看起來會賺到證明真的賺的五道關卡」。本篇只講概念與實測。 不是一個指標，是「同一指標套…"
-  },
-  {
-    "title": "Laravel 的事件概念及實作方式",
-    "rel": "Laravel 的事件概念及實作方式.md",
-    "slug": "laravel-events-concepts-implementation",
-    "url": "note.html?slug=laravel-events-concepts-implementation",
-    "excerpt": "在 Laravel 中事件 (Event) 是一種發佈-訂閱模式(Publish-Subscribe)的實作方式 ，它可以使應用程式中的邏輯從執行中分離出來，讓整個程式碼更加清晰明瞭。 當一個特定的事件發生時，會發送出該事件並且觸發訂閱這個事件的所有處理函式。 透過 event() 函式或 Event facade 來發送事件。例如 event(new UserRegister…"
-  },
-  {
-    "title": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充",
-    "rel": "HTML 作為 AI 知識展示格式：Claude Code 的實務補充.md",
-    "slug": "html-as-ai-knowledge-artifact",
-    "url": "note.html?slug=html-as-ai-knowledge-artifact",
-    "excerpt": "這份筆記整理 Thariq（Claude Code / Anthropic）文章〈Using Claude Code: The Unreasonable Effectiveness of HTML〉對 HTML artifact 的觀點，並轉成 knowledge-mirror / knowledge-showcase 的實作規則。 來源： Thariq X Article：<…"
-  },
-  {
-    "title": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文",
-    "rel": "Gemma 4 白話圖解：新手一次看懂小模型、MoE、多模態與長前後文.md",
-    "slug": "gemma-4-explained",
-    "url": "note.html?slug=gemma-4-explained",
-    "excerpt": "這篇文章在講什麼 這篇《A Visual Guide to Gemma 4》不是操作教學，也不是單純比 benchmark。它的重點是：用圖解方式，把 Gemma 4 為什麼能兼顧多模態、長前後文、效率與裝置端部署 這幾件事拆開講清楚。文章先講共通架構，再分別解釋 31B、26B A4B、E2B、E4B 這四種模型。 新手先記住這 6 件事 1. Gemma 4 有四個型號：E…"
-  },
-  {
-    "title": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構",
-    "rel": "Claw Notify：RSSHub、Firebase 與 PWA 推播收件箱架構.md",
-    "slug": "claw-notify-rsshub-firebase-pwa",
-    "url": "note.html?slug=claw-notify-rsshub-firebase-pwa",
-    "excerpt": "Claw Notify 是一套把多個內容來源整理成個人推播收件箱的輕量架構。 核心目標不是單純「發通知」，而是把通知從聊天軟體移出來，變成一套可回查、可分類、可擴充的通知資料流： 目前接入的來源包含： 阮一峰科技愛好者週刊：阮一峰科技愛好者週刊 GitHub Jacky Bing-Sheng Lee：外部連結"
-  },
-  {
-    "title": "Antigravity CLI 內容處理器：agy-content 的設計與封裝原則",
-    "rel": "Antigravity CLI 內容處理器：agy-content 的設計與封裝原則.md",
-    "slug": "antigravity-cli-agy-content-wrapper",
-    "url": "note.html?slug=antigravity-cli-agy-content-wrapper",
-    "excerpt": "整理日期：2026-06-27 這份筆記整理一次把 Antigravity CLI (agy) 包成內容處理工具的討論與實作重點。目標不是打造完整 agent，也不是把 OpenClaw 直接改成 Antigravity runtime，而是先做一個小而穩的 CLI wrapper，讓翻譯、總結、創意發想、潤稿這類低到中風險內容任務可以快速交給 agy 處理。…"
-  },
-  {
-    "title": "Agent、RAG、Harness 系統 Eval 功能設計",
-    "rel": "Agent、RAG、Harness 系統 Eval 功能設計.md",
-    "slug": "agent-rag-harness-eval-design",
-    "url": "note.html?slug=agent-rag-harness-eval-design",
-    "excerpt": "這份筆記整理一套用來評估 Agent / RAG / Harness 系統的 Eval 設計。重點不是做漂亮 demo，而是把系統裡容易退化、容易被改壞、但又很難靠肉眼長期盯住的規則，變成可重複執行的檢查。 核心原則：  Eval 不是只拿來評分模型回答好不好，而是整個 AI 系統的防回歸機制。 對 Agentic system 來說，真正會壞的地方通常不是單一 prompt，…"
-  },
-  {
-    "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
-    "rel": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness.md",
-    "slug": "agent-system-foundation-beta-harness",
-    "url": "note.html?slug=agent-system-foundation-beta-harness",
-    "excerpt": "agent-system-foundation 是一套把 AI 助手從「只會回覆問題」往前推到「能穩定推進真實多步工作」的 foundation。 它的核心重點不是 prompt 本身，而是把以下幾件事制度化： workflow state verification run orchestration human handoff observability artifact g…"
-  },
-  {
-    "title": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計",
-    "rel": "AVIF 圖片格式落地：能力檢測、CDN 快取與異步轉碼設計.md",
-    "slug": "avif-image-format-implementation",
-    "url": "note.html?slug=avif-image-format-implementation",
-    "excerpt": "SegmentFault：下一代圖片格式 AVIF 在 vivo 社區的落地實踐 SegmentFault 文章 整理日期：2026-05-08 這篇筆記整理一套在內容型網站落地 AVIF 圖片格式的工程方案。 核心不是單純「把圖片改成 AVIF」，而是建立一條安全、可回退、可快取、可觀測的圖片交付鏈路：…"
-  },
-  {
-    "title": "AIQuota Widget 開發決策紀錄：動態字體折行、App Group 警告與模擬器憑證信任",
-    "rel": "AIQuota Widget 開發決策紀錄：動態字體折行、App Group 警告與模擬器憑證信任.md",
-    "slug": "aiquota-widget-decisions-dynamic-type-app-group-cert",
-    "url": "note.html?slug=aiquota-widget-decisions-dynamic-type-app-group-cert",
-    "excerpt": "開發 AIQuota（iPhone App + Home Screen Widget，顯示 Codex、Claude、AGY 額度）時遇到的三個問題的排查與決策紀錄：Widget 文字動態字體折行、App Group 偏好設定的警告訊息判讀、以及模擬器信任自簽憑證的操作方式。整理成可回查的知識，避免下次遇到類似狀況重新排查一次。 WidgetKit 內固定寬度欄位裡的文字，不要…"
-  },
-  {
-    "title": "AI 時代的 PM 新技能：語音化工作流程設計實戰",
-    "rel": "AI/語音化工作流程設計實戰/AI 時代的 PM 新技能：語音化工作流程設計實戰.md",
-    "slug": "voice-workflow-design",
-    "url": "note.html?slug=voice-workflow-design",
-    "excerpt": "title: AI 時代的 PM 新技能：語音化工作流程設計實戰 created: 2026-05-09 source: 260508_AI 時代的 PM 新技能：語音化工作流程設計實戰.zip AI 語音工作流 PM ZeroType Prompt Engineering Ollama 這份教材的核心不是「用語音打字」，而是把語音設計成一個低摩擦的 AI 工作入口：想到就說，…"
-  },
-  {
-    "title": "AI 提示詞十則：情境、推理、誠實與風險檢查",
-    "rel": "AI/AI提示詞十則/AI 提示詞十則：情境、推理、誠實與風險檢查.md",
-    "slug": "ai-prompt-patterns",
-    "url": "note.html?slug=ai-prompt-patterns",
-    "excerpt": "這份筆記整理老闆提供的 10 張提示詞卡片，已從簡體中文轉成符合台灣正體中文語法的版本，並補成我之後可直接查用的「提示詞選擇表」。 重點不是背十句咒語，而是依當下任務選擇正確規則：要背景、要推理、要誠實、要批判、要收斂、要格式、要假設審計、要壓縮上下文，或要上線前預演失敗。 如果老闆給的是模糊任務，先用 情境簡報。 如果老闆要決策品質，加入 推理要求、誠實約束、假設審計。…"
-  },
-  {
-    "title": "AI-First Testing：收斂、探索與可重複執行",
-    "rel": "AI-First Testing：收斂、探索與可重複執行.md",
-    "slug": "ai-first-testing-workflow",
-    "url": "note.html?slug=ai-first-testing-workflow",
-    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
   }
 ]

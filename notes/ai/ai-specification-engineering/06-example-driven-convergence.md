@@ -175,8 +175,8 @@ AI 負責:快速產生範例、誠實標記需要猜測的地方、在契約更�
 
 ## 延伸閱讀
 
-- [規格即程式](./01-規格即程式：用型別、狀態機與不變量定義需求.md)——範例收斂出的介面與 DTO,在該篇被形式化為契約與不變量。
-- [AI 協作收斂](./02-AI-協作收斂：從大量資料表回到業務模型.md)——範例收斂介面,資料模型收斂持久化,兩者互為表裡。
-- [時間序列模擬](./05-時間序列模擬：用時間軸推演狀態變化找出規格歧義.md)——範例中的「先確認再執行」為何危險,在該篇有完整的並行推演。
+- [規格即程式](note.html?slug=ai/ai-specification-engineering/01-spec-as-code)——範例收斂出的介面與 DTO,在該篇被形式化為契約與不變量。
+- [AI 協作收斂](note.html?slug=ai/ai-specification-engineering/02-model-convergence)——範例收斂介面,資料模型收斂持久化,兩者互為表裡。
+- [時間序列模擬](note.html?slug=ai/ai-specification-engineering/05-timeline-simulation)——範例中的「先確認再執行」為何危險,在該篇有完整的並行推演。
 
 更新日期：2026-07-22
