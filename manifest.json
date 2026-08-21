@@ -1,5 +1,40 @@
 [
   {
+    "title": "設計決策與它們的理由",
+    "rel": "notes/ai/agent-work-harness/design-decisions.md",
+    "slug": "ai/agent-work-harness/design-decisions",
+    "url": "note.html?slug=ai/agent-work-harness/design-decisions",
+    "excerpt": "Agent Work Harness 開發過程中的關鍵決策，以及每個決策背後的取捨。 重點記「為什麼這樣決定」與「什麼情況下該反過來做」—— 只記結論的決策紀錄，過三個月就沒人知道它還成不成立。  只加已經有真實失敗案例證明需要的機制。 這句話容易說難做。難的地方在於：設計一個機制的時候，你會清楚看見它能解決什麼問題 —— 包括那些還沒發生的問題。抵抗那個誘惑需要一條明確的判準…"
+  },
+  {
+    "title": "開發過程與每階段真正抓到的問題",
+    "rel": "notes/ai/agent-work-harness/development-log.md",
+    "slug": "ai/agent-work-harness/development-log",
+    "url": "note.html?slug=ai/agent-work-harness/development-log",
+    "excerpt": "一個系統從設計文件到「可以日常使用」的完整過程紀錄。重點不在做了什麼功能， 而在每一輪驗證活動實際抓到什麼 —— 這是判斷一個驗證方法值不值得的唯一依據。  驗證活動的價值等於它抓到什麼。  每一輪開始前先問「這一輪要證偽哪個假設」，跑完後看它是否真的動搖了什麼。 四輪驗證，共抓到 8 個真實缺陷，其中 6 個是自動化流程自己抓出來的。 設計文件列了三個「必須實測、不可依賴文件…"
+  },
+  {
+    "title": "Evidence 可信度的四層模型",
+    "rel": "notes/ai/agent-work-harness/evidence-trust-model.md",
+    "slug": "ai/agent-work-harness/evidence-trust-model",
+    "url": "note.html?slug=ai/agent-work-harness/evidence-trust-model",
+    "excerpt": "自動化系統判定「工作完成了」時，依據的是什麼？這篇把「evidence 有多可信」拆成四層， 並記錄一個真實的 false positive 案例與它的修法。 適用於任何「機器判定成功」的場景：CI 驗收、Agent 工作驗證、自動化部署 gate。  大多數系統只解到第一層不等式就停了，但後面還有兩層。 第一層靠「不採信自述、自己收集 evidence」解決。第二層第三層需要…"
+  },
+  {
+    "title": "Sandbox 隔離的實測邊界：codex 與 bubblewrap",
+    "rel": "notes/ai/agent-work-harness/sandbox-isolation-findings.md",
+    "slug": "ai/agent-work-harness/sandbox-isolation-findings",
+    "url": "note.html?slug=ai/agent-work-harness/sandbox-isolation-findings",
+    "excerpt": "在實作 Agent Work Harness 時，設計文件要求「以實際 probe 證明隔離成立，不可只依賴文件假設」。 照做之後發現：三個安全假設裡有兩個不成立。 這篇記錄實測結果與可重用的結論。適用於任何要把不可信程式碼放進沙箱執行的場景， 不限於 Agent。  沙箱模式的名字（read-only / workspace-write）只描述檔案系統邊界。…"
+  },
+  {
+    "title": "Agent Work Harness：把 Coding Work 安全交給外部 Agent",
+    "rel": "notes/ai/agent-work-harness/index.md",
+    "slug": "ai/agent-work-harness/index",
+    "url": "note.html?slug=ai/agent-work-harness/index",
+    "excerpt": "一次完整的系統開發紀錄：設計一個 Work Governance Layer，把 coding work 交給外部 Agent Runtime（Codex）執行，但不採信 Agent 的自述，改以獨立收集的 evidence 決定 接受、重試、詢問或阻擋。 核心定位是一句話：  Harness 管 Work，不管 Agent loop。 它不重新實作 Agent 已經擅長的 r…"
+  },
+  {
     "title": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄",
     "rel": "notes/finance/tw-day-trading-mcp-cli-wrapper-openclaw.md",
     "slug": "finance/tw-day-trading-mcp-cli-wrapper-openclaw",
