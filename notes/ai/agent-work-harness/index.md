@@ -25,6 +25,7 @@ Agent Runtime（Codex）執行，但**不採信 Agent 的自述**，改以獨立
 | [開發過程與每階段真正抓到的問題](note.html?slug=ai/agent-work-harness/development-log) | Research | 從設計文件到 MVP 到跨 repo 驗證，每個驗證活動實際抓到什麼 |
 | [Sandbox 隔離的實測邊界](note.html?slug=ai/agent-work-harness/sandbox-isolation-findings) | Knowledge | codex sandbox 與 bubblewrap 的真實行為，文件假設與實測不符的地方 |
 | [Evidence 可信度的四層模型](note.html?slug=ai/agent-work-harness/evidence-trust-model) | Knowledge | 為什麼「測試通過」不等於「驗證完整」，以及怎麼分層處理 |
+| [TypeScript Computational Sensors：AI 程式碼的機械檢測 Harness](note.html?slug=ai/agent-work-harness/computational-sensors-typescript) | Knowledge | 用 tsc、ESLint、Knip、dependency-cruiser、Vitest、Stryker、Semgrep 等工具，把可客觀判定的問題轉成硬 evidence |
 | [設計決策與它們的理由](note.html?slug=ai/agent-work-harness/design-decisions) | Decision record | 每個決定背後的取捨，以及什麼情況下該反過來做 |
 
 ## 最值得帶走的三件事
