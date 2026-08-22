@@ -1,5 +1,12 @@
 [
   {
+    "title": "TypeScript Computational Sensors：AI 程式碼的機械檢測 Harness",
+    "rel": "notes/ai/agent-work-harness/computational-sensors-typescript.md",
+    "slug": "ai/agent-work-harness/computational-sensors-typescript",
+    "url": "note.html?slug=ai/agent-work-harness/computational-sensors-typescript",
+    "excerpt": "這篇整理 Martin Fowler 網站上 Harness Engineering 系列的 Computational Sensors 概念，並落到 TypeScript 專案：哪些問題應該交給型別檢查、Lint、架構規則、測試、Mutation Testing、安全掃描等工具機械判定，以及這些結果怎麼成為 Agent 可重跑、可比較的 evidence。 參考文章：…"
+  },
+  {
     "title": "設計決策與它們的理由",
     "rel": "notes/ai/agent-work-harness/design-decisions.md",
     "slug": "ai/agent-work-harness/design-decisions",
