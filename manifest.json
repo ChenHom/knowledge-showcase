@@ -1,5 +1,19 @@
 [
   {
+    "title": "Decision Table Playbook 文件設計",
+    "rel": "notes/ai/decision-table-playbook-design.md",
+    "slug": "ai/decision-table-playbook-design",
+    "url": "note.html?slug=ai/decision-table-playbook-design",
+    "excerpt": "這份設計定義一篇可重播的 Decision Table 操作手冊。目標不是再介紹 Decision Table，而是讓開發者、QA、PM 或領域人員從同一類需求輸入出發，按照固定步驟使用 AI、完成領域審查，產出結構一致且可直接轉成 Test Case 的表格。 正式文件採用分階段 Playbook。每個階段固定包含輸入、操作、AI Prompt、產出格式、人工檢查及完成條件；…"
+  },
+  {
+    "title": "Agent Work Harness：把 Coding Work 安全交給外部 Agent",
+    "rel": "notes/ai/agent-work-harness/index.md",
+    "slug": "ai/agent-work-harness/index",
+    "url": "note.html?slug=ai/agent-work-harness/index",
+    "excerpt": "一次完整的系統開發紀錄：設計一個 Work Governance Layer，把 coding work 交給外部 Agent Runtime（Codex）執行，但不採信 Agent 的自述，改以獨立收集的 evidence 決定 接受、重試、詢問或阻擋。 核心定位是一句話：  Harness 管 Work，不管 Agent loop。 它不重新實作 Agent 已經擅長的 r…"
+  },
+  {
     "title": "TypeScript Computational Sensors：AI 程式碼的機械檢測 Harness",
     "rel": "notes/ai/agent-work-harness/computational-sensors-typescript.md",
     "slug": "ai/agent-work-harness/computational-sensors-typescript",
@@ -33,13 +47,6 @@
     "slug": "ai/agent-work-harness/sandbox-isolation-findings",
     "url": "note.html?slug=ai/agent-work-harness/sandbox-isolation-findings",
     "excerpt": "在實作 Agent Work Harness 時，設計文件要求「以實際 probe 證明隔離成立，不可只依賴文件假設」。 照做之後發現：三個安全假設裡有兩個不成立。 這篇記錄實測結果與可重用的結論。適用於任何要把不可信程式碼放進沙箱執行的場景， 不限於 Agent。  沙箱模式的名字（read-only / workspace-write）只描述檔案系統邊界。…"
-  },
-  {
-    "title": "Agent Work Harness：把 Coding Work 安全交給外部 Agent",
-    "rel": "notes/ai/agent-work-harness/index.md",
-    "slug": "ai/agent-work-harness/index",
-    "url": "note.html?slug=ai/agent-work-harness/index",
-    "excerpt": "一次完整的系統開發紀錄：設計一個 Work Governance Layer，把 coding work 交給外部 Agent Runtime（Codex）執行，但不採信 Agent 的自述，改以獨立收集的 evidence 決定 接受、重試、詢問或阻擋。 核心定位是一句話：  Harness 管 Work，不管 Agent loop。 它不重新實作 Agent 已經擅長的 r…"
   },
   {
     "title": "tw-day-trading MCP：受控 CLI Wrapper 與 OpenClaw 接入紀錄",
