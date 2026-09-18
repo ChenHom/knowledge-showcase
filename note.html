@@ -330,7 +330,6 @@ main {
 }
 .load-error { color: #dc2626; }
 </style></head><body><main><nav class="top-nav"><a class="back-link" href="index.html">← 回首頁</a><span class="nav-meta"><code id="docPath" class="doc-title"></code></span></nav><div class="article-container"><article id="content" class="markdown-body"><p class="loading">載入中…</p></article></div></main><script src="assets/vendor/marked.umd.js"></script>
-<script src="assets/vendor/mermaid.min.js"></script>
 <script>(()=>{
 const params = new URLSearchParams(location.search);
 const slug = params.get('slug') || '';
@@ -344,7 +343,6 @@ if (!/^[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/.test(slug) || slug.includes('..')) 
 }
 
 const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'default', securityLevel: 'loose' });
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -368,7 +366,14 @@ fetch('notes/' + slug + '.md')
     });
     const diagrams = body.querySelectorAll('.mermaid');
     if (diagrams.length) {
-      mermaid.run({ nodes: diagrams }).catch(e => console.error('mermaid', e));
+      // mermaid.min.js is 3.5 MB: only fetch it for notes that actually draw a diagram.
+      const s = document.createElement('script');
+      s.src = 'assets/vendor/mermaid.min.js';
+      s.onload = () => {
+        mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'default', securityLevel: 'loose' });
+        mermaid.run({ nodes: diagrams }).catch(e => console.error('mermaid', e));
+      };
+      document.body.appendChild(s);
     }
   })
   .catch(err => {
