@@ -55,6 +55,8 @@ Decision Table 只能提高條件組合的可見性，不能自動保證涵蓋�
 
 > 哪些條件真正影響結果、哪些組合實際可能發生，以及每種組合應產生什麼行為？
 
+若要實際從 AI 粗稿走到可核可的表格，請依照[從 AI 粗稿到領域核可：Decision Table 操作手冊](note.html?slug=ai/decision-table-playbook)。該手冊提供逐階段輸入、Prompt、固定產物、人工檢查、完成門檻及購物車 Before／After 案例。
+
 補充閱讀：https://ithelp.ithome.com.tw/articles/10375192
 
 ## 抽象 Test Case：把「測什麼」與「怎麼操作」分離

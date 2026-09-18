@@ -1,5 +1,26 @@
 [
   {
+    "title": "Github copilot runtime 移植到 rust 中文全文翻譯",
+    "rel": "notes/ai/github-copilot-runtime-rust-migration.md",
+    "slug": "ai/github-copilot-runtime-rust-migration",
+    "url": "note.html?slug=ai/github-copilot-runtime-rust-migration",
+    "excerpt": "原文　[Migrating the GitHub Copilot runtime to Rust, using Copilot](github.blog/ai-and-ml/generative-ai) 作者　Stephen Toub（[@st…"
+  },
+  {
+    "title": "AI-First Testing：收斂、探索與可重複執行",
+    "rel": "notes/ai/ai-first-testing-workflow.md",
+    "slug": "ai/ai-first-testing-workflow",
+    "url": "note.html?slug=ai/ai-first-testing-workflow",
+    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
+  },
+  {
+    "title": "從 AI 粗稿到領域核可：Decision Table 操作手冊",
+    "rel": "notes/ai/decision-table-playbook.md",
+    "slug": "ai/decision-table-playbook",
+    "url": "note.html?slug=ai/decision-table-playbook",
+    "excerpt": "這是一份可逐步執行的 Decision Table Playbook。它讓開發者、QA、PM 或領域人員從 Acceptance Criteria（AC）與已確認的業務規則出發，使用 AI 整理候選內容，再透過固定的人工檢查與完成門檻，產出可追蹤、可核可、可直接轉成 Test Case 的 Decision Table。 這份手冊不承諾相同 Prompt 一定產生相同文字；它追…"
+  },
+  {
     "title": "Decision Table Playbook 文件設計",
     "rel": "notes/ai/decision-table-playbook-design.md",
     "slug": "ai/decision-table-playbook-design",
@@ -376,13 +397,6 @@
     "slug": "ai/ai-prompt-patterns/index",
     "url": "note.html?slug=ai/ai-prompt-patterns/index",
     "excerpt": "這份筆記整理老闆提供的 10 張提示詞卡片，已從簡體中文轉成符合台灣正體中文語法的版本，並補成我之後可直接查用的「提示詞選擇表」。 重點不是背十句咒語，而是依當下任務選擇正確規則：要背景、要推理、要誠實、要批判、要收斂、要格式、要假設審計、要壓縮上下文，或要上線前預演失敗。 如果老闆給的是模糊任務，先用 情境簡報。 如果老闆要決策品質，加入 推理要求、誠實約束、假設審計。…"
-  },
-  {
-    "title": "AI-First Testing：收斂、探索與可重複執行",
-    "rel": "notes/ai/ai-first-testing-workflow.md",
-    "slug": "ai/ai-first-testing-workflow",
-    "url": "note.html?slug=ai/ai-first-testing-workflow",
-    "excerpt": "這份文件整理安德魯〈AI-First Testing，以 AI 為核心重新設計測試流程〉的閱讀結果，以及閱讀過程中釐清的問題、工程補充與 Laravel 金流專案導入方式。 原文：columns.chicken-house.net/2025/11 這套流程不是讓 AI 取代測試框架，而是重新分配測試工作…"
   },
   {
     "title": "Agent System Foundation：從多步任務骨架到可治理 Beta Harness",
