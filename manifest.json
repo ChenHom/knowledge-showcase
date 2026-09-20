@@ -7,6 +7,13 @@
     "excerpt": "原文翻譯見 [Github copilot runtime 移植到 rust 中文全文翻譯](github-copilot-runtime-rust-migration.md)。這篇是讀後整理，聚焦在「AI agent 對大型重寫幫了什麼、怎麼幫、要防什麼」，不重述文章細節。 43 萬行 TypeScript → 83 萬行 Rust，128 個 PR、14 週半、一位工程師主…"
   },
   {
+    "title": "Agent 主導的功能開發流程：六步驟、五角度、機械化檢查",
+    "rel": "notes/ai/agent-driven-feature-workflow.md",
+    "slug": "ai/agent-driven-feature-workflow",
+    "url": "note.html?slug=ai/agent-driven-feature-workflow",
+    "excerpt": "延伸自 [Copilot runtime 移植 Rust 的重點整理](copilot-rust-migration-takeaways.md) 的「套到產品開發」段落。那篇講機制，這篇定固定流程：每步的進入條件 → 動作 → 判斷點 → 產出 → 退出條件，以及步驟 1–3 怎麼用腳本和 hook 把判斷點機械化。 | 代號 | 角度 | 判斷時問的問題 |…"
+  },
+  {
     "title": "Github copilot runtime 移植到 rust 中文全文翻譯",
     "rel": "notes/ai/github-copilot-runtime-rust-migration.md",
     "slug": "ai/github-copilot-runtime-rust-migration",
