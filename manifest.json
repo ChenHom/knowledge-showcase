@@ -1,5 +1,12 @@
 [
   {
+    "title": "Copilot runtime 移植 Rust：AI 協助大型重寫的重點整理",
+    "rel": "notes/ai/copilot-rust-migration-takeaways.md",
+    "slug": "ai/copilot-rust-migration-takeaways",
+    "url": "note.html?slug=ai/copilot-rust-migration-takeaways",
+    "excerpt": "原文翻譯見 [Github copilot runtime 移植到 rust 中文全文翻譯](github-copilot-runtime-rust-migration.md)。這篇是讀後整理，聚焦在「AI agent 對大型重寫幫了什麼、怎麼幫、要防什麼」，不重述文章細節。 43 萬行 TypeScript → 83 萬行 Rust，128 個 PR、14 週半、一位工程師主…"
+  },
+  {
     "title": "Github copilot runtime 移植到 rust 中文全文翻譯",
     "rel": "notes/ai/github-copilot-runtime-rust-migration.md",
     "slug": "ai/github-copilot-runtime-rust-migration",
