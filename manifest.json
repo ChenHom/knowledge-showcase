@@ -1,5 +1,12 @@
 [
   {
+    "title": "Passwordless / Authentication 登入方式設計與安全性比較",
+    "rel": "notes/backend/passwordless-authentication-comparison.md",
+    "slug": "backend/passwordless-authentication-comparison",
+    "url": "note.html?slug=backend/passwordless-authentication-comparison",
+    "excerpt": " 適用：Web / App 會員系統、SaaS、管理後台、金流與高權限系統的登入設計與 Security Review  整理日期：2026-09-23 比較 Password、Email / SMS Magic Link、Email / SMS OTP、TOTP、Push Approval、QR Login、Passkey（Synced / Device-bound）、三方登…"
+  },
+  {
     "title": "Copilot runtime 移植 Rust：AI 協助大型重寫的重點整理",
     "rel": "notes/ai/copilot-rust-migration-takeaways.md",
     "slug": "ai/copilot-rust-migration-takeaways",
