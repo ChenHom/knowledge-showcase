@@ -1,5 +1,12 @@
 [
   {
+    "title": "Zeabur 2026 資安事件：攻擊鏈、信任邊界、偵測與事故應變",
+    "rel": "notes/infrastructure/zeabur-security-incidents-lessons.md",
+    "slug": "infrastructure/zeabur-security-incidents-lessons",
+    "url": "note.html?slug=infrastructure/zeabur-security-incidents-lessons",
+    "excerpt": "以 Zeabur 2026 年 8 月、10 月的兩次資安事件為案例，分析：PaaS 為何執行客戶容器、RCE 如何造成權限擴散、AWS Root Key 為何不應交給日常服務、CI/CD 與 Runtime 權限如何區隔、Secrets 與備份如何分權、Runtime/API 如何偵測異常，以及稽核紀錄與事故處理的工程要求。本文不是聊天逐字稿；「官方確認」「官方推定／推測」「…"
+  },
+  {
     "title": "Passwordless / Authentication 登入方式設計與安全性比較",
     "rel": "notes/backend/passwordless-authentication-comparison.md",
     "slug": "backend/passwordless-authentication-comparison",
