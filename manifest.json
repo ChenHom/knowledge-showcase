@@ -1,5 +1,47 @@
 [
   {
+    "title": "矛與盾：技術內容的說服、信任與認知防禦",
+    "rel": "notes/ai/persuasion-cognitive-defense/index.md",
+    "slug": "ai/persuasion-cognitive-defense/index",
+    "url": "note.html?slug=ai/persuasion-cognitive-defense/index",
+    "excerpt": "這是一組研究文件，起點是一篇宣稱「Claude Code 搭配 REA，在五分鐘內逆向分析路由器並修好 Wi-Fi」的社群文章。研究重點不是 REA 本身，而是文章如何影響讀者，以及讀者如何避免被誇大或誤導的內容帶往錯誤結論。 A（矛）：研究內容如何被注意、理解、信任、採納，以及長期的專業信譽如何建立。 B（盾）：研究自己如何識別內容中的證據缺口、信任越界與行動風險，避免誤信，…"
+  },
+  {
+    "title": "A｜說服、敘事與長期信任：研究結論及技術文章 SOP",
+    "rel": "notes/ai/persuasion-cognitive-defense/01-persuasion-and-trust.md",
+    "slug": "ai/persuasion-cognitive-defense/01-persuasion-and-trust",
+    "url": "note.html?slug=ai/persuasion-cognitive-defense/01-persuasion-and-trust",
+    "excerpt": "A（矛）的研究目標：理解資訊如何從取得注意力，走向理解、可信度判斷、有限信任、採用與長期依賴；將研究運用在真實、可查證的技術文章。不把提高點閱率等同於建立信任，也不把讀者的信任當成可無限制借用的資產。 認同主張 ≠ 信任作者 ≠ 願意依賴 ≠ 已採取行動。這些結果要分別觀察。 ELM 指出思考投入程度會受動機與能力影響；強論據在深入處理時重要，吸引注意只是開始。[R2]"
+  },
+  {
+    "title": "B｜誤信、推論越界與認知防禦：研究結論及閱讀 SOP",
+    "rel": "notes/ai/persuasion-cognitive-defense/02-cognitive-defense.md",
+    "slug": "ai/persuasion-cognitive-defense/02-cognitive-defense",
+    "url": "note.html?slug=ai/persuasion-cognitive-defense/02-cognitive-defense",
+    "excerpt": "B（盾）研究自己如何避免誤信危險、誇大或誤導的內容。這不是「全面不相信」，不是惡意程式掃描器，也不是 Agent 自動執行權限管理。它關注閱讀當下的判斷：作者說了什麼、證據能支持到哪裡、自己腦中補上了哪些未證實的結論，以及是否值得因此採取行動。 1. 真實事實也可以導向錯誤的整體印象。Paltering 研究的是刻意利用真實陳述傳達誤導印象，但不能在沒有意圖證據時替作者貼上此標…"
+  },
+  {
+    "title": "路由器逆向分析文章：矛與盾案例走查",
+    "rel": "notes/ai/persuasion-cognitive-defense/03-router-case-and-playbooks.md",
+    "slug": "ai/persuasion-cognitive-defense/03-router-case-and-playbooks",
+    "url": "note.html?slug=ai/persuasion-cognitive-defense/03-router-case-and-playbooks",
+    "excerpt": "以一則宣稱「Claude Code 搭配 REA，五分鐘逆向分析路由器並修好 Wi-Fi」的社群案例，示範如何同時分析 A：內容如何建立信任 與 B：讀者如何阻止證據越界。 資料邊界：此案例以本次討論中提供的文章截圖與敘述為材料，未取得作者完整執行日誌、原始測速資料、路由器韌體與可靠的重現實驗。因此不能認定作者欺騙、收受廣告費、散播木馬，亦不能獨立確認其宣稱的修復效果。"
+  },
+  {
+    "title": "文獻與證據地圖：說服、信任、誤信與認知防禦",
+    "rel": "notes/ai/persuasion-cognitive-defense/04-references-and-evidence-map.md",
+    "slug": "ai/persuasion-cognitive-defense/04-references-and-evidence-map",
+    "url": "note.html?slug=ai/persuasion-cognitive-defense/04-references-and-evidence-map",
+    "excerpt": "集中記錄「矛與盾」研究的原始文獻、可以支持的論點、研究類型，以及移用到技術文章時的限制。以下並非宣稱每篇都已完成逐頁全文精讀：有些核對了出版社全文或可取得的原文，有些僅核對出版社摘要與書目資料。 理論模型、單項實驗、統合分析、實務方法的證據層級不同，不能混寫。 學術研究處理的多半是新聞、廣告、敘事或一般網站；用於 GitHub README、AI 技術文章與提示詞教學，是需要驗…"
+  },
+  {
+    "title": "Zeabur 2026 資安事件：攻擊鏈、信任邊界、偵測與事故應變",
+    "rel": "notes/infrastructure/zeabur-security-incidents-lessons.md",
+    "slug": "infrastructure/zeabur-security-incidents-lessons",
+    "url": "note.html?slug=infrastructure/zeabur-security-incidents-lessons",
+    "excerpt": "以 Zeabur 2026 年 8 月、10 月的兩次資安事件為案例，分析：PaaS 為何執行客戶容器、RCE 如何造成權限擴散、AWS Root Key 為何不應交給日常服務、CI/CD 與 Runtime 權限如何區隔、Secrets 與備份如何分權、Runtime/API 如何偵測異常，以及稽核紀錄與事故處理的工程要求。本文不是聊天逐字稿；「官方確認」「官方推定／推測」「…"
+  },
+  {
     "title": "Passwordless / Authentication 登入方式設計與安全性比較",
     "rel": "notes/backend/passwordless-authentication-comparison.md",
     "slug": "backend/passwordless-authentication-comparison",
