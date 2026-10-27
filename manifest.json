@@ -1,5 +1,12 @@
 [
   {
+    "title": "RAG 與記憶搜尋的 Embedding 服務復原",
+    "rel": "notes/ai/rag-embedding-service-recovery.md",
+    "slug": "ai/rag-embedding-service-recovery",
+    "url": "note.html?slug=ai/rag-embedding-service-recovery",
+    "excerpt": "當 RAG 或 agent 記憶搜尋依賴的 embedding 服務停止，兩者可能同時失效。本筆記整理診斷、復原與驗證原則，適用於使用 Ollama、向量資料庫及容器的自架環境。 先檢查 embedding endpoint、模型和網路，再確認 API、worker、向量庫及物件儲存；容器正在執行不等於應用已就緒。 沿用既有索引時，應保留相同模型版本、前處理、維度與索引設定。維…"
+  },
+  {
     "title": "矛與盾：技術內容的說服、信任與認知防禦",
     "rel": "notes/ai/persuasion-cognitive-defense/index.md",
     "slug": "ai/persuasion-cognitive-defense/index",
